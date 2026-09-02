@@ -1,255 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administration — Connexion</title>
-  <style>
-    /* RESET & BASE STYLES */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSCompany - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- SDK Supabase Officiel -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    body {
-      background-color: #0d0f12;
-      color: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* EFFET D'ARRIÈRE-PLAN LUMINEUX */
-    body::before {
-      content: '';
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(255, 62, 62, 0.25) 0%, rgba(0,0,0,0) 70%);
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 0;
-      filter: blur(50px);
-    }
-
-    /* CARTE DE CONNEXION */
-    .login-card {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 420px;
-      padding: 40px;
-      background: rgba(22, 27, 34, 0.8);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .login-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .login-header .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: #ff3e3e;
-      margin-bottom: 8px;
-      display: inline-block;
-    }
-
-    .login-header h1 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-
-    .login-header p {
-      font-size: 0.875rem;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
-    /* FORMULAIRE & CHAMPS */
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      color: #ffffff;
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    .form-group input:focus {
-      border-color: #ff3e3e;
-      box-shadow: 0 0 0 3px rgba(255, 62, 62, 0.15);
-    }
-
-    /* BOUTON SE CONNECTER */
-    .btn-submit {
-      width: 100%;
-      padding: 12px;
-      background: #ff3e3e;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.1s ease;
-      margin-top: 10px;
-    }
-
-    .btn-submit:hover {
-      background: #e03535;
-    }
-
-    .btn-submit:active {
-      transform: scale(0.98);
-    }
-
-    /* ZONES DE FEEDBACK / ERREURS */
-    .status-message {
-      margin-top: 16px;
-      padding: 10px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      display: none;
-      text-align: center;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .status-message.error {
-      display: block;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-    }
-
-    .status-message.success {
-      display: block;
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #86efac;
-    }
-
-    .status-message.info {
-      display: block;
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: #93c5fd;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="login-card">
-    <div class="login-header">
-      <div class="logo">MYNOVELS</div>
-      <h1>Espace Administration</h1>
-      <p>Connecte-toi pour gérer la plateforme</p>
-    </div>
-
-    <form id="admin-login-form">
-      <div class="form-group">
-        <label for="email">Adresse e-mail</label>
-        <input type="email" id="email" placeholder="admin@exemple.com" required autocomplete="email">
-      </div>
-
-      <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
-      </div>
-
-      <button type="submit" class="btn-submit" id="submit-btn">Se connecter</button>
-      
-      <div id="status-box" class="status-message"></div>
-    </form>
-  </div>
-
-  <!-- SCRIPT SUPABASE & LOGIQUE DE CONNEXION -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const SUPABASE_URL = 'https://bvehhmbowizwsqrbdnwu.supabase.co';
-    const SUPABASE_ANON_KEY = 'Sb_publishable_B4I-hDnB8ic_IRa7ZRIRMQ_zGrteY2Q';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const loginForm = document.getElementById('admin-login-form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const submitBtn = document.getElementById('submit-btn');
-    const statusBox = document.getElementById('status-box');
-
-    function showStatus(text, type = 'info') {
-      statusBox.textContent = text;
-      statusBox.className = `status-message ${type}`;
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
-      showStatus('Vérification en cours...', 'info');
-
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: emailInput.value,
-          password: passwordInput.value,
-        });
-
-        if (error) {
-          showStatus('Identifiants incorrects : ' + error.message, 'error');
-          submitBtn.disabled = false;
-          submitBtn.style.opacity = '1';
-        } else if (data.user) {
-          showStatus('Connexion réussie ! Redirection...', 'success');
-          
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1000);
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
-      } catch (err) {
-        showStatus('Une erreur est survenue lors de la connexion.', 'error');
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-      }
-    });
-  </script>
 
-</body>
-</html>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .admin-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 2rem; background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+        }
+
+        .container { max-width: 650px; margin: 2.5rem auto; width: 90%; }
+
+        .admin-card {
+            background: var(--card-bg); backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 2rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        input, select, textarea {
+            width: 100%; background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color); border-radius: 10px;
+            padding: 12px 16px; color: var(--text-main); margin-top: 0.4rem;
+            outline: none;
+        }
 
         .form-group { margin-bottom: 1.2rem; }
         label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
@@ -274,33 +77,33 @@
         <!-- FORMULAIRE DE CONNEXION -->
         <div id="loginSection" class="admin-card">
             <h2>Connexion Administrateur</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Entrez vos accès pour gérer la plateforme.</p>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Saisis tes accès administrateur.</p>
             <form id="loginForm">
                 <div class="form-group">
-                    <label>Adresse E-mail</label>
-                    <input type="email" id="loginEmail" required placeholder="admin@bscompany.com">
+                    <label>E-mail</label>
+                    <input type="email" id="loginEmail" required placeholder="tonmail@example.com">
                 </div>
                 <div class="form-group">
                     <label>Mot de passe</label>
                     <input type="password" id="loginPassword" required placeholder="••••••••">
                 </div>
                 <button type="submit" class="btn-submit">Se connecter</button>
-                <p id="loginError" style="margin-top: 1rem; text-align: center; font-size: 0.85rem;"></p>
+                <p id="loginError" style="margin-top: 1rem; text-align: center; font-size: 0.85rem; font-weight: bold;"></p>
             </form>
         </div>
 
-        <!-- FORMULAIRE DE PUBLICATION -->
+        <!-- ESPACE DE PUBLICATION -->
         <div id="adminSection" class="admin-card hidden">
-            <h2>Publier un nouveau livre</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Ajoutez une œuvre au catalogue.</p>
+            <h2 style="color: #4ade80; margin-bottom: 0.5rem;">🚀 Espace Administration</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Ajoute un nouveau livre ou webnovel au catalogue.</p>
             
             <form id="addBookForm">
                 <div class="form-group">
                     <label>Titre de l'œuvre *</label>
-                    <input type="text" id="title" required>
+                    <input type="text" id="title" required placeholder="Ex: Tika Nameka">
                 </div>
                 <div class="form-group">
-                    <label>Sous-titre / Accroche</label>
+                    <label>Sous-titre</label>
                     <input type="text" id="subtitle">
                 </div>
                 <div class="form-group">
@@ -323,7 +126,6 @@
                     <select id="status">
                         <option value="En cours">En cours</option>
                         <option value="Terminé">Terminé</option>
-                        <option value="En pause">En pause</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -334,12 +136,115 @@
                     <label>Résumé *</label>
                     <textarea id="description" rows="4" required></textarea>
                 </div>
-                <button type="submit" class="btn-submit" id="submitBtn">🚀 Publier l'œuvre</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Publier le livre</button>
                 <div id="statusMsg" style="margin-top: 1rem; text-align: center; font-weight: bold;"></div>
             </form>
         </div>
     </main>
 
-    <script src="js/admin.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://bvehhmbowizwsqrbdnwu.supabase.co';
+        const SUPABASE_KEY = 'Sb_publishable_B4I-hDnB8ic_IRa7ZRIRMQ_zGrteY2Q';
+
+        // Initialisation du client Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const loginSection = document.getElementById('loginSection');
+        const adminSection = document.getElementById('adminSection');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Vérification de session au chargement
+        async function checkUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                loginSection.classList.add('hidden');
+                adminSection.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+            }
+        }
+
+        // Action de connexion
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginError.style.color = "#3b82f6";
+            loginError.innerText = "Connexion en cours...";
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                loginError.style.color = "#ef4444";
+                loginError.innerText = "❌ " + error.message;
+            } else {
+                loginError.innerText = "";
+                loginSection.classList.add('hidden');
+                adminSection.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+            }
+        });
+
+        // Déconnexion
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            location.reload();
+        });
+
+        // Publication de livre
+        const addBookForm = document.getElementById('addBookForm');
+        const statusMsg = document.getElementById('statusMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        addBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Publication...";
+
+            try {
+                const title = document.getElementById('title').value;
+                const subtitle = document.getElementById('subtitle').value;
+                const author = document.getElementById('author').value || 'BSCompany Studio';
+                const type = document.getElementById('type').value;
+                const genre = document.getElementById('genre').value;
+                const status = document.getElementById('status').value;
+                const description = document.getElementById('description').value;
+                const fileInput = document.getElementById('coverFile');
+
+                const file = fileInput.files[0];
+                const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+
+                const { error: uploadError } = await supabase.storage.from('covers').upload(fileName, file);
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName);
+
+                const { error: insertError } = await supabase.from('works').insert([{
+                    title, subtitle, author, type, genre, status, description,
+                    cover_url: urlData.publicUrl, read_url: '#'
+                }]);
+
+                if (insertError) throw insertError;
+
+                statusMsg.style.color = "#22c55e";
+                statusMsg.innerText = "✅ Livre publié avec succès !";
+                addBookForm.reset();
+
+            } catch (err) {
+                statusMsg.style.color = "#ef4444";
+                statusMsg.innerText = "❌ Erreur : " + err.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Publier le livre";
+            }
+        });
+
+        checkUser();
+    </script>
 </body>
 </html>
