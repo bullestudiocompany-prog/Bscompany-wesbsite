@@ -9,24 +9,34 @@
 </head>
 <body>
 
-    <!-- Barre de navigation -->
     <header class="navbar">
         <div class="brand">
-            <h1 class="brand-title">BSCompany</h1>
-            <span class="brand-slogan">PARTAGEZ VOTRE BULLE</span>
+            <div>
+                <div class="brand-title">BSCompany</div>
+                <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
+            </div>
         </div>
         <button class="btn-primary">Connexion</button>
     </header>
 
-    <!-- Section "Sorties récentes" -->
+    <!-- Carrousel À LA UNE -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <p class="carousel-title">À LA UNE</p>
+            <div id="featured-carousel" class="carousel-grid">
+                <!-- Les cartes à la une chargées depuis Supabase -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Catalogue des Sorties Récentes -->
     <main class="container">
         <h2 class="section-title">Sorties récentes</h2>
-        <section id="recent-grid" class="cards-grid">
-            <!-- Les cartes chargées dynamiquement s'afficheront ici -->
+        <section id="recent-grid" class="recent-grid">
+            <!-- Les cartes récentes chargées depuis Supabase -->
         </section>
     </main>
 
     <script type="module" src="js/pages/home.js"></script>
 </body>
 </html>
-
