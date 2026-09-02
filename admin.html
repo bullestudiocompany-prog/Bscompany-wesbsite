@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSCompany - Admin</title>
+    <title>BSCompany - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <!-- SDK Supabase Officiel -->
@@ -33,7 +33,7 @@
             background-attachment: fixed;
         }
 
-        .admin-nav {  
+        .admin-nav {
             display: flex; justify-content: space-between; align-items: center;
             padding: 1.2rem 2rem; background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
@@ -88,7 +88,7 @@
                     <input type="password" id="loginPassword" required placeholder="••••••••">
                 </div>
                 <button type="submit" class="btn-submit">Se connecter</button>
-                <p id="loginError" style="margin-top: 1rem; text-align: center; font-size: 0.85rem; font-weight: bold;"></p>
+                <p id="loginError" style="margin-top: 1rem; text-align: center; font-size: 0.9rem; font-weight: bold; min-height: 24px;"></p>
             </form>
         </div>
 
@@ -143,8 +143,9 @@
     </main>
 
     <script>
+        // Identifiants vérifiés et clé corrigée en minuscules (sb_...)
         const SUPABASE_URL = 'https://bvehhmbowizwsqrbdnwu.supabase.co';
-        const SUPABASE_KEY = 'Sb_publishable_B4I-hDnB8ic_IRa7ZRIRMQ_zGrteY2Q';
+        const SUPABASE_KEY = 'sb_publishable_B4I-hDnB8ic_IRa7ZRIRMQ_zGrteY2Q';
 
         // Initialisation du client Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -155,48 +156,67 @@
         const loginError = document.getElementById('loginError');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Vérification de session au chargement
+        function openAdminPanel() {
+            loginSection.classList.add('hidden');
+            loginSection.style.display = 'none';
+            adminSection.classList.remove('hidden');
+            adminSection.style.display = 'block';
+            if (logoutBtn) logoutBtn.classList.remove('hidden');
+        }
+
+        // 1. Vérification automatique de session
         async function checkUser() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                loginSection.classList.add('hidden');
-                adminSection.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) console.error("Erreur Session Check:", error);
+                if (session) {
+                    openAdminPanel();
+                }
+            } catch (err) {
+                console.error("Erreur checkUser:", err);
             }
         }
 
-        // Action de connexion
+        // 2. Action de Connexion
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             loginError.style.color = "#3b82f6";
-            loginError.innerText = "Connexion en cours...";
+            loginError.innerText = "⏳ Connexion en cours...";
 
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-            if (error) {
+                if (error) {
+                    console.error("Erreur Supabase Auth:", error);
+                    loginError.style.color = "#ef4444";
+                    loginError.innerText = "❌ " + error.message;
+                } else if (data.user) {
+                    loginError.style.color = "#22c55e";
+                    loginError.innerText = "✅ Connexion réussie ! Chargement...";
+                    setTimeout(() => {
+                        openAdminPanel();
+                    }, 500);
+                }
+            } catch (err) {
+                console.error("Erreur globale Connexion:", err);
                 loginError.style.color = "#ef4444";
-                loginError.innerText = "❌ " + error.message;
-            } else {
-                loginError.innerText = "";
-                loginSection.classList.add('hidden');
-                adminSection.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
+                loginError.innerText = "❌ Bug : " + err.message;
             }
         });
 
-        // Déconnexion
+        // 3. Déconnexion
         logoutBtn.addEventListener('click', async () => {
             await supabase.auth.signOut();
             location.reload();
         });
 
-        // Publication de livre
+        // 4. Formulaire de Publication
         const addBookForm = document.getElementById('addBookForm');
         const statusMsg = document.getElementById('statusMsg');
         const submitBtn = document.getElementById('submitBtn');
@@ -205,6 +225,7 @@
             e.preventDefault();
             submitBtn.disabled = true;
             submitBtn.innerText = "Publication...";
+            statusMsg.innerText = "";
 
             try {
                 const title = document.getElementById('title').value;
@@ -217,13 +238,18 @@
                 const fileInput = document.getElementById('coverFile');
 
                 const file = fileInput.files[0];
+                if (!file) throw new Error("Sélectionne une image de couverture.");
+
                 const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
 
+                // Upload Image
                 const { error: uploadError } = await supabase.storage.from('covers').upload(fileName, file);
                 if (uploadError) throw uploadError;
 
+                // Obtenir l'URL
                 const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName);
 
+                // Insérer en Base de Données
                 const { error: insertError } = await supabase.from('works').insert([{
                     title, subtitle, author, type, genre, status, description,
                     cover_url: urlData.publicUrl, read_url: '#'
@@ -236,6 +262,7 @@
                 addBookForm.reset();
 
             } catch (err) {
+                console.error("Erreur Publication:", err);
                 statusMsg.style.color = "#ef4444";
                 statusMsg.innerText = "❌ Erreur : " + err.message;
             } finally {
@@ -244,6 +271,7 @@
             }
         });
 
+        // Lancer la vérification
         checkUser();
     </script>
 </body>
