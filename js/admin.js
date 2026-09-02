@@ -1,9 +1,11 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
 // Configuration Supabase
 const SUPABASE_URL = 'https://bvehhmbowizwsqrbdnwu.supabase.co';
 const SUPABASE_ANON_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2ZWhobWJvd2l6d3NxcmJkbnd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MjI3MTIsImV4cCI6MjEwMzM5ODcxMn0.hbSRiYUwKoKgrcox-tNkls8Gmo9_-o7dFBi80nzKUs0';
 
 // Initialisation du client Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const loginSection = document.getElementById('loginSection');
 const adminSection = document.getElementById('adminSection');
@@ -13,10 +15,15 @@ const logoutBtn = document.getElementById('logoutBtn');
 
 // 1. Vérification de la session
 async function checkUser() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        showAdminPanel();
-    } else {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            showAdminPanel();
+        } else {
+            showLoginForm();
+        }
+    } catch (err) {
+        console.error("Erreur de session:", err);
         showLoginForm();
     }
 }
@@ -49,7 +56,7 @@ if (loginForm) {
         });
 
         if (error) {
-            console.error("Erreur :", error);
+            console.error("Erreur connexion:", error);
             loginError.style.color = "#ef4444";
             loginError.innerText = "❌ " + error.message;
         } else {
