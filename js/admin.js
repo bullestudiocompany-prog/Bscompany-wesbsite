@@ -1,4 +1,4 @@
-import { supabase } from "./SupabaseClient.js";
+import { supabase } from "./supabaseClient.js";
 
 const $ = id => document.getElementById(id);
 
