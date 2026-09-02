@@ -1,1 +1,1 @@
-alert("🔥 ADMIN.JS EST CHARGÉ"); document.body.insertAdjacentHTML( "afterbegin", ` <div style=" position:fixed; top:0; left:0; right:0; z-index:999999; padding:20px; background:#22c55e; color:black; font-size:18px; font-weight:bold; text-align:center; "> ✅ ADMIN.JS FONCTIONNE </div> ` ); 
+alert("ADMIN JS CHARGÉ !"); console.log("ADMIN JS CHARGÉ !"); 
