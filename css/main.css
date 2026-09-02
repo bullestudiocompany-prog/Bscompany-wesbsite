@@ -1,8 +1,11 @@
 :root {
   --primary: #58bcf6;
-  --dark: #1a1a1a;
-  --bg: #f7fbff;
-  --text: #2c3e50;
+  --primary-dark: #1e88e5;
+  --dark-bg: #0b1120;
+  --dark-card: #151f32;
+  --light-bg: #f4f8fb;
+  --text-dark: #1e293b;
+  --text-light: #94a3b8;
   --white: #ffffff;
 }
 
@@ -10,30 +13,81 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: var(--light-bg);
+  color: var(--text-dark);
 }
 
+/* Navbar */
 .navbar {
   background: var(--white);
-  padding: 1rem;
+  padding: 0.8rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .brand-title {
-  font-size: 1.2rem;
-  color: var(--dark);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #000;
 }
 
 .brand-slogan {
   font-size: 0.65rem;
+  color: var(--primary);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Conteneur principal */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
   color: var(--primary);
   font-weight: bold;
   display: block;
