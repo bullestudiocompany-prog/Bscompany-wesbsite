@@ -1,14 +1,26 @@
+import { supabase } from '../config/supabase.js';
 import { createCard } from '../components/card.js';
 
-// Données de test (en attendant la connexion directe à ta base Supabase)
-const testData = [
-  { title: "Maitwenu", type: "WEBNOVEL", cover_url: "https://via.placeholder.com/80x110", rating: "4.9" },
-  { title: "Autochtones", type: "ROMAN", cover_url: "https://via.placeholder.com/80x110", rating: "4.8" },
-  { title: "KIS!", type: "WEBCOMIC", cover_url: "https://via.placeholder.com/80x110", rating: "4.6" }
-];
+async function loadHomePage() {
+  const recentContainer = document.getElementById('recent-grid');
+  
+  // Requête vers ta table Supabase (remplace 'works' par le nom exact de ta table)
+  const { data: works, error } = await supabase
+    .from('works')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-const container = document.getElementById('recent-grid');
+  if (error) {
+    console.error('Erreur Supabase:', error);
+    recentContainer.innerHTML = '<p>Erreur lors du chargement des histoires.</p>';
+    return;
+  }
 
-if (container) {
-  container.innerHTML = testData.map(item => createCard(item)).join('');
+  if (works && works.length > 0) {
+    recentContainer.innerHTML = works.map(item => createCard(item)).join('');
+  } else {
+    recentContainer.innerHTML = '<p>Aucune histoire disponible pour le moment.</p>';
+  }
 }
+
+loadHomePage();
