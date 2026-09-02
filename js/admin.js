@@ -1,134 +1,50 @@
-window.addEventListener('supabaseReady', () => {
-    const supabase = window.supabase;
+const URL = "https://bvehhmbowizwsqrbdnwu.supabase.co"; const KEY = "sb_publishable_B4I-hDnB8ic_IRa7ZRIRMQ_zGrteY2Q";
 
-    const loginSection = document.getElementById('loginSection');
-    const adminSection = document.getElementById('adminSection');
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const logoutBtn = document.getElementById('logoutBtn');
+const db = supabase.createClient(URL, KEY);
 
-    // 1. Vérification de la session active
-    async function checkUser() {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                showAdminPanel();
-            } else {
-                showLoginForm();
-            }
-        } catch (e) {
-            showLoginForm();
-        }
-    }
+const $ = id => document.getElementById(id);
 
-    function showAdminPanel() {
-        if (loginSection) loginSection.classList.add('hidden');
-        if (adminSection) adminSection.classList.remove('hidden');
-        if (logoutBtn) logoutBtn.classList.remove('hidden');
-    }
+const loginSection = $("loginSection"); const adminSection = $("adminSection"); const loginForm = $("loginForm"); const loginError = $("loginError"); const logoutBtn = $("logoutBtn");
 
-    function showLoginForm() {
-        if (loginSection) loginSection.classList.remove('hidden');
-        if (adminSection) adminSection.classList.add('hidden');
-        if (logoutBtn) logoutBtn.classList.add('hidden');
-    }
+const bookForm = $("addBookForm"); const submitBtn = $("submitBtn"); const statusMsg = $("statusMsg");
 
-    // 2. Gestion de la connexion
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loginError.style.color = "#3b82f6";
-            loginError.innerText = "Connexion en cours...";
-            
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
+function showAdmin(user) { loginSection.classList.add("hidden"); adminSection.classList.remove("hidden"); logoutBtn.classList.remove("hidden");
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+console.log("Connecté :", user.email); 
 
-            if (error) {
-                loginError.style.color = "#ef4444";
-                loginError.innerText = "❌ " + error.message;
-            } else {
-                loginError.innerText = "";
-                showAdminPanel();
-            }
-        });
-    }
+}
 
-    // 3. Déconnexion
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            showLoginForm();
-        });
-    }
+function showLogin() { loginSection.classList.remove("hidden"); adminSection.classList.add("hidden"); logoutBtn.classList.add("hidden"); }
 
-    // 4. Formulaire de publication
-    const addBookForm = document.getElementById('addBookForm');
-    const statusMsg = document.getElementById('statusMsg');
-    const submitBtn = document.getElementById('submitBtn');
+async function checkSession() { const { data, error } = await db.auth.getSession();
 
-    if (addBookForm) {
-        addBookForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Publication en cours...";
-            if (statusMsg) statusMsg.innerText = "";
+if (error) { console.error(error); return; } if (data.session) { showAdmin(data.session.user); } else { showLogin(); } 
 
-            try {
-                const title = document.getElementById('title').value;
-                const subtitle = document.getElementById('subtitle').value;
-                const author = document.getElementById('author').value || 'BSCompany Studio';
-                const type = document.getElementById('type').value;
-                const genre = document.getElementById('genre').value;
-                const status = document.getElementById('status').value;
-                const description = document.getElementById('description').value;
-                const fileInput = document.getElementById('coverFile');
+}
 
-                const file = fileInput.files[0];
-                if (!file) throw new Error("Veuillez choisir une couverture.");
+/* CONNEXION */
 
-                const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+loginForm.addEventListener("submit", async e => { e.preventDefault();
 
-                const { error: uploadError } = await supabase.storage
-                    .from('covers')
-                    .upload(fileName, file);
+const email = $("loginEmail").value.trim(); const password = $("loginPassword").value; loginError.style.color = "#3b82f6"; loginError.textContent = "⏳ Connexion..."; const { data, error } = await db.auth.signInWithPassword({ email, password }); if (error) { console.error(error); loginError.style.color = "#ef4444"; loginError.textContent = "❌ " + error.message; return; } loginError.style.color = "#22c55e"; loginError.textContent = "✅ Connexion réussie !"; showAdmin(data.user); 
 
-                if (uploadError) throw uploadError;
-
-                const { data: urlData } = supabase.storage
-                    .from('covers')
-                    .getPublicUrl(fileName);
-
-                const { error: insertError } = await supabase
-                    .from('works')
-                    .insert([{
-                        title, subtitle, author, type, genre, status, description,
-                        cover_url: urlData.publicUrl, read_url: '#'
-                    }]);
-
-                if (insertError) throw insertError;
-
-                if (statusMsg) {
-                    statusMsg.style.color = "#22c55e";
-                    statusMsg.innerText = "✅ Livre publié avec succès !";
-                }
-                addBookForm.reset();
-
-            } catch (err) {
-                if (statusMsg) {
-                    statusMsg.style.color = "#ef4444";
-                    statusMsg.innerText = "❌ Erreur : " + err.message;
-                }
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "🚀 Publier l'œuvre";
-            }
-        });
-    }
-
-    checkUser();
 });
+
+/* DÉCONNEXION */
+
+logoutBtn.addEventListener("click", async () => { await db.auth.signOut(); showLogin(); });
+
+/* PUBLICATION */
+
+bookForm.addEventListener("submit", async e => { e.preventDefault();
+
+submitBtn.disabled = true; submitBtn.textContent = "Publication..."; statusMsg.textContent = ""; try { const file = $("coverFile").files[0]; if (!file) { throw new Error("Sélectionne une couverture."); } const title = $("title").value.trim(); const subtitle = $("subtitle").value.trim(); const author = $("author").value.trim() || "BSCompany Studio"; const type = $("type").value; const genre = $("genre").value.trim(); const status = $("status").value; const description = $("description").value.trim(); if (!title || !genre || !description) { throw new Error("Remplis tous les champs obligatoires."); } /* UPLOAD */ statusMsg.textContent = "⏳ Upload de la couverture..."; const ext = file.name.split(".").pop(); const fileName = `${Date.now()}.${ext}`; const { error: uploadError } = await db.storage .from("covers") .upload(fileName, file); if (uploadError) throw uploadError; /* URL IMAGE */ const { data: urlData } = db.storage .from("covers") .getPublicUrl(fileName); /* BASE DE DONNÉES */ statusMsg.textContent = "⏳ Ajout dans le catalogue..."; const { error: dbError } = await db .from("works") .insert({ title, subtitle, author, type, genre, status, description, cover_url: urlData.publicUrl, read_url: "#" }); if (dbError) throw dbError; /* SUCCÈS */ statusMsg.style.color = "#22c55e"; statusMsg.textContent = "✅ Œuvre publiée avec succès !"; bookForm.reset(); } catch (error) { console.error(error); statusMsg.style.color = "#ef4444"; statusMsg.textContent = "❌ " + error.message; } finally { submitBtn.disabled = false; submitBtn.textContent = "Publier le livre"; } 
+
+});
+
+/* SESSION */
+
+db.auth.onAuthStateChange((event, session) => { if (session) { showAdmin(session.user); } else { showLogin(); } });
+
+checkSession();
+
