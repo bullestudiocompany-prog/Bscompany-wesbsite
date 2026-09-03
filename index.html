@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BSCompany — Partagez votre bulle</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
     <nav class="nav-links">
       <a href="#" class="active">Accueil</a>
       <a href="#">Webcomics</a>
-      <a href="#">novels/romans</a>
+      <a href="#">Webnovels</a>
       <a href="#">À propos de nous</a>
     </nav>
 
@@ -119,6 +119,16 @@
   </footer>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
-  <script type="module" src="js/pages/home.js"></script>
+  <script>
+    // Filet de sécurité : si rien ne s'est chargé après 6 secondes (CDN down,
+    // module bloqué, etc.), on affiche un message au lieu d'une page blanche.
+    setTimeout(() => {
+      const grid = document.getElementById('recent-grid');
+      if (grid && grid.children.length === 0) {
+        grid.innerHTML = '<p class="error-state">La page n\'a pas réussi à se connecter à la base de données. Vérifie ta connexion internet et recharge la page.</p>';
+      }
+    }, 6000);
+  </script>
+  <script type="module" src="js/pages/home.js?v=2"></script>
 </body>
 </html>
