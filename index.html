@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BSCompany — Partagez votre bulle</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2">
-  <link rel="stylesheet" href="css/components.css?v=2">
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
 </head>
 <body>
 
   <header class="navbar">
     <div class="brand">
-      <span class="brand-logo">🫧</span>
+      <img src="img/logo-icon.png" alt="BSCompany" class="brand-logo-img">
       <div>
         <div class="brand-title">BSCompany</div>
         <div class="brand-slogan">Partagez votre bulle</div>
@@ -39,7 +39,10 @@
         <p class="hero-eyebrow">À la une</p>
         <h1>Découvrez des histoires <span>qui vous transportent</span></h1>
         <p class="hero-sub">Webcomics, webnovels, romans... Des récits uniques, créés pour vous faire voyager.</p>
-        <button class="btn-primary btn-lg">📖 Commencer la lecture</button>
+        <button class="btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Commencer la lecture
+        </button>
       </div>
 
       <div class="carousel">
@@ -73,28 +76,36 @@
   <!-- ========================= ATOUTS ========================== -->
   <section class="features container">
     <div class="feature">
-      <span class="feature-icon">📚</span>
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </span>
       <div>
         <h3>Des histoires originales</h3>
         <p>Des récits exclusifs créés par des auteurs passionnés.</p>
       </div>
     </div>
     <div class="feature">
-      <span class="feature-icon">🛡️</span>
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+      </span>
       <div>
         <h3>Lecture sécurisée</h3>
         <p>Une expérience fluide et sans interruption.</p>
       </div>
     </div>
     <div class="feature">
-      <span class="feature-icon">👥</span>
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
       <div>
         <h3>Communauté engagée</h3>
         <p>Partagez, commentez et échangez avec d'autres fans.</p>
       </div>
     </div>
     <div class="feature">
-      <span class="feature-icon">📱</span>
+      <span class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </span>
       <div>
         <h3>Disponible partout</h3>
         <p>Lisez vos histoires préférées où que vous soyez.</p>
@@ -105,12 +116,17 @@
   <!-- ========================= CTA ========================== -->
   <section class="container">
     <div class="cta-banner">
-      <span class="cta-icon">📖</span>
+      <span class="cta-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </span>
       <div class="cta-text">
         <h3>Rejoignez l'univers <span>BSCompany</span></h3>
         <p>Ne manquez aucune sortie et faites partie de l'aventure.</p>
       </div>
-      <button class="btn-light">👤 Créer un compte</button>
+      <button class="btn-light">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+        Créer un compte
+      </button>
     </div>
   </section>
 
@@ -129,6 +145,6 @@
       }
     }, 6000);
   </script>
-  <script type="module" src="js/pages/home.js?v=2"></script>
+  <script type="module" src="js/pages/home.js?v=3"></script>
 </body>
 </html>
