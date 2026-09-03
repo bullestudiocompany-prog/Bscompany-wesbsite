@@ -22,18 +22,70 @@ function buildLatestChapterMap(chapters) {
 }
 
 async function loadHomePage() {
-  const [{ data: series, error: seriesError }, { data: chapters, error: chaptersError }] = await Promise.all([
-    supabase.from('series').select('*'),
-    supabase.from('chapters').select('series_id, chapter_number, numero, published_at, created_at')
-  ]);
+  const { data: series, error: seriesError } = await supabase.from('series').select('*');
 
   if (seriesError) {
     console.error('Erreur Supabase (series):', seriesError);
     recentContainer.innerHTML = '<p class="error-state">Erreur lors du chargement des histoires.</p>';
     return;
   }
-  if (chaptersError) {
-    console.error('Erreur Supabase (chapters):', chaptersError);
+
+  if (!series || series.length === 0) {
+    recentContainer.innerHTML = '<p class="empty-state">Aucune histoire disponible pour le moment.</p>';
+    return;
+  }
+
+  // La table chapters est optionnelle : si elle échoue (permissions, colonnes...),
+  // le reste de la page s'affiche quand même, juste sans les badges "Chapitre X".
+  let chapters = [];
+  try {
+    const { data, error: chaptersError } = await supabase
+      .from('chapters')
+      .select('series_id, chapter_number, numero, published_at, created_at');
+    if (chaptersError) {
+      console.error('Erreur Supabase (chapters):', chaptersError);
+    } else {
+      chapters = data || [];
+    }
+  } catch (err) {
+    console.error('Exception sur la requête chapters:', err);
+  }
+
+  const latestChapterMap = buildLatestChapterMap(chapters);
+
+  // --- Carrousel "À la une" : les plus vues ---
+  const featured = [...series]
+    .sort((a, b) => (b.vues ?? b.views ?? 0) - (a.vues ?? a.views ?? 0))
+    .slice(0, 6);
+  if (featuredContainer) {
+    featuredContainer.innerHTML = featured.map(createFeaturedCard).join('');
+  }
+  initCarousel({
+    viewport: featuredContainer,
+    prevBtn: document.getElementById('featuredPrev'),
+    nextBtn: document.getElementById('featuredNext'),
+    dotsContainer: document.getElementById('featuredDots'),
+    itemCount: featured.length,
+    visibleCount: 4
+  });
+
+  // --- Grille "Sorties récentes" : les plus récemment mises à jour ---
+  const recent = [...series].sort((a, b) => {
+    const aDate = latestChapterMap[a.id]?.publishedAt || a.created_at || 0;
+    const bDate = latestChapterMap[b.id]?.publishedAt || b.created_at || 0;
+    return new Date(bDate) - new Date(aDate);
+  }).slice(0, 8);
+
+  recentContainer.innerHTML = recent.map(item => {
+    const chapterInfo = latestChapterMap[item.id];
+    return createCard(item, {
+      latestChapter: chapterInfo?.number,
+      timeAgoLabel: chapterInfo?.publishedAt ? timeAgo(chapterInfo.publishedAt) : timeAgo(item.created_at)
+    });
+  }).join('');
+}
+
+loadHomePage();
   }
 
   const latestChapterMap = buildLatestChapterMap(chapters);
