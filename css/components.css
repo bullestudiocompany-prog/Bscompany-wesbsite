@@ -1,93 +1,122 @@
-/* Section Carrousel À La Une */
-.hero-section {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: var(--white);
-  padding: 2rem 1rem;
+/* ========================= BADGES ========================= */
+.type-badge{
+  display:inline-block;
+  font-size:10px;font-weight:800;letter-spacing:0.04em;
+  padding:4px 9px;border-radius:6px;
+  text-transform:uppercase;
+}
+.type-roman{background:#F59E0B;color:#fff;}
+.type-webnovel{background:#3B82F6;color:#fff;}
+.type-webcomic, .type-webtoon{background:#111827;color:#fff;}
+.type-manga{background:#8B5CF6;color:#fff;}
+
+.chapter-badge{
+  display:inline-block;
+  background:#EAF1FF;color:var(--blue-600);
+  font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:999px;
+  margin:6px 0 8px;
 }
 
-.hero-container {
-  max-width: 1200px;
-  margin: 0 auto;
+/* ========================= CARROUSEL (À LA UNE) ========================= */
+.carousel{
+  flex:1;display:flex;align-items:center;gap:12px;min-width:0;
+}
+.carousel-arrow{
+  flex-shrink:0;width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,0.12);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.carousel-arrow:hover{background:rgba(255,255,255,0.22);}
+
+.carousel-viewport{
+  display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;padding:2px;
+}
+.carousel-viewport::-webkit-scrollbar{display:none;}
+
+.featured-card{
+  flex:0 0 190px;scroll-snap-align:start;
+}
+.featured-cover{
+  position:relative;border-radius:var(--radius-md);overflow:hidden;
+  aspect-ratio:3/4;background:var(--navy-800);
+}
+.featured-cover img{width:100%;height:100%;object-fit:cover;}
+.featured-cover .type-badge{position:absolute;top:10px;left:10px;}
+
+.featured-info{padding:10px 2px 0;color:#fff;}
+.featured-info h3{font-size:14px;font-weight:700;margin-bottom:4px;}
+.featured-meta{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;color:#AAB8DC;
+}
+.featured-meta .rating{color:#FFD166;font-weight:700;}
+
+.carousel-dots{
+  display:flex;justify-content:center;gap:6px;
+  padding-top:20px;position:relative;z-index:1;
+}
+.carousel-dots span{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,0.35);
+}
+.carousel-dots span.active{background:#fff;width:18px;border-radius:4px;}
+
+/* ========================= SORTIES RÉCENTES ========================= */
+.recent-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+.story-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  box-shadow:var(--shadow-card);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.story-card:hover{transform:translateY(-3px);box-shadow:0 18px 34px rgba(16,22,43,0.12);}
+
+.story-top{display:flex;gap:12px;padding:14px;}
+.story-cover{
+  flex-shrink:0;width:78px;height:104px;border-radius:10px;overflow:hidden;
+  background:var(--bg);
+}
+.story-cover img{width:100%;height:100%;object-fit:cover;}
+
+.story-info{min-width:0;}
+.story-title{
+  font-size:13.5px;font-weight:700;margin-top:6px;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.story-desc{
+  font-size:12px;color:var(--slate-400);line-height:1.5;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.story-time{font-size:11px;color:var(--slate-400);margin-top:6px;}
+
+.story-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid var(--border);
+  padding:10px 14px;font-size:12px;color:var(--slate-600);
+}
+.story-stats{display:flex;gap:14px;}
+.bookmark-btn{
+  background:transparent;color:var(--slate-400);font-size:14px;
+}
+.bookmark-btn:hover, .bookmark-btn.saved{color:var(--blue-600);}
+
+.empty-state, .error-state{
+  grid-column:1/-1;text-align:center;color:var(--slate-400);
+  padding:40px;font-size:14px;
 }
 
-.carousel-title {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: var(--primary);
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
+@media (max-width:900px){
+  .recent-grid{grid-template-columns:repeat(2,1fr);}
 }
-
-.carousel-grid {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-  scroll-snap-type: x mandatory;
+@media (max-width:560px){
+  .recent-grid{grid-template-columns:1fr;}
+  .featured-card{flex-basis:160px;}
 }
-
-.carousel-grid::-webkit-scrollbar {
-  height: 6px;
-}
-.carousel-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-}
-
-.featured-card {
-  min-width: 220px;
-  background: var(--dark-card);
-  border-radius: 12px;
-  overflow: hidden;
-  scroll-snap-align: start;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.featured-cover {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-}
-
-.featured-info {
-  padding: 10px;
-}
-
-/* Grille des sorties récentes */
-.recent-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.recent-card {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 10px;
-  display: flex;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-}
-
-.recent-cover {
-  width: 85px;
-  height: 115px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.badge {
-  font-size: 0.6rem;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 4px;
-}
-.badge-webnovel { background: #e3f2fd; color: #1e88e5; }
-.badge-webcomic { background: #e8f5e9; color: #43a047; }
-.badge-roman { background: #f3e5f5; color: #8e24aa; }
-.badge-webcomic { background: #e8f5e9; color: #43a047; }
-.badge-roman { background: #f3e5f5; color: #8e24aa; }
-
