@@ -1,10 +1,9 @@
 // Correspondance type -> libellé affiché (Webtoon en base = "Webcomic" à l'affichage)
 const TYPE_LABELS = {
   roman: 'Roman',
-  webnovel: 'Webnovel',
+  novel: 'Webnovel',
   webtoon: 'Webcomic',
-  webcomic: 'Webcomic',
-  manga: 'Manga'
+  webcomic: 'Webcomic'
 };
 
 function typeSlug(rawType) {
