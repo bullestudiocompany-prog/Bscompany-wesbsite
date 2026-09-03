@@ -1,42 +1,124 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSCompany - Partagez votre bulle</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/components.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BSCompany — Partagez votre bulle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="brand">
-            <div>
-                <div class="brand-title">BSCompany</div>
-                <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
-            </div>
-        </div>
-        <button class="btn-primary">Connexion</button>
-    </header>
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-logo">🫧</span>
+      <div>
+        <div class="brand-title">BSCompany</div>
+        <div class="brand-slogan">Partagez votre bulle</div>
+      </div>
+    </div>
 
-    <!-- Carrousel À LA UNE -->
-    <section class="hero-section">
-        <div class="hero-container">
-            <p class="carousel-title">À LA UNE</p>
-            <div id="featured-carousel" class="carousel-grid">
-                <!-- Les cartes à la une chargées depuis Supabase -->
-            </div>
+    <nav class="nav-links">
+      <a href="#" class="active">Accueil</a>
+      <a href="#">Webcomics</a>
+      <a href="#">novels/romans</a>
+      <a href="#">À propos de nous</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn-primary" href="https://whatsapp.com/channel/REMPLACE-PAR-TON-LIEN" target="_blank" rel="noopener">Nous suivre</a>
+    </div>
+  </header>
+
+  <!-- ========================= HERO / À LA UNE ========================== -->
+  <section class="hero-section">
+    <div class="hero-container">
+
+      <div class="hero-text">
+        <p class="hero-eyebrow">À la une</p>
+        <h1>Découvrez des histoires <span>qui vous transportent</span></h1>
+        <p class="hero-sub">Webcomics, webnovels, romans... Des récits uniques, créés pour vous faire voyager.</p>
+        <button class="btn-primary btn-lg">📖 Commencer la lecture</button>
+      </div>
+
+      <div class="carousel">
+        <button class="carousel-arrow prev" id="featuredPrev" aria-label="Précédent">‹</button>
+        <div class="carousel-viewport" id="featuredCarousel">
+          <!-- cartes à la une injectées par JS -->
         </div>
+        <button class="carousel-arrow next" id="featuredNext" aria-label="Suivant">›</button>
+      </div>
+
+    </div>
+    <div class="carousel-dots" id="featuredDots"></div>
+    <div class="hero-wave"></div>
+  </section>
+
+  <!-- ========================= SORTIES RÉCENTES ========================== -->
+  <main class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Sorties <span>récentes</span></h2>
+        <p class="section-sub">Les dernières mises à jour de nos histoires</p>
+      </div>
+      <a href="#" class="link-btn">Voir tout ›</a>
+    </div>
+
+    <section id="recent-grid" class="recent-grid">
+      <!-- cartes récentes injectées par JS -->
     </section>
+  </main>
 
-    <!-- Catalogue des Sorties Récentes -->
-    <main class="container">
-        <h2 class="section-title">Sorties récentes</h2>
-        <section id="recent-grid" class="recent-grid">
-            <!-- Les cartes récentes chargées depuis Supabase -->
-        </section>
-    </main>
+  <!-- ========================= ATOUTS ========================== -->
+  <section class="features container">
+    <div class="feature">
+      <span class="feature-icon">📚</span>
+      <div>
+        <h3>Des histoires originales</h3>
+        <p>Des récits exclusifs créés par des auteurs passionnés.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">🛡️</span>
+      <div>
+        <h3>Lecture sécurisée</h3>
+        <p>Une expérience fluide et sans interruption.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">👥</span>
+      <div>
+        <h3>Communauté engagée</h3>
+        <p>Partagez, commentez et échangez avec d'autres fans.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">📱</span>
+      <div>
+        <h3>Disponible partout</h3>
+        <p>Lisez vos histoires préférées où que vous soyez.</p>
+      </div>
+    </div>
+  </section>
 
-    <script type="module" src="js/pages/home.js"></script>
+  <!-- ========================= CTA ========================== -->
+  <section class="container">
+    <div class="cta-banner">
+      <span class="cta-icon">📖</span>
+      <div class="cta-text">
+        <h3>Rejoignez l'univers <span>BSCompany</span></h3>
+        <p>Ne manquez aucune sortie et faites partie de l'aventure.</p>
+      </div>
+      <button class="btn-light">👤 Créer un compte</button>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> BSCompany — Partagez votre bulle</p>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script type="module" src="js/pages/home.js"></script>
 </body>
 </html>
