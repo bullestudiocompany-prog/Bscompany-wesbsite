@@ -6,10 +6,8 @@ async function loadHomePage() {
   
   // Requête vers ta table Supabase (remplace 'works' par le nom exact de ta table)
   const { data: works, error } = await supabase
-    .from('works')
-    .select('*')
-    .order('created_at', { ascending: false });
-
+  .from('series')
+  .select('*');
   if (error) {
     console.error('Erreur Supabase:', error);
     recentContainer.innerHTML = '<p>Erreur lors du chargement des histoires.</p>';
