@@ -1,31 +1,15 @@
 import { supabase } from '../config/supabase.js';
-import { createCard, createFeaturedCard, timeAgo } from '../components/card.js';
+import { createCard, createFeaturedCard } from '../components/card.js';
 import { initCarousel } from '../components/carousel.js';
 
 const featuredContainer = document.getElementById('featuredCarousel');
 const recentContainer = document.getElementById('recent-grid');
 
-// Le dernier numéro de chapitre par série (gère les colonnes fr/en en double)
-function buildLatestChapterMap(chapters) {
-  const map = {};
-  for (const c of chapters || []) {
-    const seriesId = c.series_id;
-    const number = c.chapter_number ?? c.numero ?? null;
-    const publishedAt = c.published_at || c.created_at || null;
-    if (!seriesId) continue;
-    const current = map[seriesId];
-    if (!current || (number ?? 0) > (current.number ?? 0)) {
-      map[seriesId] = { number, publishedAt };
-    }
-  }
-  return map;
-}
-
 async function loadHomePage() {
-  const { data: series, error: seriesError } = await supabase.from('series').select('*');
+  const { data: series, error } = await supabase.from('series').select('*');
 
-  if (seriesError) {
-    console.error('Erreur Supabase (series):', seriesError);
+  if (error) {
+    console.error('Erreur Supabase (series):', error);
     recentContainer.innerHTML = '<p class="error-state">Erreur lors du chargement des histoires.</p>';
     return;
   }
@@ -34,6 +18,33 @@ async function loadHomePage() {
     recentContainer.innerHTML = '<p class="empty-state">Aucune histoire disponible pour le moment.</p>';
     return;
   }
+
+  // --- Carrousel "À la une" : les plus vues ---
+  const featured = [...series]
+    .sort((a, b) => (b.vues ?? b.views ?? 0) - (a.vues ?? a.views ?? 0))
+    .slice(0, 6);
+
+  if (featuredContainer) {
+    featuredContainer.innerHTML = featured.map(createFeaturedCard).join('');
+    initCarousel({
+      viewport: featuredContainer,
+      prevBtn: document.getElementById('featuredPrev'),
+      nextBtn: document.getElementById('featuredNext'),
+      dotsContainer: document.getElementById('featuredDots'),
+      itemCount: featured.length,
+      visibleCount: 4
+    });
+  }
+
+  // --- Grille "Sorties récentes" : les plus récentes d'abord ---
+  const recent = [...series]
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    .slice(0, 8);
+
+  recentContainer.innerHTML = recent.map(item => createCard(item)).join('');
+}
+
+loadHomePage();
 
   // La table chapters est optionnelle : si elle échoue (permissions, colonnes...),
   // le reste de la page s'affiche quand même, juste sans les badges "Chapitre X".
