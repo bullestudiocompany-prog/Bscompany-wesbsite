@@ -1,5 +1,5 @@
 import { supabase } from '../config/supabase.js';
-import { createCard, createFeaturedCard, normalizeSeries, timeAgo } from '../components/card.js';
+import { createCard, createFeaturedCard, timeAgo } from '../components/card.js';
 import { initCarousel } from '../components/carousel.js';
 
 const featuredContainer = document.getElementById('featuredCarousel');
@@ -43,10 +43,10 @@ async function loadHomePage() {
     return;
   }
 
-  const normalized = series.map(normalizeSeries);
-
   // --- Carrousel "À la une" : les plus vues ---
-  const featured = [...normalized].sort((a, b) => b.views - a.views).slice(0, 6);
+  const featured = [...series]
+    .sort((a, b) => (b.vues ?? b.views ?? 0) - (a.vues ?? a.views ?? 0))
+    .slice(0, 6);
   if (featuredContainer) {
     featuredContainer.innerHTML = featured.map(createFeaturedCard).join('');
   }
@@ -65,6 +65,17 @@ async function loadHomePage() {
     const bDate = latestChapterMap[b.id]?.publishedAt || b.created_at || 0;
     return new Date(bDate) - new Date(aDate);
   }).slice(0, 8);
+
+  recentContainer.innerHTML = recent.map(item => {
+    const chapterInfo = latestChapterMap[item.id];
+    return createCard(item, {
+      latestChapter: chapterInfo?.number,
+      timeAgoLabel: chapterInfo?.publishedAt ? timeAgo(chapterInfo.publishedAt) : timeAgo(item.created_at)
+    });
+  }).join('');
+}
+
+loadHomePage();
 
   recentContainer.innerHTML = recent.map(item => {
     const chapterInfo = latestChapterMap[item.id];
