@@ -36,7 +36,7 @@
 .carousel-viewport::-webkit-scrollbar{display:none;}
 
 .featured-card{
-  flex:0 0 190px;scroll-snap-align:start;
+  flex:0 0 190px;scroll-snap-align:start;display:block;
 }
 .featured-cover{
   position:relative;border-radius:var(--radius-md);overflow:hidden;
@@ -72,6 +72,7 @@
   gap:18px;
 }
 .story-card{
+  display:flex;flex-direction:column;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--radius-md);
