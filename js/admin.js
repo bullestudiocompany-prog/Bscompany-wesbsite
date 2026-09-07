@@ -614,7 +614,7 @@ addSeriesForm.addEventListener(
       const {
         data: urlData
       } = supabase.storage
-        .from("covers")
+        .from("Cover series")
         .getPublicUrl(fileName);
 
       const coverUrl =
