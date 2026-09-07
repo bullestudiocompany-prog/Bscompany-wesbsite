@@ -593,7 +593,7 @@ addSeriesForm.addEventListener(
       const {
         error: uploadError
       } = await supabase.storage
-        .from("cover series")
+        .from("Cover series")
         .upload(
           fileName,
           coverFile,
