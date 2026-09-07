@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BSCompany — Détail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
+  <link rel="stylesheet" href="css/serie.css?v=1">
+</head>
+<body>
+
+  <header class="navbar">
+    <a class="brand" href="index.html">
+      <img src="data:image/png;base64,PLACEHOLDER" alt="BSCompany" class="brand-logo-img" id="brandLogoImg">
+      <div>
+        <div class="brand-title">BSCompany</div>
+        <div class="brand-slogan">Partagez votre bulle</div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="#">Webcomics</a>
+      <a href="#">Webnovels</a>
+      <a href="#">À propos de nous</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn-primary" href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F" target="_blank" rel="noopener">Nous suivre</a>
+    </div>
+  </header>
+
+  <main class="container" id="pageContent">
+
+    <a href="index.html" class="back-link">← Retour à l'accueil</a>
+
+    <!-- ========================= EN-TÊTE DE L'ŒUVRE ========================== -->
+    <section class="series-header" id="seriesHeader">
+      <!-- injecté par serie.js -->
+      <p class="loading-state">Chargement…</p>
+    </section>
+
+    <!-- ========================= CHAPITRES ========================== -->
+    <section class="chapters-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Liste des <span>chapitres</span></h2>
+          <p class="section-sub" id="chaptersCount"></p>
+        </div>
+      </div>
+      <div class="chapters-list" id="chaptersList">
+        <!-- injecté par serie.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> BSCompany — Partagez votre bulle</p>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script>
+    setTimeout(() => {
+      const header = document.getElementById('seriesHeader');
+      if (header && header.querySelector('.loading-state')) {
+        header.innerHTML = '<p class="error-state">La page n\'a pas réussi à se connecter à la base de données. Vérifie ta connexion internet et recharge la page.</p>';
+      }
+    }, 6000);
+  </script>
+  <script type="module" src="js/pages/serie.js?v=1"></script>
+</body>
+</html>
 
