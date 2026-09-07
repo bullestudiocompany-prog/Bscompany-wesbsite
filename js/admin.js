@@ -476,8 +476,6 @@ document.addEventListener(
     const id =
       button.dataset.deleteSeries;
 
-     alert("ID de l'œuvre : " + id);
-
     const confirmed =
       confirm(
         "Supprimer cette œuvre ?\n\n" +
@@ -487,11 +485,19 @@ document.addEventListener(
     if (!confirmed) return;
 
     const {
-      error
-    } = await supabase
-      .from("series")
-      .delete()
-      .eq("id", id);
+  data,
+  error
+} = await supabase
+  .from("series")
+  .delete()
+  .eq("id", id)
+  .select();
+
+alert(
+  "Résultat : " +
+  (data ? data.length : "null") +
+  " ligne(s) supprimée(s)"
+);
 
     if (error) {
 
