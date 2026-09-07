@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabase } from '../supabaseClient.js';
 import { createCard, createFeaturedCard } from '../components/card.js';
 import { initCarousel } from '../components/carousel.js';
 
