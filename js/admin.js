@@ -1084,12 +1084,6 @@ async function loadSounds() {
 
   const files = data || [];
 
-alert(
-  "Fichiers trouvés : " +
-  files.length +
-  "\n" +
-  files.map(file => file.name).join("\n")
-);
 
   if (files.length === 0) {
 
