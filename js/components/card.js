@@ -1,9 +1,10 @@
 // Correspondance type -> libellé affiché (Webtoon en base = "Webcomic" à l'affichage)
 const TYPE_LABELS = {
   roman: 'Roman',
-  novel: 'Webnovel',
+  webnovel: 'Webnovel',
   webtoon: 'Webcomic',
-  webcomic: 'Webcomic'
+  webcomic: 'Webcomic',
+  manga: 'Manga'
 };
 
 function typeSlug(rawType) {
@@ -55,7 +56,7 @@ export function createCard(rawItem, extra = {}) {
   const chapterLabel = extra.latestChapter ? `Chapitre ${extra.latestChapter}` : null;
 
   return `
-    <article class="story-card" data-id="${item.id}">
+    <a class="story-card" data-id="${item.id}" href="serie.html?id=${item.id}">
       <div class="story-top">
         <div class="story-cover">
           <img src="${item.coverUrl}" alt="${item.title}" loading="lazy" onerror="this.remove()">
@@ -73,11 +74,11 @@ export function createCard(rawItem, extra = {}) {
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg> ${formatViews(item.views)}</span>
           <span><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> ${item.rating}</span>
         </div>
-        <button class="bookmark-btn" aria-label="Sauvegarder" type="button">
+        <button class="bookmark-btn" aria-label="Sauvegarder" type="button" onclick="event.preventDefault(); event.stopPropagation();">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
       </div>
-    </article>
+    </a>
   `;
 }
 
@@ -87,7 +88,7 @@ export function createFeaturedCard(rawItem) {
   const slug = typeSlug(item.type);
 
   return `
-    <article class="featured-card" data-id="${item.id}">
+    <a class="featured-card" data-id="${item.id}" href="serie.html?id=${item.id}">
       <div class="featured-cover">
         <span class="type-badge type-${slug}">${typeLabel(item.type)}</span>
         <img src="${item.coverUrl}" alt="${item.title}" loading="lazy" onerror="this.remove()">
@@ -99,6 +100,22 @@ export function createFeaturedCard(rawItem) {
           <span class="rating"><svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> ${item.rating}</span>
         </div>
       </div>
-    </article>
+    </a>
+  `;
+}
+  return `
+    <a class="featured-card" data-id="${item.id}" href="serie.html?id=${item.id}">
+      <div class="featured-cover">
+        <span class="type-badge type-${slug}">${typeLabel(item.type)}</span>
+        <img src="${item.coverUrl}" alt="${item.title}" loading="lazy" onerror="this.remove()">
+      </div>
+      <div class="featured-info">
+        <h3>${item.title}</h3>
+        <div class="featured-meta">
+          <span>${item.genre || typeLabel(item.type)}</span>
+          <span class="rating"><svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> ${item.rating}</span>
+        </div>
+      </div>
+    </a>
   `;
 }
