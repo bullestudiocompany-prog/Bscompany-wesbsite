@@ -463,51 +463,22 @@ async function openSeries(seriesId) {
    SUPPRIMER UNE SERIE
 ===================================================== */
 
-document.addEventListener(
-  "click",
-  async (event) => {
+const {
+  error
+} = await supabase
+  .from("series")
+  .delete()
+  .eq("id", id);
 
-    const button =
-      event.target.closest(
-        "[data-delete-series]"
-      );
+if (error) {
+  alert("Erreur de suppression :\n\n" + error.message);
+  return;
+}
 
-    if (!button) return;
+alert("Œuvre supprimée avec succès !");
 
-    const id =
-      button.dataset.deleteSeries;
-
-    const confirmed =
-      confirm(
-        "Supprimer cette œuvre ?\n\n" +
-        "Ses chapitres associés seront également supprimés."
-      );
-
-    if (!confirmed) return;
-
-    const {
-      error
-    } = await supabase
-      .from("series")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-
-      alert(
-        "Erreur : " +
-        error.message
-      );
-
-      return;
-    }
-
-    await loadSeries();
-    await loadDashboard();
-
-  }
-);
-
+await loadSeries();
+await loadDashboard();
 
 /* =====================================================
    CREER UNE SERIE
