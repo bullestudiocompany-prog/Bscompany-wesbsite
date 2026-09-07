@@ -5,8 +5,15 @@ import { initCarousel } from '../components/carousel.js';
 const featuredContainer = document.getElementById('featuredCarousel');
 const recentContainer = document.getElementById('recent-grid');
 
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Délai dépassé en contactant Supabase')), ms))
+  ]);
+}
+
 async function loadHomePage() {
-  const { data: series, error } = await supabase.from('series').select('*');
+  const { data: series, error } = await withTimeout(supabase.from('series').select('*'));
 
   if (error) {
     console.error('Erreur Supabase (series):', error);
