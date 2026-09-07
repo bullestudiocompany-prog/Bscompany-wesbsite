@@ -473,10 +473,10 @@ document.addEventListener(
       );
 
     if (!button) return;
-     alert("BOUTON DE SUPPRESSION DÉTECTÉ");
-
     const id =
       button.dataset.deleteSeries;
+
+     alert("ID de l'œuvre : " + id);
 
     const confirmed =
       confirm(
