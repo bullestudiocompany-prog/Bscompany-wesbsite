@@ -1082,9 +1082,14 @@ async function loadSounds() {
     return;
   }
 
-  const files =
-    (data || [])
-      .filter(file => file.name);
+  const files = data || [];
+
+alert(
+  "Fichiers trouvés : " +
+  files.length +
+  "\n" +
+  files.map(file => file.name).join("\n")
+);
 
   if (files.length === 0) {
 
