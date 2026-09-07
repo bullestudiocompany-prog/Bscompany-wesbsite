@@ -485,19 +485,19 @@ document.addEventListener(
     if (!confirmed) return;
 
     const {
-  data,
   error
 } = await supabase
   .from("series")
   .delete()
-  .eq("id", id)
-  .select();
+  .eq("id", id);
 
-alert(
-  "Résultat : " +
-  (data ? data.length : "null") +
-  " ligne(s) supprimée(s)"
-);
+if (error) {
+  alert("Erreur : " + error.message);
+  return;
+}
+
+await loadSeries();
+await loadDashboard();
 
     if (error) {
 
