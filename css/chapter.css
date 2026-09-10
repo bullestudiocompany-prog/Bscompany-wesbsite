@@ -1,267 +1,1020 @@
-/* =====================================================
-   PAGE DE LECTURE
-===================================================== */
+/* =========================================================
+   BSCompany — LECTEUR DE CHAPITRE
+========================================================= */
 
-.chapter-page {
-  width: min(100%, 900px);
-  margin: 0 auto;
-  padding: 32px 20px 60px;
+:root {
+  --reader-blue: #2563eb;
+  --reader-purple: #7c3aed;
+  --reader-text: #172033;
+  --reader-muted: #64748b;
+  --reader-paper: #fffdf8;
+  --reader-paper-edge: #eee9df;
+  --reader-glass: rgba(255, 255, 255, 0.72);
+  --reader-glass-border: rgba(255, 255, 255, 0.55);
 }
 
 
-/* =====================================================
+/* =========================================================
+   BASE
+========================================================= */
+
+.chapter-page-body {
+  min-height: 100vh;
+  background: #eef2ff;
+  color: var(--reader-text);
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   ARRIÈRE-PLAN
+========================================================= */
+
+.reader-background {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(124, 58, 237, 0.22),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(37, 99, 235, 0.20),
+      transparent 40%
+    ),
+    #e9eefb;
+}
+
+.reader-background img {
+  position: absolute;
+  inset: -50px;
+  width: calc(100% + 100px);
+  height: calc(100% + 100px);
+
+  object-fit: cover;
+
+  filter:
+    blur(30px)
+    saturate(1.05);
+
+  opacity: 0.28;
+
+  transform: scale(1.08);
+}
+
+.reader-background-overlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(238, 242, 255, 0.65),
+      rgba(255, 255, 255, 0.82)
+    );
+}
+
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.reader-header {
+  position: relative;
+  z-index: 20;
+
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.55);
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.reader-page {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+
+  padding:
+    30px
+    24px
+    180px;
+}
+
+
+/* =========================================================
    ÉTATS
-===================================================== */
+========================================================= */
 
 .chapter-state {
+  min-height: 60vh;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
   text-align: center;
-  padding: 70px 20px;
-  color: var(--slate-600);
+
+  color: var(--reader-muted);
+}
+
+.loading-spinner {
+  width: 42px;
+  height: 42px;
+
+  margin-bottom: 18px;
+
+  border:
+    3px solid rgba(37, 99, 235, 0.15);
+
+  border-top-color: var(--reader-blue);
+
+  border-radius: 50%;
+
+  animation:
+    readerSpin 0.8s linear infinite;
+}
+
+@keyframes readerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chapter-error {
+  min-height: 70vh;
+}
+
+.error-icon {
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 50%;
+
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+
+  font-weight: 800;
+  font-size: 24px;
 }
 
 .chapter-error h2 {
-  margin-bottom: 10px;
+  margin: 0 0 8px;
 }
 
 .chapter-error p {
-  margin-bottom: 20px;
+  margin: 0 0 24px;
 }
 
-
-/* =====================================================
-   EN-TÊTE DU CHAPITRE
-===================================================== */
-
-.chapter-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.chapter-back {
-  display: inline-block;
-  margin-bottom: 22px;
-  color: var(--primary, #2563eb);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.chapter-back:hover {
-  text-decoration: underline;
-}
-
-.chapter-meta {
-  margin-bottom: 8px;
-}
-
-#chapterType {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #2563eb;
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-#chapterTitle {
-  margin: 10px 0 6px;
-  font-size: clamp(25px, 5vw, 40px);
-  line-height: 1.2;
-}
-
-#seriesTitle {
-  margin: 0;
-  color: var(--slate-400, #64748b);
-  font-size: 15px;
-}
-
-
-/* =====================================================
-   STATS
-===================================================== */
-
-.chapter-stats {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  margin-top: 18px;
-  color: var(--slate-600, #475569);
-  font-size: 14px;
-}
-
-.like-button {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-
-.like-button:hover {
-  color: #e11d48;
-}
-
-
-/* =====================================================
-   AUDIO
-===================================================== */
-
-.chapter-audio {
-  margin: 25px 0;
-  padding: 16px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 14px;
-  background: var(--surface, #ffffff);
-}
-
-.audio-title {
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.audio-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.audio-btn {
-  width: 38px;
-  height: 38px;
-  border: 0;
-  border-radius: 50%;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.audio-btn:hover {
-  opacity: 0.9;
-}
-
-#audioProgress {
-  flex: 1;
-  min-width: 0;
-}
-
-#audioVolume {
-  width: 90px;
-}
-
-
-/* =====================================================
-   CONTENU
-===================================================== */
-
-.chapter-content {
-  margin-top: 35px;
-}
-
-#chapterText {
-  font-size: 18px;
-  line-height: 1.9;
-  color: var(--text, #1e293b);
-}
-
-#chapterText p {
-  margin: 0 0 22px;
-}
-
-#chapterImages {
-  margin-top: 30px;
-}
-
-#chapterImages img {
-  display: block;
-  width: 100%;
-  max-width: 850px;
-  height: auto;
-  margin: 0 auto 22px;
-  border-radius: 10px;
-}
-
-
-/* =====================================================
-   NAVIGATION ENTRE CHAPITRES
-===================================================== */
-
-.chapter-navigation {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 45px;
-  padding-top: 25px;
-  border-top: 1px solid var(--border, #e2e8f0);
-}
-
-.chapter-nav-btn {
+.chapter-back-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 16px;
-  border-radius: 10px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e2e8f0);
-  color: inherit;
+
+  padding: 12px 20px;
+
+  border-radius: 14px;
+
+  background: var(--reader-blue);
+  color: #fff;
+
   text-decoration: none;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.22);
+}
+
+
+/* =========================================================
+   EN-TÊTE
+========================================================= */
+
+.reader-hero {
+  padding-top: 10px;
+  text-align: center;
+}
+
+.reader-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 35px;
+
+  padding: 9px 15px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.6);
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  color: var(--reader-text);
+
+  text-decoration: none;
+
   font-size: 14px;
+  font-weight: 650;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.reader-back:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.back-arrow {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   IMAGE DU CHAPITRE
+========================================================= */
+
+.chapter-cover-area {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 25px;
+}
+
+.chapter-image-wrap {
+  position: relative;
+
+  width: min(100%, 520px);
+
+  border-radius: 28px;
+
+  isolation: isolate;
+}
+
+.chapter-main-image {
+  position: relative;
+  z-index: 2;
+
+  display: block;
+
+  width: 100%;
+  max-height: 560px;
+
+  object-fit: cover;
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.20);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.65);
+
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.chapter-image-glow {
+  position: absolute;
+
+  z-index: 1;
+
+  inset: 18px;
+
+  border-radius: 35px;
+
+  background: inherit;
+
+  filter: blur(35px);
+
+  opacity: 0.6;
+
+  transform:
+    translateY(25px)
+    scale(0.94);
+}
+
+
+/* =========================================================
+   INFORMATIONS CHAPITRE
+========================================================= */
+
+.chapter-heading {
+  max-width: 800px;
+}
+
+.chapter-type {
+  display: inline-flex;
+
+  padding: 6px 13px;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--reader-blue),
+      var(--reader-purple)
+    );
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.20);
+}
+
+.series-name {
+  margin: 15px 0 3px;
+
+  color: var(--reader-muted);
+
+  font-size: 15px;
   font-weight: 600;
+}
+
+.chapter-number {
+  margin: 0 0 5px;
+
+  color: var(--reader-blue);
+
+  font-size: 13px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#chapterTitle {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: clamp(30px, 6vw, 58px);
+
+  line-height: 1.05;
+
+  letter-spacing: -0.035em;
+
+  text-wrap: balance;
+}
+
+
+/* =========================================================
+   ZONE DE LECTURE
+========================================================= */
+
+.reading-area {
+  position: relative;
+
+  margin-top: 70px;
+}
+
+.reading-paper {
+  position: relative;
+  z-index: 2;
+
+  width: min(100%, 820px);
+
+  margin: 0 auto;
+
+  padding:
+    75px
+    clamp(28px, 7vw, 82px)
+    90px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fffefa 0%,
+      #fffdf8 100%
+    );
+
+  border:
+    1px solid var(--reader-paper-edge);
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.13),
+    0 5px 15px rgba(15, 23, 42, 0.06);
+
+  overflow: hidden;
+}
+
+
+/* effet page */
+
+.reading-paper::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+  left: 32px;
+
+  width: 1px;
+
+  background:
+    rgba(239, 68, 68, 0.13);
+}
+
+.reading-paper::after {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 9px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 99, 235, 0.08),
+      rgba(124, 58, 237, 0.08)
+    );
+}
+
+
+/* ombre sous la feuille */
+
+.paper-shadow {
+  position: absolute;
+
+  z-index: 1;
+
+  left: 5%;
+  right: 5%;
+  bottom: -20px;
+
+  height: 50px;
+
+  border-radius: 50%;
+
+  background: rgba(15, 23, 42, 0.16);
+
+  filter: blur(24px);
+}
+
+
+/* =========================================================
+   ENTÊTE DE PAGE
+========================================================= */
+
+.paper-top {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 55px;
+
+  padding-bottom: 15px;
+
+  border-bottom:
+    1px solid rgba(100, 116, 139, 0.12);
+
+  color: #94a3b8;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.paper-chapter {
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   TEXTE
+========================================================= */
+
+.chapter-text {
+  color: #293241;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 19px;
+
+  line-height: 2;
+
+  letter-spacing: 0.005em;
+}
+
+.chapter-text p {
+  margin:
+    0 0 27px;
+}
+
+.chapter-text p:first-child::first-letter {
+  float: left;
+
+  margin:
+    7px
+    9px
+    0
+    0;
+
+  color: var(--reader-blue);
+
+  font-size: 4.1em;
+  font-weight: 700;
+
+  line-height: 0.78;
+}
+
+
+/* =========================================================
+   IMAGE(S) DANS LE CHAPITRE
+========================================================= */
+
+.chapter-images {
+  margin-top: 50px;
+}
+
+.chapter-images img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  margin:
+    0
+    auto
+    35px;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 15px 35px rgba(15, 23, 42, 0.13);
+}
+
+
+/* =========================================================
+   FIN DE PAGE
+========================================================= */
+
+.paper-end {
+  margin-top: 65px;
+
+  padding-top: 30px;
+
+  border-top:
+    1px solid rgba(100, 116, 139, 0.14);
+
+  text-align: center;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.chapter-navigation {
+  width: min(100%, 820px);
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin:
+    45px
+    auto
+    0;
+}
+
+.chapter-nav-btn {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-width: 220px;
+
+  padding: 15px 18px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.65);
+
+  border-radius: 18px;
+
+  background:
+    rgba(255, 255, 255, 0.62);
+
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+
+  color: var(--reader-text);
+
+  text-decoration: none;
+
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.07);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .chapter-nav-btn:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  transform: translateY(-3px);
+
+  background:
+    rgba(255, 255, 255, 0.86);
+}
+
+.chapter-nav-btn.next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.nav-arrow {
+  font-size: 25px;
+  color: var(--reader-blue);
+}
+
+.nav-content {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.nav-content small {
+  color: var(--reader-muted);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.nav-content strong {
+  font-size: 13px;
 }
 
 
-/* =====================================================
-   BOUTON RETOUR ERREUR
-===================================================== */
+/* =========================================================
+   BARRE FLOTTANTE
+========================================================= */
 
-.chapter-back-btn {
-  display: inline-block;
-  padding: 11px 16px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
+.reader-controls {
+  position: fixed;
+
+  z-index: 100;
+
+  left: 50%;
+  bottom: 18px;
+
+  width: min(
+    calc(100% - 30px),
+    850px
+  );
+
+  transform: translateX(-50%);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 10px 12px;
+
+  border:
+    1px solid var(--reader-glass-border);
+
+  border-radius: 25px;
+
+  background:
+    rgba(255, 255, 255, 0.64);
+
+  backdrop-filter:
+    blur(25px)
+    saturate(1.2);
+
+  -webkit-backdrop-filter:
+    blur(25px)
+    saturate(1.2);
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.16);
+
+  animation:
+    controlAppear 0.35s ease;
+}
+
+@keyframes controlAppear {
+  from {
+    opacity: 0;
+    transform:
+      translate(-50%, 15px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translate(-50%, 0);
+  }
+}
+
+
+/* =========================================================
+   STATISTIQUES
+========================================================= */
+
+.floating-stats {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+.control-stat,
+.control-button {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-height: 46px;
+
+  padding: 6px 10px;
+
+  border: 0;
+
+  border-radius: 15px;
+
+  background: transparent;
+
+  color: var(--reader-text);
+
+  font: inherit;
+
   text-decoration: none;
-  font-weight: 600;
+}
+
+.control-button {
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.control-button:hover {
+  background:
+    rgba(255, 255, 255, 0.7);
+
+  transform: translateY(-1px);
+}
+
+.control-icon,
+.stat-icon {
+  font-size: 18px;
+}
+
+.control-stat strong,
+.control-button strong {
+  display: block;
+
+  font-size: 13px;
+}
+
+.control-stat small,
+.control-button small {
+  display: block;
+
+  color: var(--reader-muted);
+
+  font-size: 9px;
+}
+
+.like-button.active {
+  color: #e11d48;
+}
+
+.like-button.active .control-icon {
+  transform: scale(1.08);
 }
 
 
-/* =====================================================
+/* =========================================================
+   AUDIO FLOTTANT
+========================================================= */
+
+.floating-audio {
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  min-width: 0;
+
+  padding-left: 10px;
+
+  border-left:
+    1px solid rgba(100, 116, 139, 0.15);
+}
+
+.audio-play-button {
+  flex:
+    0 0
+    40px;
+
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--reader-blue),
+      var(--reader-purple)
+    );
+
+  color: #fff;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.22);
+
+  transition:
+    transform 0.2s ease;
+}
+
+.audio-play-button:hover {
+  transform: scale(1.06);
+}
+
+.audio-progress-area {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.audio-top-line {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 2px;
+
+  color: var(--reader-muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.audio-progress {
+  display: block;
+
+  width: 100%;
+  height: 4px;
+
+  cursor: pointer;
+
+  accent-color: var(--reader-blue);
+}
+
+.audio-small-button {
+  flex:
+    0 0
+    34px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.55);
+
+  cursor: pointer;
+}
+
+.audio-volume {
+  width: 65px;
+
+  accent-color: var(--reader-blue);
+}
+
+
+/* =========================================================
    MOBILE
-===================================================== */
+========================================================= */
 
-@media (max-width: 600px) {
+@media (max-width: 760px) {
 
-  .chapter-page {
-    padding: 25px 14px 45px;
+  .reader-page {
+    padding:
+      20px
+      13px
+      210px;
   }
 
-  #chapterTitle {
-    font-size: 27px;
+  .reader-back {
+    margin-bottom: 25px;
   }
 
-  #chapterText {
-    font-size: 16px;
-    line-height: 1.8;
+  .chapter-image-wrap {
+    width: min(100%, 390px);
   }
 
-  .audio-controls {
-    flex-wrap: wrap;
+  .chapter-main-image {
+    max-height: 450px;
   }
 
-  #audioProgress {
-    order: 3;
-    flex-basis: 100%;
+  .reading-area {
+    margin-top: 45px;
   }
 
-  #audioVolume {
-    width: 80px;
+  .reading-paper {
+    padding:
+      55px
+      27px
+      65px;
+
+    border-radius: 5px;
+  }
+
+  .reading-paper::before {
+    left: 17px;
+  }
+
+  .paper-top {
+    margin-bottom: 40px;
+  }
+
+  .chapter-text {
+    font-size: 17px;
+    line-height: 1.9;
+  }
+
+  .chapter-text p {
+    margin-bottom: 24px;
   }
 
   .chapter-navigation {
@@ -270,5 +1023,110 @@
 
   .chapter-nav-btn {
     width: 100%;
+    min-width: 0;
   }
+
+  .chapter-nav-btn.next {
+    margin-left: 0;
   }
+
+  .reader-controls {
+    width: calc(100% - 18px);
+
+    bottom: 9px;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 8px;
+
+    border-radius: 22px;
+  }
+
+  .floating-stats {
+    width: 100%;
+
+    justify-content: space-around;
+  }
+
+  .control-stat,
+  .control-button {
+    flex: 1;
+
+    justify-content: center;
+  }
+
+  .floating-audio {
+    width: 100%;
+
+    padding:
+      7px
+      4px
+      2px;
+
+    border-left: 0;
+
+    border-top:
+      1px solid rgba(100, 116, 139, 0.12);
+  }
+
+  .audio-volume {
+    display: none;
+  }
+
+  .audio-small-button {
+    flex-shrink: 0;
+  }
+}
+
+
+/* =========================================================
+   PETITS ÉCRANS
+========================================================= */
+
+@media (max-width: 430px) {
+
+  .reader-page {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  #chapterTitle {
+    font-size: 31px;
+  }
+
+  .series-name {
+    font-size: 14px;
+  }
+
+  .chapter-main-image {
+    border-radius: 20px;
+  }
+
+  .reading-paper {
+    padding:
+      48px
+      22px
+      55px;
+  }
+
+  .reading-paper::before {
+    left: 13px;
+  }
+
+  .chapter-text {
+    font-size: 16px;
+    line-height: 1.85;
+  }
+
+  .control-stat small,
+  .control-button small {
+    display: none;
+  }
+
+  .control-icon,
+  .stat-icon {
+    font-size: 17px;
+  }
+   }
