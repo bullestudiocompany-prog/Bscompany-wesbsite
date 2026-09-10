@@ -720,11 +720,11 @@ async function loadChapters() {
     `<div class="box">⏳ Chargement...</div>`;
 
   const {
-    data,
-    error
-  } = await supabase
-    .from("chapters")
-    .select(`
+  data,
+  error
+} = await supabase
+  .from("chapters")
+  .select(`
   id,
   series_id,
   chapter_number,
