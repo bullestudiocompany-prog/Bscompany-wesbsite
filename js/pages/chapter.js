@@ -881,54 +881,70 @@ function formatTime(seconds) {
   return `${minutes}:${remaining}`;
 }
 
+// ======================================================
+// IDENTIFIANT DU NAVIGATEUR
+// ======================================================
+
+function getVisitorId() {
+  const STORAGE_KEY = "bscompany_visitor_id";
+
+  let visitorId = localStorage.getItem(STORAGE_KEY);
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem(STORAGE_KEY, visitorId);
+  }
+
+  return visitorId;
+}
 
 // ======================================================
-// VUE
+// VUE DU CHAPITRE
 // ======================================================
 
 async function registerView(chapter) {
+  try {
+    const visitorId = getVisitorId();
 
-  const currentViews =
-    Number(
-      chapter.views || 0
-    );
+    // Enregistrer le navigateur pour ce chapitre
+    const { error: insertError } = await supabase
+      .from("chapter_views")
+      .upsert(
+        {
+          chapter_id: chapter.id,
+          visitor_id: visitorId
+        },
+        {
+          onConflict: "chapter_id,visitor_id",
+          ignoreDuplicates: true
+        }
+      );
 
+    if (insertError) {
+      console.error("Erreur enregistrement vue :", insertError);
+      return;
+    }
 
-  const newViews =
-    currentViews + 1;
+    // Compter les visiteurs uniques de ce chapitre
+    const { count, error: countError } = await supabase
+      .from("chapter_views")
+      .select("id", {
+        count: "exact",
+        head: true
+      })
+      .eq("chapter_id", chapter.id);
 
+    if (countError) {
+      console.error("Erreur comptage vues :", countError);
+      return;
+    }
 
-  const {
-    error
-  } = await supabase
+    chapterViews.textContent = count ?? 0;
 
-    .from("chapters")
-
-    .update({
-      views: newViews
-    })
-
-    .eq(
-      "id",
-      chapter.id
-    );
-
-
-  if (error) {
-
-    console.error(
-      "Erreur vue :",
-      error
-    );
-
-    return;
+  } catch (error) {
+    console.error("Erreur système des vues :", error);
   }
-
-
-  chapterViews.textContent =
-    newViews;
-}
-
+      }
 
 // ======================================================
 // LIKE
