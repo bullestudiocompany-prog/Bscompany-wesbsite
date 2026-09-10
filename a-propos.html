@@ -1,1 +1,1624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>À propos — BSCompany</title>
+
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/components.css">
+
+  <style>
+    /* =========================================================
+       À PROPOS — BSCompany
+       ========================================================= */
+
+    :root{
+      --about-blue:#2563eb;
+      --about-blue-dark:#1d4ed8;
+      --about-violet:#7c3aed;
+      --about-purple:#9333ea;
+      --about-soft:#eff6ff;
+      --about-text:#111827;
+      --about-muted:#64748b;
+      --about-white:#ffffff;
+    }
+
+    .about-page{
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(37,99,235,.07), transparent 28%),
+        radial-gradient(circle at 90% 15%, rgba(124,58,237,.08), transparent 30%);
+    }
+
+    /* =========================================================
+       DECORATIONS
+       ========================================================= */
+
+    .about-decoration{
+      position:absolute;
+      pointer-events:none;
+      z-index:0;
+      border-radius:50%;
+      filter:blur(1px);
+      opacity:.55;
+    }
+
+    .about-decoration.one{
+      width:220px;
+      height:220px;
+      top:120px;
+      left:-110px;
+      border:35px solid rgba(37,99,235,.08);
+    }
+
+    .about-decoration.two{
+      width:300px;
+      height:300px;
+      top:850px;
+      right:-160px;
+      border:45px solid rgba(124,58,237,.07);
+    }
+
+    .about-decoration.three{
+      width:140px;
+      height:140px;
+      top:1500px;
+      left:-60px;
+      border:25px solid rgba(37,99,235,.06);
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .about-hero{
+      position:relative;
+      min-height:620px;
+      display:flex;
+      align-items:center;
+      padding:80px 20px 90px;
+      isolation:isolate;
+    }
+
+    .about-hero-inner{
+      position:relative;
+      z-index:2;
+      width:min(1180px,100%);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      align-items:center;
+      gap:60px;
+    }
+
+    .about-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(37,99,235,.08);
+      border:1px solid rgba(37,99,235,.12);
+      color:var(--about-blue);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      margin-bottom:20px;
+    }
+
+    .about-kicker-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--about-blue);
+      box-shadow:0 0 0 5px rgba(37,99,235,.10);
+      animation:aboutPulse 2s infinite;
+    }
+
+    .about-hero h1{
+      margin:0;
+      max-width:720px;
+      font-size:clamp(42px,6vw,76px);
+      line-height:1.02;
+      letter-spacing:-.045em;
+      color:var(--about-text);
+    }
+
+    .about-hero h1 span{
+      display:block;
+      background:linear-gradient(
+        100deg,
+        var(--about-blue),
+        var(--about-violet),
+        var(--about-blue)
+      );
+      background-size:200% auto;
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      animation:aboutGradient 5s linear infinite;
+    }
+
+    .about-hero-text{
+      max-width:650px;
+      margin:24px 0 0;
+      color:var(--about-muted);
+      font-size:17px;
+      line-height:1.8;
+    }
+
+    .about-hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:30px;
+    }
+
+    .about-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      min-height:46px;
+      padding:0 18px;
+      border-radius:12px;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:800;
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+    }
+
+    .about-btn:hover{
+      transform:translateY(-3px);
+    }
+
+    .about-btn-primary{
+      color:#fff;
+      background:linear-gradient(135deg,var(--about-blue),var(--about-violet));
+      box-shadow:0 12px 28px rgba(37,99,235,.22);
+    }
+
+    .about-btn-primary:hover{
+      box-shadow:0 18px 35px rgba(37,99,235,.28);
+    }
+
+    .about-btn-secondary{
+      color:var(--about-text);
+      background:var(--about-white);
+      border:1px solid #e2e8f0;
+      box-shadow:0 8px 22px rgba(15,23,42,.06);
+    }
+
+    /* =========================================================
+       HERO ILLUSTRATION
+       ========================================================= */
+
+    .about-visual{
+      position:relative;
+      height:460px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .about-orbit{
+      position:absolute;
+      border:1px solid rgba(37,99,235,.12);
+      border-radius:50%;
+      animation:aboutRotate 18s linear infinite;
+    }
+
+    .about-orbit.one{
+      width:360px;
+      height:360px;
+    }
+
+    .about-orbit.two{
+      width:270px;
+      height:270px;
+      border-color:rgba(124,58,237,.14);
+      animation-direction:reverse;
+      animation-duration:14s;
+    }
+
+    .about-bubble-main{
+      position:relative;
+      width:205px;
+      height:205px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 32% 25%, rgba(255,255,255,.95), transparent 13%),
+        linear-gradient(145deg,#60a5fa,#2563eb 55%,#7c3aed);
+      box-shadow:
+        0 35px 70px rgba(37,99,235,.25),
+        inset -18px -20px 35px rgba(30,64,175,.20),
+        inset 15px 15px 25px rgba(255,255,255,.25);
+      animation:aboutFloat 4s ease-in-out infinite;
+      z-index:3;
+    }
+
+    .about-bubble-main::before{
+      content:"";
+      position:absolute;
+      width:35px;
+      height:18px;
+      border-radius:50%;
+      background:rgba(255,255,255,.65);
+      top:38px;
+      left:48px;
+      transform:rotate(-25deg);
+    }
+
+    .about-bubble-main::after{
+      content:"";
+      position:absolute;
+      width:16px;
+      height:10px;
+      border-radius:50%;
+      background:rgba(255,255,255,.42);
+      top:68px;
+      left:39px;
+      transform:rotate(-25deg);
+    }
+
+    .about-bubble-logo{
+      position:relative;
+      z-index:2;
+      color:#fff;
+      text-align:center;
+      font-weight:900;
+      line-height:1;
+      text-shadow:0 3px 10px rgba(15,23,42,.18);
+    }
+
+    .about-bubble-logo .big{
+      display:block;
+      font-size:38px;
+      letter-spacing:-.05em;
+    }
+
+    .about-bubble-logo .small{
+      display:block;
+      margin-top:7px;
+      font-size:10px;
+      letter-spacing:.16em;
+    }
+
+    .about-float-card{
+      position:absolute;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:10px 13px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:13px;
+      box-shadow:0 15px 35px rgba(15,23,42,.10);
+      color:var(--about-text);
+      font-size:11px;
+      font-weight:800;
+      z-index:4;
+    }
+
+    .about-float-card span:first-child{
+      font-size:19px;
+    }
+
+    .about-float-card.a{
+      top:65px;
+      right:5px;
+      animation:aboutFloatSmall 4s ease-in-out infinite;
+    }
+
+    .about-float-card.b{
+      bottom:65px;
+      left:0;
+      animation:aboutFloatSmall 4.5s ease-in-out infinite .5s;
+    }
+
+    .about-float-card.c{
+      bottom:30px;
+      right:30px;
+      animation:aboutFloatSmall 5s ease-in-out infinite 1s;
+    }
+
+    /* =========================================================
+       COMMON SECTIONS
+       ========================================================= */
+
+    .about-section{
+      position:relative;
+      z-index:1;
+      width:min(1100px,calc(100% - 40px));
+      margin:0 auto;
+      padding:85px 0;
+    }
+
+    .about-section-heading{
+      max-width:720px;
+      margin-bottom:42px;
+    }
+
+    .about-eyebrow{
+      color:var(--about-blue);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+
+    .about-section-heading h2{
+      margin:0;
+      color:var(--about-text);
+      font-size:clamp(30px,4vw,46px);
+      line-height:1.12;
+      letter-spacing:-.035em;
+    }
+
+    .about-section-heading p{
+      margin:15px 0 0;
+      color:var(--about-muted);
+      line-height:1.75;
+      font-size:15px;
+    }
+
+    /* =========================================================
+       STORY / HISTORY
+       ========================================================= */
+
+    .about-story{
+      display:grid;
+      grid-template-columns:.8fr 1.2fr;
+      gap:60px;
+      align-items:center;
+    }
+
+    .about-date-card{
+      position:relative;
+      padding:35px;
+      min-height:250px;
+      border-radius:25px;
+      overflow:hidden;
+      background:linear-gradient(145deg,#eff6ff,#f5f3ff);
+      border:1px solid rgba(37,99,235,.10);
+      box-shadow:0 18px 45px rgba(15,23,42,.07);
+    }
+
+    .about-date-card::before{
+      content:"";
+      position:absolute;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      border:30px solid rgba(37,99,235,.07);
+      right:-80px;
+      bottom:-80px;
+    }
+
+    .about-date-card .date-icon{
+      font-size:35px;
+      margin-bottom:25px;
+    }
+
+    .about-date-card strong{
+      display:block;
+      color:var(--about-blue);
+      font-size:38px;
+      line-height:1;
+      letter-spacing:-.04em;
+    }
+
+    .about-date-card span{
+      display:block;
+      margin-top:9px;
+      color:var(--about-muted);
+      font-size:13px;
+    }
+
+    .about-story-copy p{
+      color:var(--about-muted);
+      line-height:1.85;
+      margin:0 0 17px;
+      font-size:15px;
+    }
+
+    .about-story-copy p:last-child{
+      margin-bottom:0;
+    }
+
+    .about-highlight{
+      display:inline;
+      color:var(--about-text);
+      font-weight:800;
+    }
+
+    /* =========================================================
+       VALUES / ACTIVITIES
+       ========================================================= */
+
+    .about-cards{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .about-card{
+      position:relative;
+      min-height:220px;
+      padding:26px;
+      border-radius:20px;
+      background:var(--about-white);
+      border:1px solid #e8edf5;
+      box-shadow:0 10px 28px rgba(15,23,42,.055);
+      overflow:hidden;
+      transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+    }
+
+    .about-card::after{
+      content:"";
+      position:absolute;
+      width:90px;
+      height:90px;
+      border-radius:50%;
+      background:rgba(37,99,235,.06);
+      right:-35px;
+      bottom:-35px;
+      transition:transform .3s ease;
+    }
+
+    .about-card:hover{
+      transform:translateY(-7px);
+      border-color:rgba(37,99,235,.18);
+      box-shadow:0 20px 40px rgba(15,23,42,.10);
+    }
+
+    .about-card:hover::after{
+      transform:scale(1.35);
+    }
+
+    .about-card-icon{
+      width:48px;
+      height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:14px;
+      background:#eff6ff;
+      font-size:23px;
+      margin-bottom:22px;
+    }
+
+    .about-card:nth-child(2) .about-card-icon{
+      background:#f5f3ff;
+    }
+
+    .about-card:nth-child(3) .about-card-icon{
+      background:#ecfeff;
+    }
+
+    .about-card h3{
+      position:relative;
+      z-index:1;
+      margin:0 0 9px;
+      color:var(--about-text);
+      font-size:17px;
+    }
+
+    .about-card p{
+      position:relative;
+      z-index:1;
+      margin:0;
+      color:var(--about-muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    /* =========================================================
+       BULL ART
+       ========================================================= */
+
+    .bull-art{
+      position:relative;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:45px;
+      align-items:center;
+      padding:55px;
+      border-radius:30px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 100% 0%,rgba(124,58,237,.25),transparent 35%),
+        linear-gradient(135deg,#172554,#312e81);
+      box-shadow:0 25px 60px rgba(30,41,99,.20);
+    }
+
+    .bull-art::before,
+    .bull-art::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .bull-art::before{
+      width:300px;
+      height:300px;
+      right:-90px;
+      top:-120px;
+    }
+
+    .bull-art::after{
+      width:190px;
+      height:190px;
+      right:20px;
+      bottom:-100px;
+    }
+
+    .bull-art-copy{
+      position:relative;
+      z-index:2;
+    }
+
+    .bull-art-label{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.16);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      margin-bottom:16px;
+    }
+
+    .bull-art h2{
+      margin:0;
+      color:#fff;
+      font-size:clamp(31px,4vw,48px);
+      line-height:1.05;
+      letter-spacing:-.04em;
+    }
+
+    .bull-art h2 span{
+      color:#93c5fd;
+    }
+
+    .bull-art p{
+      max-width:600px;
+      margin:18px 0 0;
+      color:rgba(255,255,255,.74);
+      line-height:1.8;
+      font-size:14px;
+    }
+
+    .bull-art-visual{
+      position:relative;
+      z-index:2;
+      min-height:250px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .bull-art-ring{
+      width:210px;
+      height:210px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      animation:aboutRotate 15s linear infinite;
+    }
+
+    .bull-art-circle{
+      width:145px;
+      height:145px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      background:linear-gradient(145deg,#60a5fa,#7c3aed);
+      color:#fff;
+      box-shadow:0 20px 50px rgba(0,0,0,.20);
+      animation:aboutFloat 3.5s ease-in-out infinite;
+    }
+
+    .bull-art-circle strong{
+      display:block;
+      font-size:25px;
+      letter-spacing:-.04em;
+    }
+
+    .bull-art-circle small{
+      display:block;
+      margin-top:5px;
+      font-size:9px;
+      opacity:.75;
+      letter-spacing:.12em;
+    }
+
+    /* =========================================================
+       COMMUNITY
+       ========================================================= */
+
+    .community-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .community-card{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      padding:27px;
+      min-height:230px;
+      border-radius:20px;
+      background:#fff;
+      border:1px solid #e8edf5;
+      box-shadow:0 10px 28px rgba(15,23,42,.055);
+      overflow:hidden;
+      transition:transform .25s ease,box-shadow .25s ease;
+    }
+
+    .community-card:hover{
+      transform:translateY(-7px);
+      box-shadow:0 20px 40px rgba(15,23,42,.10);
+    }
+
+    .community-icon{
+      width:50px;
+      height:50px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:15px;
+      font-size:23px;
+      margin-bottom:20px;
+    }
+
+    .community-card.discord .community-icon{
+      background:#eef2ff;
+    }
+
+    .community-card.tiktok .community-icon{
+      background:#f1f5f9;
+    }
+
+    .community-card.whatsapp .community-icon{
+      background:#ecfdf5;
+    }
+
+    .community-card h3{
+      margin:0;
+      color:var(--about-text);
+      font-size:17px;
+    }
+
+    .community-card p{
+      margin:9px 0 20px;
+      color:var(--about-muted);
+      font-size:13px;
+      line-height:1.7;
+      flex:1;
+    }
+
+    .community-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:10px;
+      text-decoration:none;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:var(--about-text);
+      font-size:12px;
+      font-weight:800;
+      transition:.2s ease;
+    }
+
+    .community-link:hover{
+      background:#eff6ff;
+      border-color:#bfdbfe;
+      color:var(--about-blue);
+    }
+
+    /* =========================================================
+       FINAL CTA
+       ========================================================= */
+
+    .about-final{
+      padding-top:30px;
+      padding-bottom:100px;
+    }
+
+    .about-final-box{
+      position:relative;
+      overflow:hidden;
+      padding:55px 30px;
+      text-align:center;
+      border-radius:28px;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(96,165,250,.20),transparent 30%),
+        radial-gradient(circle at 80% 80%,rgba(167,139,250,.18),transparent 30%),
+        #f8fafc;
+      border:1px solid #e2e8f0;
+    }
+
+    .about-final-box h2{
+      position:relative;
+      z-index:1;
+      margin:0;
+      color:var(--about-text);
+      font-size:clamp(30px,4vw,45px);
+      letter-spacing:-.04em;
+    }
+
+    .about-final-box p{
+      position:relative;
+      z-index:1;
+      max-width:620px;
+      margin:14px auto 25px;
+      color:var(--about-muted);
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    .about-final-bubbles{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    .about-final-bubbles span{
+      position:absolute;
+      display:block;
+      border-radius:50%;
+      border:1px solid rgba(37,99,235,.12);
+      animation:aboutFloatSmall 5s ease-in-out infinite;
+    }
+
+    .about-final-bubbles span:nth-child(1){
+      width:70px;
+      height:70px;
+      top:20px;
+      left:8%;
+    }
+
+    .about-final-bubbles span:nth-child(2){
+      width:35px;
+      height:35px;
+      top:35%;
+      right:12%;
+      animation-delay:1s;
+    }
+
+    .about-final-bubbles span:nth-child(3){
+      width:100px;
+      height:100px;
+      bottom:-50px;
+      left:25%;
+      animation-delay:2s;
+    }
+
+    /* =========================================================
+       REVEAL
+       ========================================================= */
+
+    .about-reveal{
+      opacity:0;
+      transform:translateY(28px);
+      transition:
+        opacity .75s ease,
+        transform .75s ease;
+    }
+
+    .about-reveal.visible{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .about-delay-1{transition-delay:.08s;}
+    .about-delay-2{transition-delay:.16s;}
+    .about-delay-3{transition-delay:.24s;}
+
+    /* =========================================================
+       ANIMATIONS
+       ========================================================= */
+
+    @keyframes aboutFloat{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-13px);}
+    }
+
+    @keyframes aboutFloatSmall{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-8px);}
+    }
+
+    @keyframes aboutRotate{
+      from{transform:rotate(0deg);}
+      to{transform:rotate(360deg);}
+    }
+
+    @keyframes aboutGradient{
+      0%{background-position:0% 50%;}
+      100%{background-position:200% 50%;}
+    }
+
+    @keyframes aboutPulse{
+      0%,100%{transform:scale(1);opacity:1;}
+      50%{transform:scale(.75);opacity:.6;}
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width:900px){
+
+      .about-hero{
+        min-height:auto;
+        padding-top:60px;
+      }
+
+      .about-hero-inner{
+        grid-template-columns:1fr;
+        gap:30px;
+        text-align:center;
+      }
+
+      .about-hero-text{
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      .about-hero-actions{
+        justify-content:center;
+      }
+
+      .about-visual{
+        height:380px;
+      }
+
+      .about-story{
+        grid-template-columns:1fr;
+        gap:30px;
+      }
+
+      .about-cards,
+      .community-grid{
+        grid-template-columns:1fr;
+      }
+
+      .bull-art{
+        grid-template-columns:1fr;
+        padding:40px 30px;
+      }
+
+      .bull-art-copy{
+        text-align:center;
+      }
+
+      .bull-art p{
+        margin-left:auto;
+        margin-right:auto;
+      }
+    }
+
+    @media (max-width:600px){
+
+      .about-section{
+        width:min(100% - 28px,1100px);
+        padding:60px 0;
+      }
+
+      .about-hero{
+        padding:45px 14px 60px;
+      }
+
+      .about-hero h1{
+        font-size:43px;
+      }
+
+      .about-hero-text{
+        font-size:14px;
+        line-height:1.7;
+      }
+
+      .about-visual{
+        height:320px;
+      }
+
+      .about-orbit.one{
+        width:270px;
+        height:270px;
+      }
+
+      .about-orbit.two{
+        width:205px;
+        height:205px;
+      }
+
+      .about-bubble-main{
+        width:155px;
+        height:155px;
+      }
+
+      .about-bubble-logo .big{
+        font-size:29px;
+      }
+
+      .about-float-card{
+        transform:scale(.82);
+      }
+
+      .about-float-card.a{
+        right:-10px;
+        top:35px;
+      }
+
+      .about-float-card.b{
+        left:-12px;
+        bottom:35px;
+      }
+
+      .about-float-card.c{
+        right:0;
+        bottom:5px;
+      }
+
+      .about-date-card{
+        padding:28px;
+      }
+
+      .bull-art{
+        padding:35px 20px;
+        border-radius:24px;
+      }
+
+      .bull-art-visual{
+        min-height:210px;
+      }
+
+      .bull-art-ring{
+        width:180px;
+        height:180px;
+      }
+
+      .bull-art-circle{
+        width:125px;
+        height:125px;
+      }
+
+      .about-final-box{
+        padding:45px 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce){
+
+      *,
+      *::before,
+      *::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+        transition-duration:.01ms !important;
+      }
+
+      .about-reveal{
+        opacity:1;
+        transform:none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =======================================================
+       NAVBAR
+       ======================================================= -->
+
+  <header class="site-header">
+    <nav class="navbar">
+
+      <a href="index.html" class="brand">
+        Ᏸ.Ꮥ.CᎧᎷᎮᏗᏁᎩ
+      </a>
+
+      <button
+        class="mobile-menu-btn"
+        id="mobileMenuBtn"
+        type="button"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Accueil</a>
+        <a href="webcomic.html">Webcomics</a>
+        <a href="romans.html">Romans</a>
+        <a href="a-propos.html" class="active">À propos de nous</a>
+        <a
+          href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Nous suivre
+        </a>
+      </div>
+
+    </nav>
+  </header>
+
+
+  <main class="about-page">
+
+    <!-- Décorations -->
+    <div class="about-decoration one"></div>
+    <div class="about-decoration two"></div>
+    <div class="about-decoration three"></div>
+
+
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+
+    <section class="about-hero">
+
+      <div class="about-hero-inner">
+
+        <div class="about-hero-copy about-reveal">
+
+          <div class="about-kicker">
+            <span class="about-kicker-dot"></span>
+            Bienvenue dans notre bulle
+          </div>
+
+          <h1>
+            Nous sommes
+            <span>BSCompany.</span>
+          </h1>
+
+          <p class="about-hero-text">
+            Un studio qui rassemble des auteurs et des créateurs
+            autour d'une même envie : donner une place aux histoires
+            qui méritent d'être racontées.
+          </p>
+
+          <div class="about-hero-actions">
+
+            <a
+              href="https://discord.gg/7FeYKrpEs"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="about-btn about-btn-primary"
+            >
+              💬 Rejoindre notre Discord
+            </a>
+
+            <a
+              href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="about-btn about-btn-secondary"
+            >
+              🫧 Notre chaîne WhatsApp
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- Illustration -->
+        <div class="about-visual about-reveal about-delay-1">
+
+          <div class="about-orbit one"></div>
+          <div class="about-orbit two"></div>
+
+          <div class="about-bubble-main">
+
+            <div class="about-bubble-logo">
+              <span class="big">BS</span>
+              <span class="small">COMPANY</span>
+            </div>
+
+          </div>
+
+          <div class="about-float-card a">
+            <span>✍️</span>
+            <span>Des auteurs</span>
+          </div>
+
+          <div class="about-float-card b">
+            <span>📖</span>
+            <span>Des histoires</span>
+          </div>
+
+          <div class="about-float-card c">
+            <span>✨</span>
+            <span>Des projets</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         HISTOIRE
+         ===================================================== -->
+
+    <section class="about-section">
+
+      <div class="about-story">
+
+        <div class="about-date-card about-reveal">
+
+          <div class="date-icon">🫧</div>
+
+          <strong>24.12.2025</strong>
+
+          <span>
+            Le jour où l'aventure BSCompany a commencé.
+          </span>
+
+        </div>
+
+
+        <div class="about-story-copy about-reveal about-delay-1">
+
+          <div class="about-eyebrow">
+            Notre histoire
+          </div>
+
+          <h2>
+            Une petite bulle devenue un univers.
+          </h2>
+
+          <p>
+            <span class="about-highlight">BSCompany existe depuis le 24 décembre 2025.</span>
+            Depuis sa création, le studio s'est construit autour d'une
+            idée simple : permettre à des créateurs de faire découvrir
+            leurs histoires et leurs univers.
+          </p>
+
+          <p>
+            Aujourd'hui, BSCompany réunit de nombreux auteurs et propose
+            différents projets, activités et événements autour de la
+            création et du partage.
+          </p>
+
+          <p>
+            Nos racines sont africaines, mais notre porte est ouverte.
+            Les histoires peuvent venir de partout et toucher tout le monde.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CE QUE NOUS FAISONS
+         ===================================================== -->
+
+    <section class="about-section">
+
+      <div class="about-section-heading about-reveal">
+
+        <div class="about-eyebrow">
+          Notre univers
+        </div>
+
+        <h2>
+          Plus qu'un studio, une bulle pour les créateurs.
+        </h2>
+
+        <p>
+          BSCompany donne de la visibilité aux histoires et crée
+          des espaces où auteurs et lecteurs peuvent se retrouver.
+        </p>
+
+      </div>
+
+
+      <div class="about-cards">
+
+        <article class="about-card about-reveal">
+
+          <div class="about-card-icon">
+            ✍️
+          </div>
+
+          <h3>
+            Les auteurs
+          </h3>
+
+          <p>
+            Nous donnons aux auteurs la possibilité de présenter
+            leurs histoires, leurs univers et leurs projets à notre
+            communauté.
+          </p>
+
+        </article>
+
+
+        <article class="about-card about-reveal about-delay-1">
+
+          <div class="about-card-icon">
+            📚
+          </div>
+
+          <h3>
+            Les histoires
+          </h3>
+
+          <p>
+            Romans, webcomics et différents projets créatifs trouvent
+            leur place dans notre catalogue et dans l'univers BSCompany.
+          </p>
+
+        </article>
+
+
+        <article class="about-card about-reveal about-delay-2">
+
+          <div class="about-card-icon">
+            🎉
+          </div>
+
+          <h3>
+            Les événements
+          </h3>
+
+          <p>
+            Le studio organise également des événements et différentes
+            activités pour faire vivre sa communauté.
+          </p>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         BULL ART
+         ===================================================== -->
+
+    <section class="about-section">
+
+      <div class="bull-art about-reveal">
+
+        <div class="bull-art-copy">
+
+          <div class="bull-art-label">
+            Concours BSCompany
+          </div>
+
+          <h2>
+            Bienvenue dans<br>
+            <span>Bull Art.</span>
+          </h2>
+
+          <p>
+            Bull Art est un concours qui permet aux auteurs de se mettre
+            en avant en proposant leur histoire. Une façon de faire
+            découvrir de nouveaux univers et de donner une place aux
+            créateurs.
+          </p>
+
+        </div>
+
+
+        <div class="bull-art-visual">
+
+          <div class="bull-art-ring">
+
+            <div class="bull-art-circle">
+
+              <div>
+                <strong>BULL<br>ART</strong>
+                <small>CREATE • SHARE • DISCOVER</small>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         COMMUNAUTÉ
+         ===================================================== -->
+
+    <section class="about-section">
+
+      <div class="about-section-heading about-reveal">
+
+        <div class="about-eyebrow">
+          Notre communauté
+        </div>
+
+        <h2>
+          Retrouvez BSCompany au-delà du site.
+        </h2>
+
+        <p>
+          Notre communauté évolue également sur plusieurs plateformes.
+          Rejoins-nous là où tu préfères suivre notre actualité,
+          discuter et découvrir nos projets.
+        </p>
+
+      </div>
+
+
+      <div class="community-grid">
+
+
+        <!-- Discord -->
+
+        <article class="community-card discord about-reveal">
+
+          <div class="community-icon">
+            💬
+          </div>
+
+          <h3>
+            Discord
+          </h3>
+
+          <p>
+            Notre espace communautaire pour échanger, discuter autour
+            des créations et rester au plus près de la communauté BSCompany.
+          </p>
+
+          <a
+            href="https://discord.gg/7FeYKrpEs"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="community-link"
+          >
+            Rejoindre Discord →
+          </a>
+
+        </article>
+
+
+        <!-- TikTok -->
+
+        <article class="community-card tiktok about-reveal about-delay-1">
+
+          <div class="community-icon">
+            ♪
+          </div>
+
+          <h3>
+            TikTok
+          </h3>
+
+          <p>
+            Retrouvez BSCompany sur TikTok pour découvrir notre présence
+            sur la plateforme et suivre nos contenus.
+          </p>
+
+          <a
+            href="https://www.tiktok.com/@bscompany_officiel?_r=1&_t=ZN-98pnH4xd49X"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="community-link"
+          >
+            Voir notre TikTok →
+          </a>
+
+        </article>
+
+
+        <!-- WhatsApp -->
+
+        <article class="community-card whatsapp about-reveal about-delay-2">
+
+          <div class="community-icon">
+            🫧
+          </div>
+
+          <h3>
+            WhatsApp
+          </h3>
+
+          <p>
+            Notre chaîne officielle pour suivre les actualités et les
+            publications de BSCompany.
+          </p>
+
+          <a
+            href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="community-link"
+          >
+            Suivre la chaîne →
+          </a>
+
+        </article>
+
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CTA FINAL
+         ===================================================== -->
+
+    <section class="about-section about-final">
+
+      <div class="about-final-box about-reveal">
+
+        <div class="about-final-bubbles">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <h2>
+          Partagez votre bulle. 🫧
+        </h2>
+
+        <p>
+          Découvrez nos histoires, rejoignez notre communauté et
+          entrez dans l'univers BSCompany.
+        </p>
+
+        <div class="about-hero-actions" style="justify-content:center;">
+
+          <a
+            href="romans.html"
+            class="about-btn about-btn-primary"
+          >
+            📚 Découvrir nos romans
+          </a>
+
+          <a
+            href="webcomic.html"
+            class="about-btn about-btn-secondary"
+          >
+            🎨 Découvrir les webcomics
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =======================================================
+       JAVASCRIPT
+       ======================================================= -->
+
+  <script>
+    /* -------------------------------------------------------
+       MENU MOBILE
+       ------------------------------------------------------- */
+
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const navLinks = document.getElementById("navLinks");
+
+    if (mobileMenuBtn && navLinks) {
+
+      mobileMenuBtn.addEventListener("click", () => {
+
+        const isOpen = navLinks.classList.toggle("mobile-open");
+
+        mobileMenuBtn.setAttribute(
+          "aria-expanded",
+          String(isOpen)
+        );
+
+      });
+
+      navLinks.querySelectorAll("a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+          navLinks.classList.remove("mobile-open");
+
+          mobileMenuBtn.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+        });
+
+      });
+
+    }
+
+
+    /* -------------------------------------------------------
+       SCROLL REVEAL
+       ------------------------------------------------------- */
+
+    const revealElements =
+      document.querySelectorAll(".about-reveal");
+
+    if ("IntersectionObserver" in window) {
+
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+
+          entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+              entry.target.classList.add("visible");
+
+              obs.unobserve(entry.target);
+
+            }
+
+          });
+
+        },
+        {
+          threshold: 0.12,
+          rootMargin: "0px 0px -35px 0px"
+        }
+      );
+
+      revealElements.forEach(element => {
+        observer.observe(element);
+      });
+
+    } else {
+
+      revealElements.forEach(element => {
+        element.classList.add("visible");
+      });
+
+    }
+  </script>
+
+</body>
+  </html>
