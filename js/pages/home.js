@@ -59,3 +59,34 @@ loadHomePage().catch(err => {
     recentContainer.innerHTML = `<p class="error-state">Impossible de contacter la base de données. Vérifie ta connexion et réessaie. (${err.message || err})</p>`;
   }
 });
+
+// =========================
+// MENU MOBILE
+// =========================
+
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const navLinks = document.querySelector('.nav-links');
+
+if (mobileMenuBtn && navLinks) {
+  mobileMenuBtn.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('mobile-open');
+
+    mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+    mobileMenuBtn.setAttribute(
+      'aria-label',
+      isOpen ? 'Fermer le menu' : 'Ouvrir le menu'
+    );
+
+    mobileMenuBtn.textContent = isOpen ? '✕' : '☰';
+  });
+
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('mobile-open');
+
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      mobileMenuBtn.setAttribute('aria-label', 'Ouvrir le menu');
+      mobileMenuBtn.textContent = '☰';
+    });
+  });
+}
