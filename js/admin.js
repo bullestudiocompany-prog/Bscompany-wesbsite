@@ -727,16 +727,18 @@ async function loadChapters() {
   } = await supabase
     .from("chapters")
     .select(`
-      id,
-      series_id,
-      chapter_number,
-      title,
-      content,
-      published_at,
-      views,
-      sound_url,
-      created_at
-    `)
+     .select(`
+  id,
+  series_id,
+  chapter_number,
+  title,
+  content,
+  chapter_image_url,
+  published_at,
+  views,
+  sound_url,
+  created_at
+`)
     .eq(
       "series_id",
       selectedSeries.id
