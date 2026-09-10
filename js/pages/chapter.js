@@ -881,6 +881,631 @@ function formatTime(seconds) {
   return `${minutes}:${remaining}`;
 }
 
+
+// ======================================================
+// IDENTIFIANT DU NAVIGATEUR
+// ======================================================
+
+function getVisitorId() {
+
+  const STORAGE_KEY =
+    "bscompany_visitor_id";
+
+
+  let visitorId =
+    localStorage.getItem(
+      STORAGE_KEY
+    );
+
+
+  if (!visitorId) {
+
+    visitorId =
+      crypto.randomUUID();
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      visitorId
+    );
+  }
+
+
+  return visitorId;
+}
+
+
+// ======================================================
+// VUE DU CHAPITRE
+// ======================================================
+
+async function registerView(chapter) {
+
+  try {
+
+    const visitorId =
+      getVisitorId();
+
+
+    // Enregistrer le navigateur pour ce chapitre
+
+    const {
+      error: insertError
+    } = await supabase
+
+      .from("chapter_views")
+
+      .upsert(
+        {
+          chapter_id: chapter.id,
+          visitor_id: visitorId
+        },
+        {
+          onConflict:
+            "chapter_id,visitor_id",
+          ignoreDuplicates:
+            true
+        }
+      );
+
+
+    if (insertError) {
+
+      console.error(
+        "Erreur enregistrement vue :",
+        insertError
+      );
+
+      return;
+    }
+
+
+    // Compter les visiteurs uniques de ce chapitre
+
+    const {
+      count,
+      error: countError
+    } = await supabase
+
+      .from("chapter_views")
+
+      .select("id", {
+        count: "exact",
+        head: true
+      })
+
+      .eq(
+        "chapter_id",
+        chapter.id
+      );
+
+
+    if (countError) {
+
+      console.error(
+        "Erreur comptage vues :",
+        countError
+      );
+
+      return;
+    }
+
+
+    chapterViews.textContent =
+      count ?? 0;
+
+
+  } catch (error) {
+
+    console.error(
+      "Erreur système des vues :",
+      error
+    );
+  }
+}
+
+
+// ======================================================
+// LIKE
+// ======================================================
+
+async function setupLikeButton(chapter) {
+
+  if (
+    !likeButton ||
+    !likeCount
+  ) {
+    return;
+  }
+
+
+  // --------------------------------------------------
+  // CHARGER LA SESSION
+  // --------------------------------------------------
+
+  const {
+    data: {
+      user
+    }
+  } = await supabase.auth.getUser();
+
+
+  // --------------------------------------------------
+  // CHARGER LE NOMBRE TOTAL DE LIKES
+  // --------------------------------------------------
+
+  const {
+    count,
+    error: countError
+  } = await supabase
+
+    .from("likes")
+
+    .select("*", {
+      count: "exact",
+      head: true
+    })
+
+    .eq(
+      "chapter_id",
+      chapter.id
+    );
+
+
+  if (countError) {
+
+    console.error(
+      "Erreur chargement likes :",
+      countError
+    );
+
+    likeCount.textContent =
+      "0";
+
+  } else {
+
+    likeCount.textContent =
+      count ?? 0;
+  }
+
+
+  // --------------------------------------------------
+  // VÉRIFIER SI L'UTILISATEUR A DÉJÀ LIKÉ
+  // --------------------------------------------------
+
+  let userLiked =
+    false;
+
+
+  if (user) {
+
+    const {
+      data: existingLike,
+      error: existingLikeError
+    } = await supabase
+
+      .from("likes")
+
+      .select("chapter_id")
+
+      .eq(
+        "chapter_id",
+        chapter.id
+      )
+
+      .eq(
+        "user_id",
+        user.id
+      )
+
+      .maybeSingle();
+
+
+    if (existingLikeError) {
+
+      console.error(
+        "Erreur vérification like :",
+        existingLikeError
+      );
+
+    } else {
+
+      userLiked =
+        !!existingLike;
+    }
+  }
+
+
+  updateLikeButton(
+    userLiked
+  );
+
+
+  // --------------------------------------------------
+  // CLIQUER SUR LIKE
+  // --------------------------------------------------
+
+  likeButton.onclick =
+    async () => {
+
+      // Pas connecté
+
+      if (!user) {
+
+        alert(
+          "Connectez-vous ou créez un compte pour aimer ce chapitre."
+        );
+
+        return;
+      }
+
+
+      likeButton.disabled =
+        true;
+
+
+      try {
+
+        // ----------------------------------------------
+        // DÉJÀ LIKÉ → SUPPRIMER LE LIKE
+        // ----------------------------------------------
+
+        if (userLiked) {
+
+          const {
+            error
+          } = await supabase
+
+            .from("likes")
+
+            .delete()
+
+            .eq(
+              "chapter_id",
+              chapter.id
+            )
+
+            .eq(
+              "user_id",
+              user.id
+            );
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          userLiked =
+            false;
+
+        }
+
+
+        // ----------------------------------------------
+        // PAS ENCORE LIKÉ → AJOUTER LE LIKE
+        // ----------------------------------------------
+
+        else {
+
+          const {
+            error
+          } = await supabase
+
+            .from("likes")
+
+            .insert({
+              user_id:
+                user.id,
+
+              chapter_id:
+                chapter.id,
+
+              profil_id:
+                null,
+
+              series_id:
+                chapter.series_id
+            });
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          userLiked =
+            true;
+        }
+
+
+        // ----------------------------------------------
+        // METTRE À JOUR LE COMPTEUR
+        // ----------------------------------------------
+
+        const {
+          count,
+          error: refreshError
+        } = await supabase
+
+          .from("likes")
+
+          .select("*", {
+            count: "exact",
+            head: true
+          })
+
+          .eq(
+            "chapter_id",
+            chapter.id
+          );
+
+
+        if (refreshError) {
+          throw refreshError;
+        }
+
+
+        likeCount.textContent =
+          count ?? 0;
+
+
+        updateLikeButton(
+          userLiked
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Erreur Like :",
+          error
+        );
+
+        alert(
+          "Impossible de modifier le Like pour le moment."
+        );
+
+      } finally {
+
+        likeButton.disabled =
+          false;
+      }
+    };
+}
+
+
+// ======================================================
+// AFFICHER L'ÉTAT DU LIKE
+// ======================================================
+
+function updateLikeButton(isLiked) {
+
+  if (
+    !likeButton ||
+    !likeIcon
+  ) {
+    return;
+  }
+
+
+  if (isLiked) {
+
+    likeIcon.textContent =
+      "♥";
+
+    likeButton.classList.add(
+      "liked"
+    );
+
+    likeButton.setAttribute(
+      "aria-pressed",
+      "true"
+    );
+
+    likeButton.setAttribute(
+      "aria-label",
+      "Retirer le Like"
+    );
+
+  } else {
+
+    likeIcon.textContent =
+      "♡";
+
+    likeButton.classList.remove(
+      "liked"
+    );
+
+    likeButton.setAttribute(
+      "aria-pressed",
+      "false"
+    );
+
+    likeButton.setAttribute(
+      "aria-label",
+      "Aimer ce chapitre"
+    );
+  }
+}
+
+
+// ======================================================
+// COMMENTAIRES
+// ======================================================
+
+function setupComments() {
+
+  if (!commentButton) {
+    return;
+  }
+
+
+  /*
+   * L'espace commentaires sera branché
+   * à la table comments lorsque nous
+   * définirons précisément son fonctionnement.
+   */
+
+  commentButton.addEventListener(
+    "click",
+    () => {
+
+      const commentsSection =
+        document.getElementById(
+          "commentsSection"
+        );
+
+
+      if (commentsSection) {
+
+        commentsSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    }
+  );
+}
+
+
+// ======================================================
+// ERREUR
+// ======================================================
+
+function showError() {
+
+  loading.hidden =
+    true;
+
+  reader.hidden =
+    true;
+
+  if (readerControls) {
+
+    readerControls.hidden =
+      true;
+  }
+
+  errorBox.hidden =
+    false;
+}
+
+
+// ======================================================
+// MENU MOBILE
+// ======================================================
+
+const mobileMenuBtn =
+  document.getElementById(
+    "mobileMenuBtn"
+  );
+
+const navLinks =
+  document.getElementById(
+    "navLinks"
+  );
+
+
+if (
+  mobileMenuBtn &&
+  navLinks
+) {
+
+  mobileMenuBtn.addEventListener(
+    "click",
+    () => {
+
+      const opened =
+        navLinks.classList.toggle(
+          "mobile-open"
+        );
+
+
+      mobileMenuBtn.setAttribute(
+        "aria-expanded",
+        opened
+          ? "true"
+          : "false"
+      );
+    }
+  );
+}
+
+
+// ======================================================
+// DÉMARRAGE
+// ======================================================
+
+async function startReader() {
+
+  await loadChapter();
+
+
+  if (currentChapter) {
+
+    setupLikeButton(
+      currentChapter
+    );
+
+    setupComments();
+  }
+}
+
+
+startReader();    audio.duration &&
+    Number.isFinite(audio.duration)
+  ) {
+
+    progress.value =
+      (
+        audio.currentTime /
+        audio.duration
+      ) *
+      100;
+
+  } else {
+
+    progress.value =
+      0;
+  }
+
+
+  if (audioTime) {
+
+    audioTime.textContent =
+      formatTime(
+        audio.currentTime
+      );
+  }
+}
+
+
+// ======================================================
+// FORMAT TEMPS
+// ======================================================
+
+function formatTime(seconds) {
+
+  if (
+    !seconds ||
+    !Number.isFinite(seconds)
+  ) {
+    return "0:00";
+  }
+
+
+  const minutes =
+    Math.floor(seconds / 60);
+
+  const remaining =
+    Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
+
+
+  return `${minutes}:${remaining}`;
+}
+
 // ======================================================
 // IDENTIFIANT DU NAVIGATEUR
 // ======================================================
