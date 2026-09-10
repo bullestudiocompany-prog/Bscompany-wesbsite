@@ -172,16 +172,183 @@ img{display:block;max-width:100%;}
 }
 
 /* ========================= RESPONSIVE ========================= */
-@media (max-width:900px){
-  .nav-links{display:none;}
-  .hero-container{flex-direction:column;align-items:flex-start;}
-  .hero-text{flex:none;}
-  .features{grid-template-columns:1fr 1fr;}
+
+@media (max-width: 900px){
+
+  .navbar{
+    padding:14px 24px;
+  }
+
+  .nav-links{
+    display:none;
+  }
+
+  .hero-container{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:28px;
+  }
+
+  .hero-text{
+    flex:none;
+    width:100%;
+  }
+
+  .features{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .section-header{
+    margin-top:42px;
+  }
 }
-@media (max-width:560px){
-  .navbar{padding:14px 18px;}
-  .container{padding:0 18px;}
-  .hero-container{padding:0 18px;}
-  .features{grid-template-columns:1fr;}
-  .cta-banner{flex-direction:column;text-align:center;}
+
+
+@media (max-width: 560px){
+
+  body{
+    overflow-x:hidden;
+  }
+
+  .navbar{
+    padding:12px 16px;
+    gap:12px;
+  }
+
+  .brand{
+    min-width:0;
+  }
+
+  .brand-logo-img{
+    height:32px;
+  }
+
+  .brand-title{
+    font-size:16px;
+  }
+
+  .brand-slogan{
+    font-size:8px;
+  }
+
+  .nav-actions{
+    gap:8px;
+  }
+
+  .icon-btn{
+    width:34px;
+    height:34px;
+    font-size:14px;
+  }
+
+  .btn-primary{
+    padding:9px 14px;
+    font-size:12px;
+  }
+
+  .container{
+    width:100%;
+    padding:0 16px;
+  }
+
+  /* HERO */
+
+  .hero-section{
+    padding:32px 0 54px;
+  }
+
+  .hero-container{
+    width:100%;
+    padding:0 16px;
+    gap:24px;
+  }
+
+  .hero-text{
+    width:100%;
+  }
+
+  .hero-eyebrow{
+    font-size:12px;
+    margin-bottom:10px;
+  }
+
+  .hero-text h1{
+    font-size:28px;
+    line-height:1.18;
+    margin-bottom:12px;
+  }
+
+  .hero-sub{
+    font-size:13px;
+    line-height:1.55;
+    margin-bottom:18px;
+  }
+
+  .btn-lg{
+    padding:11px 18px;
+    font-size:13px;
+  }
+
+  .hero-wave{
+    height:65px;
+    bottom:-30px;
+  }
+
+  /* SECTIONS */
+
+  .section-header{
+    margin:38px 0 18px;
+    align-items:flex-start;
+  }
+
+  .section-title{
+    font-size:21px;
+  }
+
+  .section-sub{
+    font-size:12px;
+  }
+
+  .link-btn{
+    padding:8px 13px;
+    font-size:12px;
+  }
+
+  /* FEATURES */
+
+  .features{
+    grid-template-columns:1fr;
+    gap:12px;
+    margin:36px auto;
+  }
+
+  .feature{
+    padding:16px;
+  }
+
+  /* CTA */
+
+  .cta-banner{
+    padding:24px 18px;
+    flex-direction:column;
+    text-align:center;
+    gap:14px;
+    margin-bottom:36px;
+  }
+
+  .cta-text h3{
+    font-size:17px;
+  }
+
+  .cta-text p{
+    font-size:12px;
+    line-height:1.5;
+  }
+
+  /* FOOTER */
+
+  .site-footer{
+    padding:22px 16px;
+    font-size:12px;
+  }
 }
