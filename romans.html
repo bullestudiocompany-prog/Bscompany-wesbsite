@@ -149,10 +149,10 @@
       try {
 
         const { data: series, error } = await supabase
-          .from('series')
-          .select('*')
-          .in('type', ['webnovel', 'roman'])
-          .order('created_at', { ascending: false });
+  .from('series')
+  .select('*')
+  .in('type', ['novel'])
+  .order('created_at', { ascending: false });
 
         if (error) {
           console.error('Erreur Supabase (romans):', error);
