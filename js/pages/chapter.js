@@ -830,25 +830,46 @@ async function attemptAutoplay() {
 // ======================================================
 
 function updatePlayButton() {
-
   if (!playButton) {
-
     return;
   }
 
+  const playIcon =
+    playButton.querySelector(".play-icon");
 
-  playButton.textContent =
-    audio.paused
-      ? "▶"
-      : "Ⅱ";
+  const pauseIcon =
+    playButton.querySelector(".pause-icon");
 
+  if (audio.paused) {
 
-  playButton.setAttribute(
-    "aria-label",
-    audio.paused
-      ? "Lire"
-      : "Mettre en pause"
-  );
+    if (playIcon) {
+      playIcon.style.display = "block";
+    }
+
+    if (pauseIcon) {
+      pauseIcon.style.display = "none";
+    }
+
+    playButton.setAttribute(
+      "aria-label",
+      "Lire"
+    );
+
+  } else {
+
+    if (playIcon) {
+      playIcon.style.display = "none";
+    }
+
+    if (pauseIcon) {
+      pauseIcon.style.display = "block";
+    }
+
+    playButton.setAttribute(
+      "aria-label",
+      "Mettre en pause"
+    );
+  }
 }
 
 
@@ -857,20 +878,44 @@ function updatePlayButton() {
 // ======================================================
 
 function updateMuteButton() {
-
   if (!muteButton) {
-
     return;
   }
 
+  const svg =
+    muteButton.querySelector("svg");
 
-  muteButton.textContent =
+  if (!svg) {
+    return;
+  }
+
+  if (
     audio.muted ||
     audio.volume === 0
-      ? "🔇"
-      : "🔊";
-}
+  ) {
+    svg.innerHTML = `
+      <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+      <path d="m18 9-5 6M13 9l5 6"/>
+    `;
 
+    muteButton.setAttribute(
+      "aria-label",
+      "Activer le son"
+    );
+
+  } else {
+
+    svg.innerHTML = `
+      <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+      <path d="M17 9.5a4 4 0 0 1 0 5M19.5 7a7.5 7.5 0 0 1 0 10"/>
+    `;
+
+    muteButton.setAttribute(
+      "aria-label",
+      "Couper le son"
+    );
+  }
+}
 
 // ======================================================
 // PROGRESSION AUDIO
