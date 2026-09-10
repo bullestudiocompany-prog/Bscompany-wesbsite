@@ -155,11 +155,16 @@ async function loadChapter() {
 
   setupAudio(data);
 
+// TEST : on affiche le lecteur avant le système de vues
+loading.hidden = true;
+reader.hidden = false;
 
-  await registerView(data);
+if (readerControls) {
+  readerControls.hidden = false;
+}
 
-
-  loading.hidden = true;
+// Les vues sont enregistrées après
+registerView(data);
 
   reader.hidden = false;
 
