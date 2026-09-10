@@ -103,10 +103,23 @@ let currentChapter = null;
 
 async function loadChapter() {
 
+  console.log("🔵 loadChapter démarre");
+
+
   if (!chapterId) {
+
+    console.log("🔴 Aucun chapterId");
+
     showError();
+
     return;
   }
+
+
+  console.log(
+    "🟢 chapterId =",
+    chapterId
+  );
 
 
   const {
@@ -131,10 +144,19 @@ async function loadChapter() {
     .single();
 
 
+  console.log(
+    "🟡 Réponse Supabase :",
+    {
+      data,
+      error
+    }
+  );
+
+
   if (error || !data) {
 
     console.error(
-      "Erreur chapitre :",
+      "🔴 Erreur chapitre :",
       error
     );
 
@@ -144,33 +166,63 @@ async function loadChapter() {
   }
 
 
+  console.log(
+    "🟢 Chapitre récupéré"
+  );
+
+
   currentChapter = data;
 
 
   renderChapter(data);
 
 
+  console.log(
+    "🟢 renderChapter terminé"
+  );
+
+
   await loadChapterNavigation(data);
+
+
+  console.log(
+    "🟢 navigation terminée"
+  );
 
 
   setupAudio(data);
 
-// TEST : on affiche le lecteur avant le système de vues
-loading.hidden = true;
-reader.hidden = false;
 
-if (readerControls) {
-  readerControls.hidden = false;
-}
+  console.log(
+    "🟢 audio terminé"
+  );
 
-// Les vues sont enregistrées après
-registerView(data);
+
+  // ==================================================
+  // AFFICHER LE LECTEUR
+  // ==================================================
+
+  loading.hidden = true;
 
   reader.hidden = false;
 
+
   if (readerControls) {
+
     readerControls.hidden = false;
   }
+
+
+  console.log(
+    "✅ LECTEUR AFFICHÉ"
+  );
+
+
+  // ==================================================
+  // ENREGISTRER LA VUE
+  // ==================================================
+
+  registerView(data);
 }
 
 
@@ -284,9 +336,6 @@ function renderChapter(chapter) {
     chapterImage.hidden = false;
 
 
-    // Même image en arrière-plan,
-    // avec le blur défini en CSS.
-
     chapterBackground.src =
       mainImage;
 
@@ -294,9 +343,6 @@ function renderChapter(chapter) {
       "";
 
   } else {
-
-    // Si une ancienne image existe,
-    // on la garde en secours.
 
     let fallbackImages =
       chapter.image_urls || [];
@@ -328,6 +374,8 @@ function renderChapter(chapter) {
       chapterImage.alt =
         chapter.title ||
         "Image du chapitre";
+
+      chapterImage.hidden = false;
 
       chapterBackground.src =
         fallbackImages[0];
@@ -386,7 +434,7 @@ function renderChapter(chapter) {
 
 
   // ==================================================
-  // ANCIENNES IMAGES SUPPLÉMENTAIRES
+  // IMAGES SUPPLÉMENTAIRES
   // ==================================================
 
   chapterImages.innerHTML = "";
@@ -412,12 +460,10 @@ function renderChapter(chapter) {
 
 
   if (!Array.isArray(images)) {
+
     images = [];
   }
 
-
-  // L'image principale ne doit pas être
-  // répétée dans cette zone.
 
   images
     .filter(
@@ -456,6 +502,7 @@ async function loadChapterNavigation(chapter) {
 
 
   if (!seriesId) {
+
     return;
   }
 
@@ -571,6 +618,7 @@ function setupAudio(chapter) {
     !audioSection ||
     !playButton
   ) {
+
     return;
   }
 
@@ -581,7 +629,9 @@ function setupAudio(chapter) {
     null;
 
 
-  // Aucun son
+  // --------------------------------------------------
+  // AUCUN SON
+  // --------------------------------------------------
 
   if (!soundUrl) {
 
@@ -673,6 +723,7 @@ function setupAudio(chapter) {
     () => {
 
       if (!audio.duration) {
+
         return;
       }
 
@@ -736,10 +787,12 @@ function setupAudio(chapter) {
     updatePlayButton
   );
 
+
   audio.addEventListener(
     "pause",
     updatePlayButton
   );
+
 
   audio.addEventListener(
     "ended",
@@ -767,9 +820,6 @@ async function attemptAutoplay() {
 
   } catch {
 
-    // Le navigateur peut bloquer
-    // l'autoplay avec son.
-    // Le bouton reste disponible.
     updatePlayButton();
   }
 }
@@ -782,6 +832,7 @@ async function attemptAutoplay() {
 function updatePlayButton() {
 
   if (!playButton) {
+
     return;
   }
 
@@ -808,6 +859,7 @@ function updatePlayButton() {
 function updateMuteButton() {
 
   if (!muteButton) {
+
     return;
   }
 
@@ -827,6 +879,7 @@ function updateMuteButton() {
 function updateAudioProgress() {
 
   if (!audio || !progress) {
+
     return;
   }
 
@@ -870,12 +923,14 @@ function formatTime(seconds) {
     !seconds ||
     !Number.isFinite(seconds)
   ) {
+
     return "0:00";
   }
 
 
   const minutes =
     Math.floor(seconds / 60);
+
 
   const remaining =
     Math.floor(seconds % 60)
@@ -927,11 +982,14 @@ async function registerView(chapter) {
 
   try {
 
+    console.log(
+      "👁️ Enregistrement de la vue..."
+    );
+
+
     const visitorId =
       getVisitorId();
 
-
-    // Enregistrer le navigateur pour ce chapitre
 
     const {
       error: insertError
@@ -941,12 +999,16 @@ async function registerView(chapter) {
 
       .upsert(
         {
-          chapter_id: chapter.id,
-          visitor_id: visitorId
+          chapter_id:
+            chapter.id,
+
+          visitor_id:
+            visitorId
         },
         {
           onConflict:
             "chapter_id,visitor_id",
+
           ignoreDuplicates:
             true
         }
@@ -963,8 +1025,6 @@ async function registerView(chapter) {
       return;
     }
 
-
-    // Compter les visiteurs uniques de ce chapitre
 
     const {
       count,
@@ -995,8 +1055,16 @@ async function registerView(chapter) {
     }
 
 
-    chapterViews.textContent =
-      count ?? 0;
+    if (chapterViews) {
+
+      chapterViews.textContent =
+        count ?? 0;
+    }
+
+
+    console.log(
+      "✅ Vue enregistrée"
+    );
 
 
   } catch (error) {
@@ -1019,13 +1087,10 @@ async function setupLikeButton(chapter) {
     !likeButton ||
     !likeCount
   ) {
+
     return;
   }
 
-
-  // --------------------------------------------------
-  // CHARGER LA SESSION
-  // --------------------------------------------------
 
   const {
     data: {
@@ -1035,7 +1100,7 @@ async function setupLikeButton(chapter) {
 
 
   // --------------------------------------------------
-  // CHARGER LE NOMBRE TOTAL DE LIKES
+  // NOMBRE TOTAL DE LIKES
   // --------------------------------------------------
 
   const {
@@ -1074,7 +1139,7 @@ async function setupLikeButton(chapter) {
 
 
   // --------------------------------------------------
-  // VÉRIFIER SI L'UTILISATEUR A DÉJÀ LIKÉ
+  // VÉRIFIER LE LIKE DE L'UTILISATEUR
   // --------------------------------------------------
 
   let userLiked =
@@ -1132,8 +1197,6 @@ async function setupLikeButton(chapter) {
   likeButton.onclick =
     async () => {
 
-      // Pas connecté
-
       if (!user) {
 
         alert(
@@ -1151,7 +1214,7 @@ async function setupLikeButton(chapter) {
       try {
 
         // ----------------------------------------------
-        // DÉJÀ LIKÉ → SUPPRIMER LE LIKE
+        // SUPPRIMER LE LIKE
         // ----------------------------------------------
 
         if (userLiked) {
@@ -1176,6 +1239,7 @@ async function setupLikeButton(chapter) {
 
 
           if (error) {
+
             throw error;
           }
 
@@ -1187,7 +1251,7 @@ async function setupLikeButton(chapter) {
 
 
         // ----------------------------------------------
-        // PAS ENCORE LIKÉ → AJOUTER LE LIKE
+        // AJOUTER LE LIKE
         // ----------------------------------------------
 
         else {
@@ -1214,6 +1278,7 @@ async function setupLikeButton(chapter) {
 
 
           if (error) {
+
             throw error;
           }
 
@@ -1224,7 +1289,7 @@ async function setupLikeButton(chapter) {
 
 
         // ----------------------------------------------
-        // METTRE À JOUR LE COMPTEUR
+        // ACTUALISER LE COMPTEUR
         // ----------------------------------------------
 
         const {
@@ -1246,6 +1311,7 @@ async function setupLikeButton(chapter) {
 
 
         if (refreshError) {
+
           throw refreshError;
         }
 
@@ -1270,6 +1336,7 @@ async function setupLikeButton(chapter) {
           "Impossible de modifier le Like pour le moment."
         );
 
+
       } finally {
 
         likeButton.disabled =
@@ -1289,6 +1356,7 @@ function updateLikeButton(isLiked) {
     !likeButton ||
     !likeIcon
   ) {
+
     return;
   }
 
@@ -1341,15 +1409,10 @@ function updateLikeButton(isLiked) {
 function setupComments() {
 
   if (!commentButton) {
+
     return;
   }
 
-
-  /*
-   * L'espace commentaires sera branché
-   * à la table comments lorsque nous
-   * définirons précisément son fonctionnement.
-   */
 
   commentButton.addEventListener(
     "click",
@@ -1385,11 +1448,13 @@ function showError() {
   reader.hidden =
     true;
 
+
   if (readerControls) {
 
     readerControls.hidden =
       true;
   }
+
 
   errorBox.hidden =
     false;
@@ -1443,470 +1508,17 @@ if (
 
 async function startReader() {
 
+  console.log(
+    "🚀 Démarrage du lecteur"
+  );
+
+
   await loadChapter();
 
 
-  if (currentChapter) {
-
-    setupLikeButton(
-      currentChapter
-    );
-
-    setupComments();
-  }
-}
-
-
-startReader();    audio.duration &&
-    Number.isFinite(audio.duration)
-  ) {
-
-    progress.value =
-      (
-        audio.currentTime /
-        audio.duration
-      ) *
-      100;
-
-  } else {
-
-    progress.value =
-      0;
-  }
-
-
-  if (audioTime) {
-
-    audioTime.textContent =
-      formatTime(
-        audio.currentTime
-      );
-  }
-}
-
-
-// ======================================================
-// FORMAT TEMPS
-// ======================================================
-
-function formatTime(seconds) {
-
-  if (
-    !seconds ||
-    !Number.isFinite(seconds)
-  ) {
-    return "0:00";
-  }
-
-
-  const minutes =
-    Math.floor(seconds / 60);
-
-  const remaining =
-    Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, "0");
-
-
-  return `${minutes}:${remaining}`;
-}
-
-// ======================================================
-// IDENTIFIANT DU NAVIGATEUR
-// ======================================================
-
-function getVisitorId() {
-  const STORAGE_KEY = "bscompany_visitor_id";
-
-  let visitorId = localStorage.getItem(STORAGE_KEY);
-
-  if (!visitorId) {
-    visitorId = crypto.randomUUID();
-    localStorage.setItem(STORAGE_KEY, visitorId);
-  }
-
-  return visitorId;
-}
-
-// ======================================================
-// VUE DU CHAPITRE
-// ======================================================
-
-async function registerView(chapter) {
-  try {
-    const visitorId = getVisitorId();
-
-    // Enregistrer le navigateur pour ce chapitre
-    const { error: insertError } = await supabase
-      .from("chapter_views")
-      .upsert(
-        {
-          chapter_id: chapter.id,
-          visitor_id: visitorId
-        },
-        {
-          onConflict: "chapter_id,visitor_id",
-          ignoreDuplicates: true
-        }
-      );
-
-    if (insertError) {
-      console.error("Erreur enregistrement vue :", insertError);
-      return;
-    }
-
-    // Compter les visiteurs uniques de ce chapitre
-    const { count, error: countError } = await supabase
-      .from("chapter_views")
-      .select("id", {
-        count: "exact",
-        head: true
-      })
-      .eq("chapter_id", chapter.id);
-
-    if (countError) {
-      console.error("Erreur comptage vues :", countError);
-      return;
-    }
-
-    chapterViews.textContent = count ?? 0;
-
-  } catch (error) {
-    console.error("Erreur système des vues :", error);
-  }
-      }
-
-// ======================================================
-// LIKE
-// ======================================================
-
-async function setupLikeButton(chapter) {
-  if (!likeButton || !likeCount) {
-    return;
-  }
-
-  // --------------------------------------------------
-  // CHARGER LA SESSION
-  // --------------------------------------------------
-
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-
-  // --------------------------------------------------
-  // CHARGER LE NOMBRE TOTAL DE LIKES
-  // --------------------------------------------------
-
-  const {
-    count,
-    error: countError
-  } = await supabase
-    .from("likes")
-    .select("*", {
-      count: "exact",
-      head: true
-    })
-    .eq("chapter_id", chapter.id);
-
-
-  if (countError) {
-    console.error(
-      "Erreur chargement likes :",
-      countError
-    );
-
-    likeCount.textContent = "0";
-
-  } else {
-
-    likeCount.textContent =
-      count ?? 0;
-  }
-
-
-  // --------------------------------------------------
-  // VÉRIFIER SI L'UTILISATEUR A DÉJÀ LIKÉ
-  // --------------------------------------------------
-
-  let userLiked = false;
-
-
-  if (user) {
-
-    const {
-      data: existingLike,
-      error: existingLikeError
-    } = await supabase
-      .from("likes")
-      .select("chapter_id")
-      .eq("chapter_id", chapter.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-
-    if (existingLikeError) {
-
-      console.error(
-        "Erreur vérification like :",
-        existingLikeError
-      );
-
-    } else {
-
-      userLiked = !!existingLike;
-    }
-  }
-
-
-  updateLikeButton(userLiked);
-
-
-  // --------------------------------------------------
-  // CLIQUER SUR LIKE
-  // --------------------------------------------------
-
-  likeButton.onclick = async () => {
-
-    // Pas connecté
-    if (!user) {
-
-      alert(
-        "Connectez-vous ou créez un compte pour aimer ce chapitre."
-      );
-
-      return;
-    }
-
-
-    likeButton.disabled = true;
-
-
-    try {
-
-      // ----------------------------------------------
-      // DÉJÀ LIKÉ → SUPPRIMER LE LIKE
-      // ----------------------------------------------
-
-      if (userLiked) {
-
-        const {
-          error
-        } = await supabase
-          .from("likes")
-          .delete()
-          .eq("chapter_id", chapter.id)
-          .eq("user_id", user.id);
-
-
-        if (error) {
-          throw error;
-        }
-
-
-        userLiked = false;
-
-      }
-
-      // ----------------------------------------------
-      // PAS ENCORE LIKÉ → AJOUTER LE LIKE
-      // ----------------------------------------------
-
-      else {
-
-        const {
-          error
-        } = await supabase
-          .from("likes")
-          .insert({
-            user_id: user.id,
-            chapter_id: chapter.id,
-            profil_id: null,
-            series_id: chapter.series_id
-          });
-
-
-        if (error) {
-          throw error;
-        }
-
-
-        userLiked = true;
-      }
-
-
-      // ----------------------------------------------
-      // METTRE À JOUR LE COMPTEUR
-      // ----------------------------------------------
-
-      const {
-        count,
-        error: refreshError
-      } = await supabase
-        .from("likes")
-        .select("*", {
-          count: "exact",
-          head: true
-        })
-        .eq("chapter_id", chapter.id);
-
-
-      if (refreshError) {
-        throw refreshError;
-      }
-
-
-      likeCount.textContent =
-        count ?? 0;
-
-
-      updateLikeButton(userLiked);
-
-
-    } catch (error) {
-
-      console.error(
-        "Erreur Like :",
-        error
-      );
-
-      alert(
-        "Impossible de modifier le Like pour le moment."
-      );
-
-    } finally {
-
-      likeButton.disabled = false;
-    }
-  };
-    }
-function updateLikeButton(isLiked) {
-
-  if (!likeButton || !likeIcon) {
-    return;
-  }
-
-
-  /*
-   * La table likes n'est pas encore branchée
-   * à l'interface utilisateur.
-   *
-   * On prépare donc simplement le bouton
-   * sans inventer de logique Supabase.
-   */
-
-  
-
-
-// ======================================================
-// COMMENTAIRES
-// ======================================================
-
-function setupComments() {
-
-  if (!commentButton) {
-    return;
-  }
-
-
-  /*
-   * L'espace commentaires sera branché
-   * à la table comments lorsque nous
-   * définirons précisément son fonctionnement.
-   */
-
-  commentButton.addEventListener(
-    "click",
-    () => {
-
-      const commentsSection =
-        document.getElementById(
-          "commentsSection"
-        );
-
-
-      if (commentsSection) {
-
-        commentsSection.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }
-    }
+  console.log(
+    "🏁 loadChapter terminé"
   );
-}
-
-
-// ======================================================
-// ERREUR
-// ======================================================
-
-function showError() {
-
-  loading.hidden =
-    true;
-
-  reader.hidden =
-    true;
-
-  if (readerControls) {
-    readerControls.hidden =
-      true;
-  }
-
-  errorBox.hidden =
-    false;
-}
-
-
-// ======================================================
-// MENU MOBILE
-// ======================================================
-
-const mobileMenuBtn =
-  document.getElementById(
-    "mobileMenuBtn"
-  );
-
-const navLinks =
-  document.getElementById(
-    "navLinks"
-  );
-
-
-if (
-  mobileMenuBtn &&
-  navLinks
-) {
-
-  mobileMenuBtn.addEventListener(
-    "click",
-    () => {
-
-      const opened =
-        navLinks.classList.toggle(
-          "mobile-open"
-        );
-
-
-      mobileMenuBtn.setAttribute(
-        "aria-expanded",
-        opened
-          ? "true"
-          : "false"
-      );
-    }
-  );
-}
-
-
-// ======================================================
-// DÉMARRAGE
-// ======================================================
-
-async function startReader() {
-
-  await loadChapter();
 
 
   if (currentChapter) {
