@@ -6,313 +6,244 @@
 
   <title>Romans — BSCompany</title>
 
-  <link rel="stylesheet" href="css/main.css?v=4">
-  <link rel="stylesheet" href="css/components.css?v=4">
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
 
   <style>
-    /* =========================
-       CATALOGUE ROMANS
-    ========================= */
-
-    .romans-intro {
-      margin-bottom: 28px;
-    }
-
-    .romans-intro .section-title {
-      margin-bottom: 8px;
-    }
-
-    .romans-intro .section-sub {
-      max-width: 650px;
-    }
-
-    /* =========================
-       OUTILS DE RECHERCHE
-    ========================= */
+    /* ================================
+       OUTILS DU CATALOGUE
+       ================================ */
 
     .catalogue-tools {
-      display: grid;
-      grid-template-columns: minmax(220px, 1fr) auto auto;
+      display: flex;
+      flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 26px;
-      padding: 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
+      margin: 24px 0;
     }
 
-    .search-box {
-      position: relative;
+    .catalogue-search {
+      flex: 1;
+      min-width: 220px;
     }
 
-    .search-box input,
-    .catalogue-select {
+    .catalogue-search input,
+    .catalogue-tools select {
       width: 100%;
-      height: 46px;
+      height: 42px;
+      padding: 0 13px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg);
-      color: var(--ink);
-      padding: 0 14px;
-      outline: none;
-      font: inherit;
-    }
-
-    .search-box input {
-      padding-left: 42px;
-    }
-
-    .search-box input:focus,
-    .catalogue-select:focus {
-      border-color: var(--blue-500);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--slate-400);
-      pointer-events: none;
-    }
-
-    .catalogue-select {
-      min-width: 170px;
-      cursor: pointer;
-    }
-
-    .results-count {
-      margin: 0 0 16px;
-      color: var(--slate-600);
-      font-size: 13px;
-    }
-/* ================================
-   CATALOGUE DES ROMANS
-   ================================ */
-
-#romans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 200px));
-  justify-content: center;
-  gap: 22px 18px;
-  width: 100%;
-}
-
-/* Carte compacte */
-#romans-grid .story-card {
-  width: 100%;
-  min-width: 0;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Partie supérieure en vertical */
-#romans-grid .story-top {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  gap: 0;
-}
-
-/* Couverture verticale */
-#romans-grid .story-cover {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 2 / 3;
-  flex-shrink: 0;
-  border-radius: 0;
-  overflow: hidden;
-}
-
-#romans-grid .story-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Informations */
-#romans-grid .story-info {
-  padding: 10px 11px 9px;
-  min-width: 0;
-}
-
-/* Badge */
-#romans-grid .type-badge {
-  font-size: 10px;
-  padding: 4px 7px;
-}
-
-/* Titre */
-#romans-grid .story-title {
-  font-size: 14px;
-  line-height: 1.3;
-  margin-top: 7px;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Description cachée pour garder les cartes compactes */
-#romans-grid .story-desc {
-  display: none;
-}
-
-/* Date */
-#romans-grid .story-time {
-  font-size: 10px;
-  margin-top: 6px;
-}
-
-/* Bas de carte */
-#romans-grid .story-footer {
-  padding: 8px 10px;
-  font-size: 11px;
-}
-
-#romans-grid .story-stats {
-  gap: 9px;
-}
-
-
-/* ================================
-   TABLETTE / PETITS ÉCRANS
-   ================================ */
-
-@media (max-width: 700px) {
-
-  #romans-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 420px;
-    margin: 0 auto;
-    gap: 16px 12px;
-  }
-
-}
-
-
-/* ================================
-   PETITS TÉLÉPHONES
-   ================================ */
-
-@media (max-width: 380px) {
-
-  #romans-grid {
-    gap: 14px 10px;
-  }
-
-}
-
-    /* =========================
-       ÉTAT VIDE
-    ========================= */
-
-    .romans-empty {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 55px 20px;
-      border: 1px dashed var(--border);
-      border-radius: var(--radius-lg);
+      border-radius: 10px;
       background: var(--surface);
-    }
-
-    .romans-empty-icon {
-      font-size: 36px;
-      margin-bottom: 12px;
-    }
-
-    .romans-empty h3 {
-      margin: 0 0 7px;
-      color: var(--ink);
-      font-size: 18px;
-    }
-
-    .romans-empty p {
-      margin: 0;
-      color: var(--slate-400);
+      color: var(--text);
       font-size: 13px;
+      outline: none;
     }
 
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 1000px) {
-      #romans-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .catalogue-tools {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .search-box {
-        grid-column: 1 / -1;
-      }
+    .catalogue-search input:focus,
+    .catalogue-tools select:focus {
+      border-color: #7c3aed;
     }
+
+    .catalogue-filter {
+      width: 180px;
+    }
+
+    .catalogue-count {
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--slate-400);
+    }
+
+
+    /* ================================
+       CATALOGUE DES ROMANS
+       CARTES COMPACTES
+       ================================ */
+
+    #romans-grid {
+      display: grid;
+
+      /*
+        Cartes petites :
+        largeur maximale ≈ 200px
+        plusieurs cartes par ligne
+      */
+      grid-template-columns:
+        repeat(auto-fill, minmax(170px, 200px));
+
+      justify-content: center;
+
+      gap: 22px 18px;
+      width: 100%;
+    }
+
+    /* Carte */
+    #romans-grid .story-card {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+    /* Partie supérieure */
+    #romans-grid .story-top {
+      display: flex;
+      flex-direction: column;
+
+      padding: 0;
+      gap: 0;
+    }
+
+    /* Couverture */
+    #romans-grid .story-cover {
+      width: 100%;
+      height: auto;
+
+      aspect-ratio: 2 / 3;
+
+      flex-shrink: 0;
+
+      border-radius: 0;
+      overflow: hidden;
+    }
+
+    #romans-grid .story-cover img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Informations */
+    #romans-grid .story-info {
+      padding: 10px 11px 9px;
+      min-width: 0;
+    }
+
+    /* Badge */
+    #romans-grid .type-badge {
+      font-size: 10px;
+      padding: 4px 7px;
+    }
+
+    /* Titre */
+    #romans-grid .story-title {
+      font-size: 14px;
+      line-height: 1.3;
+
+      margin-top: 7px;
+
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+
+      overflow: hidden;
+    }
+
+    /* Description cachée
+       pour garder les cartes compactes */
+    #romans-grid .story-desc {
+      display: none;
+    }
+
+    /* Date */
+    #romans-grid .story-time {
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
+    /* Footer */
+    #romans-grid .story-footer {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    #romans-grid .story-stats {
+      gap: 9px;
+    }
+
+
+    /* ================================
+       TABLETTE / PETITS ÉCRANS
+       ================================ */
 
     @media (max-width: 700px) {
+
       #romans-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
+        max-width: 420px;
+        margin: 0 auto;
+
+        gap: 16px 12px;
       }
 
-      #romans-grid .story-cover {
-        height: 230px;
+      .catalogue-filter {
+        width: 100%;
       }
 
-      .catalogue-tools {
-        grid-template-columns: 1fr;
-        padding: 12px;
-      }
-
-      .search-box {
-        grid-column: auto;
-      }
-
-      .catalogue-select {
-        min-width: 0;
-      }
     }
 
-    @media (max-width: 480px) {
+
+    /* ================================
+       PETITS TÉLÉPHONES
+       ================================ */
+
+    @media (max-width: 380px) {
+
       #romans-grid {
-        grid-template-columns: 1fr;
+        gap: 14px 10px;
       }
 
-      #romans-grid .story-cover {
-        height: 300px;
-      }
     }
   </style>
 </head>
+
 
 <body>
 
   <!-- =========================
        NAVBAR
-  ========================= -->
+       ========================= -->
 
   <header class="navbar">
 
     <div class="brand">
       <div>
         <div class="brand-title">BSCompany</div>
-        <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
+        <div class="brand-slogan">
+          PARTAGEZ VOTRE BULLE
+        </div>
       </div>
     </div>
 
+
     <nav class="nav-links">
-      <a href="index.html">Accueil</a>
-      <a href="webcomic.html">Webcomics</a>
-      <a href="romans.html" class="active">Romans</a>
-      <a href="a-propos.html">À propos de nous</a>
+
+      <a href="index.html">
+        Accueil
+      </a>
+
+      <a href="webcomic.html">
+        Webcomics
+      </a>
+
+      <a href="romans.html" class="active">
+        Romans
+      </a>
+
+      <a href="a-propos.html">
+        À propos de nous
+      </a>
+
     </nav>
+
 
     <button
       class="mobile-menu-btn"
@@ -324,7 +255,9 @@
       ☰
     </button>
 
+
     <div class="nav-actions">
+
       <a
         class="btn-primary"
         href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
@@ -333,20 +266,22 @@
       >
         Nous suivre
       </a>
+
     </div>
 
   </header>
 
 
   <!-- =========================
-       CONTENU
-  ========================= -->
+       CATALOGUE ROMANS
+       ========================= -->
 
   <main class="container">
 
-    <section class="romans-intro section-header">
+    <section class="section-header">
 
       <div>
+
         <h1 class="section-title">
           Nos <span>Romans</span>
         </h1>
@@ -354,38 +289,23 @@
         <p class="section-sub">
           Découvrez toutes les histoires disponibles sur BSCompany.
         </p>
+
       </div>
 
     </section>
 
 
     <!-- =========================
-         RECHERCHE + FILTRES
-    ========================= -->
+         OUTILS DE RECHERCHE
+         ========================= -->
 
     <section class="catalogue-tools">
 
-      <div class="search-box">
-
-        <span class="search-icon">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-4-4"></path>
-          </svg>
-        </span>
+      <div class="catalogue-search">
 
         <input
-          id="searchInput"
           type="search"
+          id="searchInput"
           placeholder="Rechercher un roman..."
           autocomplete="off"
         >
@@ -393,48 +313,64 @@
       </div>
 
 
-      <select id="genreFilter" class="catalogue-select">
-        <option value="all">Tous les genres</option>
-      </select>
+      <div class="catalogue-filter">
+
+        <select id="genreFilter">
+
+          <option value="all">
+            Tous les genres
+          </option>
+
+        </select>
+
+      </div>
 
 
-      <select id="sortSelect" class="catalogue-select">
+      <div class="catalogue-filter">
 
-        <option value="recent">
-          Plus récent
-        </option>
+        <select id="sortSelect">
 
-        <option value="popular">
-          Plus populaire
-        </option>
+          <option value="recent">
+            Plus récents
+          </option>
 
-      </select>
+          <option value="popular">
+            Plus populaires
+          </option>
+
+        </select>
+
+      </div>
 
     </section>
 
 
-    <p
+    <!-- =========================
+         COMPTEUR
+         ========================= -->
+
+    <div
       id="resultsCount"
-      class="results-count"
-      aria-live="polite"
+      class="catalogue-count"
     >
-      Chargement des romans...
-    </p>
+      Chargement...
+    </div>
 
 
     <!-- =========================
-         GRILLE
-    ========================= -->
+         GRILLE DES ROMANS
+         ========================= -->
 
     <section
       id="romans-grid"
+      class="recent-grid"
       aria-live="polite"
     >
-      <div class="romans-empty">
-        <div class="romans-empty-icon">📚</div>
-        <h3>Chargement des romans...</h3>
-        <p>Un instant...</p>
-      </div>
+
+      <p class="empty-state">
+        Chargement des romans...
+      </p>
+
     </section>
 
   </main>
@@ -442,7 +378,7 @@
 
   <!-- =========================
        MENU MOBILE
-  ========================= -->
+       ========================= -->
 
   <script>
 
@@ -452,52 +388,69 @@
     const navLinks =
       document.querySelector('.nav-links');
 
+
     if (mobileMenuBtn && navLinks) {
 
-      mobileMenuBtn.addEventListener('click', () => {
+      mobileMenuBtn.addEventListener(
+        'click',
+        () => {
 
-        const isOpen =
-          navLinks.classList.toggle('mobile-open');
+          const isOpen =
+            navLinks.classList.toggle('mobile-open');
 
-        mobileMenuBtn.setAttribute(
-          'aria-expanded',
-          String(isOpen)
-        );
-
-        mobileMenuBtn.setAttribute(
-          'aria-label',
-          isOpen
-            ? 'Fermer le menu'
-            : 'Ouvrir le menu'
-        );
-
-        mobileMenuBtn.textContent =
-          isOpen ? '✕' : '☰';
-
-      });
-
-
-      navLinks.querySelectorAll('a').forEach(link => {
-
-        link.addEventListener('click', () => {
-
-          navLinks.classList.remove('mobile-open');
 
           mobileMenuBtn.setAttribute(
             'aria-expanded',
-            'false'
+            String(isOpen)
           );
+
 
           mobileMenuBtn.setAttribute(
             'aria-label',
-            'Ouvrir le menu'
+            isOpen
+              ? 'Fermer le menu'
+              : 'Ouvrir le menu'
           );
 
-          mobileMenuBtn.textContent = '☰';
+
+          mobileMenuBtn.textContent =
+            isOpen ? '✕' : '☰';
+
+        }
+      );
+
+
+      navLinks
+        .querySelectorAll('a')
+        .forEach(link => {
+
+          link.addEventListener(
+            'click',
+            () => {
+
+              navLinks.classList.remove(
+                'mobile-open'
+              );
+
+
+              mobileMenuBtn.setAttribute(
+                'aria-expanded',
+                'false'
+              );
+
+
+              mobileMenuBtn.setAttribute(
+                'aria-label',
+                'Ouvrir le menu'
+              );
+
+
+              mobileMenuBtn.textContent = '☰';
+
+            }
+          );
 
         });
-
-      });
 
     }
 
@@ -506,7 +459,7 @@
 
   <!-- =========================
        SUPABASE + CATALOGUE
-  ========================= -->
+       ========================= -->
 
   <script type="module">
 
@@ -537,213 +490,8 @@
 
 
     /* =========================
-       NORMALISATION
-    ========================= */
-
-    function normalizeText(value) {
-
-      return (value || '')
-        .toString()
-        .trim()
-        .toLowerCase();
-
-    }
-
-
-    /* =========================
-       GENRES
-    ========================= */
-
-    function extractGenres(romans) {
-
-      const genres = new Set();
-
-      romans.forEach(roman => {
-
-        const rawGenre =
-          roman.genre || '';
-
-        rawGenre
-          .split(',')
-          .map(genre => genre.trim())
-          .filter(Boolean)
-          .forEach(genre => {
-            genres.add(genre);
-          });
-
-      });
-
-      return [...genres].sort(
-        (a, b) => a.localeCompare(b, 'fr')
-      );
-
-    }
-
-
-    function populateGenreFilter() {
-
-      const genres =
-        extractGenres(allRomans);
-
-      genreFilter.innerHTML = `
-        <option value="all">
-          Tous les genres
-        </option>
-      `;
-
-      genres.forEach(genre => {
-
-        const option =
-          document.createElement('option');
-
-        option.value = genre;
-        option.textContent = genre;
-
-        genreFilter.appendChild(option);
-
-      });
-
-    }
-
-
-    /* =========================
-       AFFICHAGE
-    ========================= */
-
-    function renderRomans() {
-
-      const search =
-        normalizeText(searchInput.value);
-
-      const selectedGenre =
-        genreFilter.value;
-
-      const sort =
-        sortSelect.value;
-
-
-      let filteredRomans =
-        [...allRomans];
-
-
-      /* RECHERCHE */
-
-      if (search) {
-
-        filteredRomans =
-          filteredRomans.filter(roman => {
-
-            const title =
-              normalizeText(roman.title);
-
-            const description =
-              normalizeText(roman.description);
-
-            const genre =
-              normalizeText(roman.genre);
-
-            return (
-              title.includes(search) ||
-              description.includes(search) ||
-              genre.includes(search)
-            );
-
-          });
-
-      }
-
-
-      /* GENRE */
-
-      if (selectedGenre !== 'all') {
-
-        filteredRomans =
-          filteredRomans.filter(roman => {
-
-            const genres =
-              (roman.genre || '')
-                .split(',')
-                .map(g => normalizeText(g));
-
-            return genres.includes(
-              normalizeText(selectedGenre)
-            );
-
-          });
-
-      }
-
-
-      /* TRI */
-
-      if (sort === 'popular') {
-
-        filteredRomans.sort(
-          (a, b) =>
-            Number(b.views ?? b.vues ?? 0) -
-            Number(a.views ?? a.vues ?? 0)
-        );
-
-      } else {
-
-        filteredRomans.sort(
-          (a, b) =>
-            new Date(b.created_at || 0) -
-            new Date(a.created_at || 0)
-        );
-
-      }
-
-
-      /* COMPTEUR */
-
-      resultsCount.textContent =
-        filteredRomans.length === 0
-          ? 'Aucun roman trouvé'
-          : `${filteredRomans.length} roman${filteredRomans.length > 1 ? 's' : ''}`;
-
-
-      /* ÉTAT VIDE */
-
-      if (filteredRomans.length === 0) {
-
-        romansGrid.innerHTML = `
-          <div class="romans-empty">
-
-            <div class="romans-empty-icon">
-              🔎
-            </div>
-
-            <h3>
-              Aucun roman trouvé
-            </h3>
-
-            <p>
-              Essaie avec un autre titre,
-              un autre genre ou une autre recherche.
-            </p>
-
-          </div>
-        `;
-
-        return;
-
-      }
-
-
-      /* CARTES */
-
-      romansGrid.innerHTML =
-        filteredRomans
-          .map(roman => createCard(roman))
-          .join('');
-
-    }
-
-
-    /* =========================
-       CHARGEMENT SUPABASE
-    ========================= */
+       CHARGEMENT DES ROMANS
+       ========================= */
 
     async function loadRomans() {
 
@@ -768,26 +516,15 @@
             error
           );
 
-          resultsCount.textContent =
-            'Erreur lors du chargement';
 
           romansGrid.innerHTML = `
-            <div class="romans-empty">
-
-              <div class="romans-empty-icon">
-                ⚠️
-              </div>
-
-              <h3>
-                Impossible de charger les romans
-              </h3>
-
-              <p>
-                Vérifie ta connexion et réessaie.
-              </p>
-
-            </div>
+            <p class="error-state">
+              Impossible de charger les romans
+              pour le moment.
+            </p>
           `;
+
+          resultsCount.textContent = '';
 
           return;
 
@@ -799,65 +536,44 @@
 
         if (allRomans.length === 0) {
 
+          romansGrid.innerHTML = `
+            <p class="empty-state">
+              Aucun roman n'est disponible
+              pour le moment.
+            </p>
+          `;
+
           resultsCount.textContent =
             '0 roman';
-
-          romansGrid.innerHTML = `
-            <div class="romans-empty">
-
-              <div class="romans-empty-icon">
-                📚
-              </div>
-
-              <h3>
-                Aucun roman disponible
-              </h3>
-
-              <p>
-                Les premiers romans de BSCompany
-                arriveront bientôt.
-              </p>
-
-            </div>
-          `;
 
           return;
 
         }
 
 
-        populateGenreFilter();
+        populateGenres();
 
         renderRomans();
 
+      }
 
-      } catch (error) {
+      catch (error) {
 
         console.error(
-          'Erreur inattendue:',
+          'Erreur inattendue lors du chargement des romans:',
           error
         );
 
-        resultsCount.textContent =
-          'Erreur lors du chargement';
 
         romansGrid.innerHTML = `
-          <div class="romans-empty">
-
-            <div class="romans-empty-icon">
-              ⚠️
-            </div>
-
-            <h3>
-              Une erreur est survenue
-            </h3>
-
-            <p>
-              Impossible de contacter la base de données.
-            </p>
-
-          </div>
+          <p class="error-state">
+            Impossible de contacter la base de données.
+            Vérifie ta connexion et réessaie.
+          </p>
         `;
+
+
+        resultsCount.textContent = '';
 
       }
 
@@ -865,24 +581,249 @@
 
 
     /* =========================
+       GENRES
+       ========================= */
+
+    function populateGenres() {
+
+      const genres = new Set();
+
+
+      allRomans.forEach(roman => {
+
+        if (!roman.genre) {
+          return;
+        }
+
+
+        roman.genre
+          .split(',')
+          .map(genre => genre.trim())
+          .filter(Boolean)
+          .forEach(genre => {
+            genres.add(genre);
+          });
+
+      });
+
+
+      const sortedGenres =
+        [...genres].sort(
+          (a, b) => a.localeCompare(b)
+        );
+
+
+      genreFilter.innerHTML = `
+        <option value="all">
+          Tous les genres
+        </option>
+      `;
+
+
+      sortedGenres.forEach(genre => {
+
+        const option =
+          document.createElement('option');
+
+        option.value = genre;
+        option.textContent = genre;
+
+        genreFilter.appendChild(option);
+
+      });
+
+    }
+
+
+    /* =========================
+       AFFICHAGE
+       ========================= */
+
+    function renderRomans() {
+
+      const search =
+        searchInput.value
+          .trim()
+          .toLowerCase();
+
+
+      const selectedGenre =
+        genreFilter.value;
+
+
+      const sort =
+        sortSelect.value;
+
+
+      let romans =
+        [...allRomans];
+
+
+      /* Recherche */
+
+      if (search) {
+
+        romans =
+          romans.filter(roman => {
+
+            const title =
+              roman.title || '';
+
+            const description =
+              roman.description || '';
+
+            const genre =
+              roman.genre || '';
+
+
+            const content = `
+              ${title}
+              ${description}
+              ${genre}
+            `.toLowerCase();
+
+
+            return content.includes(search);
+
+          });
+
+      }
+
+
+      /* Filtre genre */
+
+      if (selectedGenre !== 'all') {
+
+        romans =
+          romans.filter(roman => {
+
+            if (!roman.genre) {
+              return false;
+            }
+
+
+            return roman.genre
+              .split(',')
+              .map(g => g.trim())
+              .includes(selectedGenre);
+
+          });
+
+      }
+
+
+      /* Tri */
+
+      if (sort === 'popular') {
+
+        romans.sort((a, b) => {
+
+          const viewsA =
+            Number(
+              a.views ??
+              a.vues ??
+              0
+            );
+
+
+          const viewsB =
+            Number(
+              b.views ??
+              b.vues ??
+              0
+            );
+
+
+          return viewsB - viewsA;
+
+        });
+
+      }
+
+      else {
+
+        romans.sort((a, b) => {
+
+          const dateA =
+            new Date(
+              a.created_at || 0
+            ).getTime();
+
+
+          const dateB =
+            new Date(
+              b.created_at || 0
+            ).getTime();
+
+
+          return dateB - dateA;
+
+        });
+
+      }
+
+
+      /* Compteur */
+
+      const count =
+        romans.length;
+
+
+      resultsCount.textContent =
+        `${count} roman${count > 1 ? 's' : ''}`;
+
+
+      /* Aucun résultat */
+
+      if (count === 0) {
+
+        romansGrid.innerHTML = `
+          <p class="empty-state">
+            Aucun roman ne correspond
+            à votre recherche.
+          </p>
+        `;
+
+        return;
+
+      }
+
+
+      /* Cartes */
+
+      romansGrid.innerHTML =
+        romans
+          .map(roman => createCard(roman))
+          .join('');
+
+    }
+
+
+    /* =========================
        ÉVÉNEMENTS
-    ========================= */
+       ========================= */
 
     searchInput.addEventListener(
       'input',
       renderRomans
     );
 
+
     genreFilter.addEventListener(
       'change',
       renderRomans
     );
+
 
     sortSelect.addEventListener(
       'change',
       renderRomans
     );
 
+
+    /* =========================
+       LANCEMENT
+       ========================= */
 
     loadRomans();
 
