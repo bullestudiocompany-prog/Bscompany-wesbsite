@@ -1,6 +1,4 @@
-import { supabase } from "./supabaseClient.js";
-
-const $ = (id) => document.getElementById(id);
+import { supabase } from "./supabaseClient.js"const $ = (id) => document.getElementById(id);
 
 
 /* =====================================================
@@ -727,7 +725,6 @@ async function loadChapters() {
   } = await supabase
     .from("chapters")
     .select(`
-     .select(`
   id,
   series_id,
   chapter_number,
