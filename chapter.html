@@ -1,1 +1,208 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Lecture — BSCompany</title>
+
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/chapter.css">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="site-header">
+    <nav class="navbar">
+
+      <a href="index.html" class="logo">
+        <span>Ᏸ.Ꮥ.CᎧᎷᎮᏗᏁᎩ</span>
+      </a>
+
+      <button
+        class="mobile-menu-btn"
+        id="mobileMenuBtn"
+        type="button"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Accueil</a>
+        <a href="webcomic.html">Webcomics</a>
+        <a href="romans.html">Romans</a>
+        <a href="a-propos.html">À propos de nous</a>
+        <a
+          href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Nous suivre
+        </a>
+      </div>
+
+    </nav>
+  </header>
+
+
+  <main class="chapter-page">
+
+    <!-- CHARGEMENT -->
+    <div id="chapterLoading" class="chapter-state">
+      Chargement du chapitre...
+    </div>
+
+    <!-- ERREUR -->
+    <div id="chapterError" class="chapter-state chapter-error" hidden>
+      <h2>Chapitre introuvable</h2>
+      <p>Impossible de charger ce chapitre.</p>
+      <a href="index.html" class="chapter-back-btn">
+        Retour à l'accueil
+      </a>
+    </div>
+
+
+    <!-- LECTEUR -->
+    <article id="chapterReader" hidden>
+
+      <!-- EN-TÊTE -->
+      <header class="chapter-header">
+
+        <a
+          href="#"
+          id="backToSeries"
+          class="chapter-back"
+        >
+          ← Retour à l'œuvre
+        </a>
+
+        <div class="chapter-meta">
+          <span id="chapterType"></span>
+        </div>
+
+        <h1 id="chapterTitle">Chapitre</h1>
+
+        <p id="seriesTitle"></p>
+
+        <div class="chapter-stats">
+          <span>
+            👁 <span id="chapterViews">0</span>
+          </span>
+
+          <button
+            id="likeButton"
+            class="like-button"
+            type="button"
+          >
+            ♡ <span id="likeCount">0</span>
+          </button>
+        </div>
+
+      </header>
+
+
+      <!-- AUDIO -->
+      <section
+        id="audioSection"
+        class="chapter-audio"
+        hidden
+      >
+
+        <div class="audio-title">
+          🎵 Ambiance du chapitre
+        </div>
+
+        <div class="audio-controls">
+
+          <button
+            id="audioPlay"
+            type="button"
+            class="audio-btn"
+          >
+            ▶
+          </button>
+
+          <input
+            id="audioProgress"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            step="0.1"
+          >
+
+          <button
+            id="audioMute"
+            type="button"
+            class="audio-btn"
+          >
+            🔊
+          </button>
+
+          <input
+            id="audioVolume"
+            type="range"
+            min="0"
+            max="1"
+            value="1"
+            step="0.05"
+          >
+
+        </div>
+
+        <audio
+          id="chapterAudio"
+          preload="metadata"
+          loop
+        ></audio>
+
+      </section>
+
+
+      <!-- CONTENU DU CHAPITRE -->
+      <section class="chapter-content">
+
+        <div id="chapterText"></div>
+
+        <div id="chapterImages"></div>
+
+      </section>
+
+
+      <!-- NAVIGATION -->
+      <nav class="chapter-navigation">
+
+        <a
+          href="#"
+          id="previousChapter"
+          class="chapter-nav-btn"
+          hidden
+        >
+          ← Chapitre précédent
+        </a>
+
+        <a
+          href="#"
+          id="nextChapter"
+          class="chapter-nav-btn"
+          hidden
+        >
+          Chapitre suivant →
+        </a>
+
+      </nav>
+
+    </article>
+
+  </main>
+
+
+  <script type="module" src="./js/pages/chapter.js"></script>
+
+</body>
+      </html>
