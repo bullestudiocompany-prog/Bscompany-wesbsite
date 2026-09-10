@@ -270,57 +270,102 @@
        BARRE FLOTTANTE
   ====================================================== -->
 
-  <aside
-    id="readerControls"
-    class="reader-controls"
-    hidden
-  >
+ <aside id="readerControls" class="reader-controls" hidden>
 
-    <div class="floating-stats">
+  <div class="reader-control-panel">
 
+    <!-- Petite poignée décorative -->
+    <div class="panel-handle">
+      <span></span>
+    </div>
+
+    <!-- STATISTIQUES -->
+    <div class="control-stats">
+
+      <!-- Vues -->
       <div class="control-stat">
-        <span class="stat-icon">◉</span>
+        <span class="control-svg">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+            <circle cx="12" cy="12" r="2.8"/>
+          </svg>
+        </span>
 
-        <span>
+        <span class="control-info">
           <strong id="chapterViews">0</strong>
           <small>vues</small>
         </span>
       </div>
 
 
+      <!-- Commentaires -->
       <button
         id="commentButton"
         class="control-button"
         type="button"
         aria-label="Commentaires"
       >
-        <span class="control-icon">💬</span>
-        <span>
+        <span class="control-svg">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3v-5.2A7.5 7.5 0 0 1 4.5 4h8A7.5 7.5 0 0 1 20 11.5Z"/>
+            <path d="M8 10h8M8 13.5h5"/>
+          </svg>
+        </span>
+
+        <span class="control-info">
           <strong id="commentCount">0</strong>
           <small>commentaires</small>
         </span>
       </button>
 
 
+      <!-- Like -->
       <button
-  id="likeButton"
-  class="like-button"
-  type="button"
-  aria-pressed="false"
->
-  <span id="likeIcon">♡</span>
-  <span id="likeCount">0</span>
+        id="likeButton"
+        class="like-button"
+        type="button"
+        aria-pressed="false"
+        aria-label="Aimer ce chapitre"
+      >
+        <span id="likeIcon" class="like-svg">
+
+          <svg
+            class="heart-outline"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M20.8 8.7c0 5.4-8.8 10.3-8.8 10.3S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/>
+          </svg>
+
+          <svg
+            class="heart-filled"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M12 20.2S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5C20.8 14.1 12 20.2 12 20.2Z"/>
+          </svg>
+
+        </span>
+
+        <span id="likeCount">0</span>
       </button>
+
     </div>
 
 
     <!-- AUDIO -->
-
     <div
       id="audioSection"
       class="floating-audio"
       hidden
     >
+
+      <div class="audio-icon-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+          <path d="M17 9.5a4 4 0 0 1 0 5M19.5 7a7.5 7.5 0 0 1 0 10"/>
+        </svg>
+      </div>
 
       <audio
         id="chapterAudio"
@@ -333,26 +378,32 @@
         id="audioPlay"
         class="audio-play-button"
         type="button"
-        aria-label="Lecture"
+        aria-label="Lire"
       >
-        ▶
+        <svg
+          class="play-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M8 5.5v13l10-6.5-10-6.5Z"/>
+        </svg>
+
+        <svg
+          class="pause-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M7 5h3v14H7zM14 5h3v14h-3z"/>
+        </svg>
       </button>
 
 
       <div class="audio-progress-area">
 
         <div class="audio-top-line">
-
-          <span>
-            Ambiance
-          </span>
-
-          <span id="audioTime">
-            0:00
-          </span>
-
+          <span>Ambiance</span>
+          <span id="audioTime">0:00</span>
         </div>
-
 
         <input
           id="audioProgress"
@@ -374,7 +425,10 @@
         type="button"
         aria-label="Couper le son"
       >
-        🔊
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+          <path d="m18 9-5 6M13 9l5 6"/>
+        </svg>
       </button>
 
 
@@ -391,8 +445,9 @@
 
     </div>
 
-  </aside>
+  </div>
 
+  </aside>
 
   <!-- =====================================================
        SCRIPT
