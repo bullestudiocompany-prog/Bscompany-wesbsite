@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,10 +11,23 @@
   <link rel="stylesheet" href="./css/chapter.css">
 </head>
 
-<body>
+<body class="chapter-page-body">
 
-  <!-- NAVBAR -->
-  <header class="site-header">
+  <!-- =====================================================
+       ARRIÈRE-PLAN VISUEL
+  ====================================================== -->
+
+  <div class="reader-background" aria-hidden="true">
+    <img id="chapterBackground" src="" alt="">
+    <div class="reader-background-overlay"></div>
+  </div>
+
+
+  <!-- =====================================================
+       NAVBAR
+  ====================================================== -->
+
+  <header class="site-header reader-header">
     <nav class="navbar">
 
       <a href="index.html" class="logo">
@@ -37,6 +49,7 @@
         <a href="webcomic.html">Webcomics</a>
         <a href="romans.html">Romans</a>
         <a href="a-propos.html">À propos de nous</a>
+
         <a
           href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
           target="_blank"
@@ -50,159 +63,355 @@
   </header>
 
 
-  <main class="chapter-page">
+  <!-- =====================================================
+       PAGE
+  ====================================================== -->
+
+  <main class="reader-page">
 
     <!-- CHARGEMENT -->
+
     <div id="chapterLoading" class="chapter-state">
-      Chargement du chapitre...
+      <div class="loading-spinner"></div>
+      <p>Préparation de votre lecture...</p>
     </div>
 
+
     <!-- ERREUR -->
-    <div id="chapterError" class="chapter-state chapter-error" hidden>
+
+    <div
+      id="chapterError"
+      class="chapter-state chapter-error"
+      hidden
+    >
+      <div class="error-icon">!</div>
+
       <h2>Chapitre introuvable</h2>
-      <p>Impossible de charger ce chapitre.</p>
+
+      <p>
+        Impossible de charger ce chapitre.
+      </p>
+
       <a href="index.html" class="chapter-back-btn">
         Retour à l'accueil
       </a>
     </div>
 
 
-    <!-- LECTEUR -->
-    <article id="chapterReader" hidden>
+    <!-- =====================================================
+         LECTEUR
+    ====================================================== -->
 
-      <!-- EN-TÊTE -->
-      <header class="chapter-header">
+    <article id="chapterReader" class="reader" hidden>
+
+
+      <!-- =================================================
+           EN-TÊTE DU CHAPITRE
+      ================================================== -->
+
+      <header class="reader-hero">
 
         <a
           href="#"
           id="backToSeries"
-          class="chapter-back"
+          class="reader-back"
         >
-          ← Retour à l'œuvre
+          <span class="back-arrow">←</span>
+          <span>Retour à l'œuvre</span>
         </a>
 
-        <div class="chapter-meta">
-          <span id="chapterType"></span>
-        </div>
 
-        <h1 id="chapterTitle">Chapitre</h1>
+        <div class="chapter-cover-area">
 
-        <p id="seriesTitle"></p>
+          <!-- Image principale -->
 
-        <div class="chapter-stats">
-          <span>
-            👁 <span id="chapterViews">0</span>
-          </span>
+          <div class="chapter-image-wrap">
 
-          <button
-            id="likeButton"
-            class="like-button"
-            type="button"
-          >
-            ♡ <span id="likeCount">0</span>
-          </button>
+            <img
+              id="chapterImage"
+              class="chapter-main-image"
+              src=""
+              alt=""
+            >
+
+            <div class="chapter-image-glow"></div>
+
+          </div>
+
+
+          <!-- Informations -->
+
+          <div class="chapter-heading">
+
+            <span
+              id="chapterType"
+              class="chapter-type"
+            >
+            </span>
+
+            <p
+              id="seriesTitle"
+              class="series-name"
+            >
+            </p>
+
+            <p
+              id="chapterNumber"
+              class="chapter-number"
+            >
+            </p>
+
+            <h1 id="chapterTitle">
+              Chapitre
+            </h1>
+
+          </div>
+
         </div>
 
       </header>
 
 
-      <!-- AUDIO -->
-      <section
-        id="audioSection"
-        class="chapter-audio"
-        hidden
-      >
+      <!-- =================================================
+           ZONE DE LECTURE
+      ================================================== -->
 
-        <div class="audio-title">
-          🎵 Ambiance du chapitre
-        </div>
+      <section class="reading-area">
 
-        <div class="audio-controls">
+        <div class="paper-shadow"></div>
 
-          <button
-            id="audioPlay"
-            type="button"
-            class="audio-btn"
+        <article
+          class="reading-paper"
+          id="readingPaper"
+        >
+
+          <div class="paper-top">
+
+            <span class="paper-label">
+              BSCompany
+            </span>
+
+            <span
+              class="paper-chapter"
+              id="paperChapterNumber"
+            >
+            </span>
+
+          </div>
+
+
+          <div
+            id="chapterText"
+            class="chapter-text"
           >
-            ▶
-          </button>
+          </div>
 
-          <input
-            id="audioProgress"
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-            step="0.1"
+
+          <div
+            id="chapterImages"
+            class="chapter-images"
           >
+          </div>
 
-          <button
-            id="audioMute"
-            type="button"
-            class="audio-btn"
-          >
-            🔊
-          </button>
 
-          <input
-            id="audioVolume"
-            type="range"
-            min="0"
-            max="1"
-            value="1"
-            step="0.05"
-          >
+          <div class="paper-end">
+            <span>— Fin du chapitre —</span>
+          </div>
 
-        </div>
-
-        <audio
-          id="chapterAudio"
-          preload="metadata"
-          loop
-        ></audio>
+        </article>
 
       </section>
 
 
-      <!-- CONTENU DU CHAPITRE -->
-      <section class="chapter-content">
+      <!-- =================================================
+           NAVIGATION
+      ================================================== -->
 
-        <div id="chapterText"></div>
-
-        <div id="chapterImages"></div>
-
-      </section>
-
-
-      <!-- NAVIGATION -->
       <nav class="chapter-navigation">
 
         <a
           href="#"
           id="previousChapter"
-          class="chapter-nav-btn"
+          class="chapter-nav-btn previous"
           hidden
         >
-          ← Chapitre précédent
+          <span class="nav-arrow">←</span>
+
+          <span class="nav-content">
+            <small>Précédent</small>
+            <strong>Chapitre précédent</strong>
+          </span>
         </a>
+
 
         <a
           href="#"
           id="nextChapter"
-          class="chapter-nav-btn"
+          class="chapter-nav-btn next"
           hidden
         >
-          Chapitre suivant →
+          <span class="nav-content">
+            <small>Suivant</small>
+            <strong>Chapitre suivant</strong>
+          </span>
+
+          <span class="nav-arrow">→</span>
         </a>
 
       </nav>
+
 
     </article>
 
   </main>
 
 
-  <script type="module" src="./js/pages/chapter.js"></script>
+  <!-- =====================================================
+       BARRE FLOTTANTE
+  ====================================================== -->
+
+  <aside
+    id="readerControls"
+    class="reader-controls"
+    hidden
+  >
+
+    <div class="floating-stats">
+
+      <div class="control-stat">
+        <span class="stat-icon">◉</span>
+
+        <span>
+          <strong id="chapterViews">0</strong>
+          <small>vues</small>
+        </span>
+      </div>
+
+
+      <button
+        id="commentButton"
+        class="control-button"
+        type="button"
+        aria-label="Commentaires"
+      >
+        <span class="control-icon">💬</span>
+        <span>
+          <strong id="commentCount">0</strong>
+          <small>commentaires</small>
+        </span>
+      </button>
+
+
+      <button
+        id="likeButton"
+        class="control-button like-button"
+        type="button"
+        aria-label="J'aime ce chapitre"
+      >
+        <span
+          id="likeIcon"
+          class="control-icon"
+        >
+          ♡
+        </span>
+
+        <span>
+          <strong id="likeCount">0</strong>
+          <small>j'aime</small>
+        </span>
+      </button>
+
+    </div>
+
+
+    <!-- AUDIO -->
+
+    <div
+      id="audioSection"
+      class="floating-audio"
+      hidden
+    >
+
+      <audio
+        id="chapterAudio"
+        preload="auto"
+        loop
+      ></audio>
+
+
+      <button
+        id="audioPlay"
+        class="audio-play-button"
+        type="button"
+        aria-label="Lecture"
+      >
+        ▶
+      </button>
+
+
+      <div class="audio-progress-area">
+
+        <div class="audio-top-line">
+
+          <span>
+            Ambiance
+          </span>
+
+          <span id="audioTime">
+            0:00
+          </span>
+
+        </div>
+
+
+        <input
+          id="audioProgress"
+          class="audio-progress"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          step="0.1"
+          aria-label="Progression audio"
+        >
+
+      </div>
+
+
+      <button
+        id="audioMute"
+        class="audio-small-button"
+        type="button"
+        aria-label="Couper le son"
+      >
+        🔊
+      </button>
+
+
+      <input
+        id="audioVolume"
+        class="audio-volume"
+        type="range"
+        min="0"
+        max="1"
+        value="1"
+        step="0.05"
+        aria-label="Volume"
+      >
+
+    </div>
+
+  </aside>
+
+
+  <!-- =====================================================
+       SCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="./js/pages/chapter.js"
+  ></script>
 
 </body>
-      </html>
+          </html>
