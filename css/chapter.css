@@ -1,0 +1,274 @@
+/* =====================================================
+   PAGE DE LECTURE
+===================================================== */
+
+.chapter-page {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+
+/* =====================================================
+   ÉTATS
+===================================================== */
+
+.chapter-state {
+  text-align: center;
+  padding: 70px 20px;
+  color: var(--slate-600);
+}
+
+.chapter-error h2 {
+  margin-bottom: 10px;
+}
+
+.chapter-error p {
+  margin-bottom: 20px;
+}
+
+
+/* =====================================================
+   EN-TÊTE DU CHAPITRE
+===================================================== */
+
+.chapter-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.chapter-back {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: var(--primary, #2563eb);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chapter-back:hover {
+  text-decoration: underline;
+}
+
+.chapter-meta {
+  margin-bottom: 8px;
+}
+
+#chapterType {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#chapterTitle {
+  margin: 10px 0 6px;
+  font-size: clamp(25px, 5vw, 40px);
+  line-height: 1.2;
+}
+
+#seriesTitle {
+  margin: 0;
+  color: var(--slate-400, #64748b);
+  font-size: 15px;
+}
+
+
+/* =====================================================
+   STATS
+===================================================== */
+
+.chapter-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 18px;
+  color: var(--slate-600, #475569);
+  font-size: 14px;
+}
+
+.like-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.like-button:hover {
+  color: #e11d48;
+}
+
+
+/* =====================================================
+   AUDIO
+===================================================== */
+
+.chapter-audio {
+  margin: 25px 0;
+  padding: 16px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  background: var(--surface, #ffffff);
+}
+
+.audio-title {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audio-btn {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.audio-btn:hover {
+  opacity: 0.9;
+}
+
+#audioProgress {
+  flex: 1;
+  min-width: 0;
+}
+
+#audioVolume {
+  width: 90px;
+}
+
+
+/* =====================================================
+   CONTENU
+===================================================== */
+
+.chapter-content {
+  margin-top: 35px;
+}
+
+#chapterText {
+  font-size: 18px;
+  line-height: 1.9;
+  color: var(--text, #1e293b);
+}
+
+#chapterText p {
+  margin: 0 0 22px;
+}
+
+#chapterImages {
+  margin-top: 30px;
+}
+
+#chapterImages img {
+  display: block;
+  width: 100%;
+  max-width: 850px;
+  height: auto;
+  margin: 0 auto 22px;
+  border-radius: 10px;
+}
+
+
+/* =====================================================
+   NAVIGATION ENTRE CHAPITRES
+===================================================== */
+
+.chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 45px;
+  padding-top: 25px;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.chapter-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chapter-nav-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+
+/* =====================================================
+   BOUTON RETOUR ERREUR
+===================================================== */
+
+.chapter-back-btn {
+  display: inline-block;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  .chapter-page {
+    padding: 25px 14px 45px;
+  }
+
+  #chapterTitle {
+    font-size: 27px;
+  }
+
+  #chapterText {
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  .audio-controls {
+    flex-wrap: wrap;
+  }
+
+  #audioProgress {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  #audioVolume {
+    width: 80px;
+  }
+
+  .chapter-navigation {
+    flex-direction: column;
+  }
+
+  .chapter-nav-btn {
+    width: 100%;
+  }
+  }
