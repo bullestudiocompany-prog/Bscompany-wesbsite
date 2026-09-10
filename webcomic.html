@@ -1,1 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Webcomics — BSCompany</title>
+
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
+
+  <style>
+    /* =========================
+       PAGE WEBComics
+       ========================= */
+
+    .empty-page {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+    }
+
+    .empty-content {
+      max-width: 620px;
+      width: 100%;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 50px 35px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .empty-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      border-radius: 20px;
+      background: #EEF4FF;
+      color: var(--blue-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+    }
+
+    .empty-content h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--navy-900);
+      margin-bottom: 12px;
+    }
+
+    .empty-content h1 span {
+      color: var(--blue-600);
+    }
+
+    .empty-content p {
+      max-width: 480px;
+      margin: 0 auto 28px;
+      color: var(--slate-600);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 560px) {
+      .empty-page {
+        padding: 40px 18px;
+      }
+
+      .empty-content {
+        padding: 38px 22px;
+      }
+
+      .empty-content h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       NAVBAR
+       ========================= -->
+
+  <header class="navbar">
+
+    <div class="brand">
+      <div>
+        <div class="brand-title">BSCompany</div>
+        <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="webcomic.html" class="active">Webcomics</a>
+      <a href="romans.html">Romans</a>
+      <a href="a-propos.html">À propos de nous</a>
+    </nav>
+
+    <button
+      class="mobile-menu-btn"
+      id="mobileMenuBtn"
+      type="button"
+      aria-label="Ouvrir le menu"
+      aria-expanded="false"
+    >
+      ☰
+    </button>
+
+    <div class="nav-actions">
+      <a
+        class="btn-primary"
+        href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+        target="_blank"
+        rel="noopener"
+      >
+        Nous suivre
+      </a>
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       CONTENU
+       ========================= -->
+
+  <main class="empty-page">
+
+    <section class="empty-content">
+
+      <div class="empty-icon">
+        📖
+      </div>
+
+      <h1>
+        Aucun <span>webcomic</span> pour le moment
+      </h1>
+
+      <p>
+        Désolé, nous n’avons pas encore de webcomic disponible.
+        Nos premiers webcomics arriveront très bientôt sur BSCompany.
+      </p>
+
+      <a href="index.html" class="btn-primary btn-lg">
+        ← Retour à l’accueil
+      </a>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       MENU MOBILE
+       ========================= -->
+
+  <script>
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuBtn && navLinks) {
+      mobileMenuBtn.addEventListener('click', () => {
+        const isOpen = navLinks.classList.toggle('mobile-open');
+
+        mobileMenuBtn.setAttribute(
+          'aria-expanded',
+          String(isOpen)
+        );
+
+        mobileMenuBtn.setAttribute(
+          'aria-label',
+          isOpen ? 'Fermer le menu' : 'Ouvrir le menu'
+        );
+
+        mobileMenuBtn.textContent = isOpen ? '✕' : '☰';
+      });
+
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('mobile-open');
+
+          mobileMenuBtn.setAttribute(
+            'aria-expanded',
+            'false'
+          );
+
+          mobileMenuBtn.setAttribute(
+            'aria-label',
+            'Ouvrir le menu'
+          );
+
+          mobileMenuBtn.textContent = '☰';
+        });
+      });
+    }
+  </script>
+
+</body>
+  </html>
