@@ -950,9 +950,209 @@ async function registerView(chapter) {
 // LIKE
 // ======================================================
 
-function setupLikeButton(chapter) {
+async function setupLikeButton(chapter) {
+  if (!likeButton || !likeCount) {
+    return;
+  }
 
-  if (!likeButton) {
+  // --------------------------------------------------
+  // CHARGER LA SESSION
+  // --------------------------------------------------
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+
+  // --------------------------------------------------
+  // CHARGER LE NOMBRE TOTAL DE LIKES
+  // --------------------------------------------------
+
+  const {
+    count,
+    error: countError
+  } = await supabase
+    .from("likes")
+    .select("*", {
+      count: "exact",
+      head: true
+    })
+    .eq("chapter_id", chapter.id);
+
+
+  if (countError) {
+    console.error(
+      "Erreur chargement likes :",
+      countError
+    );
+
+    likeCount.textContent = "0";
+
+  } else {
+
+    likeCount.textContent =
+      count ?? 0;
+  }
+
+
+  // --------------------------------------------------
+  // VÉRIFIER SI L'UTILISATEUR A DÉJÀ LIKÉ
+  // --------------------------------------------------
+
+  let userLiked = false;
+
+
+  if (user) {
+
+    const {
+      data: existingLike,
+      error: existingLikeError
+    } = await supabase
+      .from("likes")
+      .select("chapter_id")
+      .eq("chapter_id", chapter.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+
+    if (existingLikeError) {
+
+      console.error(
+        "Erreur vérification like :",
+        existingLikeError
+      );
+
+    } else {
+
+      userLiked = !!existingLike;
+    }
+  }
+
+
+  updateLikeButton(userLiked);
+
+
+  // --------------------------------------------------
+  // CLIQUER SUR LIKE
+  // --------------------------------------------------
+
+  likeButton.onclick = async () => {
+
+    // Pas connecté
+    if (!user) {
+
+      alert(
+        "Connectez-vous ou créez un compte pour aimer ce chapitre."
+      );
+
+      return;
+    }
+
+
+    likeButton.disabled = true;
+
+
+    try {
+
+      // ----------------------------------------------
+      // DÉJÀ LIKÉ → SUPPRIMER LE LIKE
+      // ----------------------------------------------
+
+      if (userLiked) {
+
+        const {
+          error
+        } = await supabase
+          .from("likes")
+          .delete()
+          .eq("chapter_id", chapter.id)
+          .eq("user_id", user.id);
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        userLiked = false;
+
+      }
+
+      // ----------------------------------------------
+      // PAS ENCORE LIKÉ → AJOUTER LE LIKE
+      // ----------------------------------------------
+
+      else {
+
+        const {
+          error
+        } = await supabase
+          .from("likes")
+          .insert({
+            user_id: user.id,
+            chapter_id: chapter.id,
+            profil_id: null,
+            series_id: chapter.series_id
+          });
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        userLiked = true;
+      }
+
+
+      // ----------------------------------------------
+      // METTRE À JOUR LE COMPTEUR
+      // ----------------------------------------------
+
+      const {
+        count,
+        error: refreshError
+      } = await supabase
+        .from("likes")
+        .select("*", {
+          count: "exact",
+          head: true
+        })
+        .eq("chapter_id", chapter.id);
+
+
+      if (refreshError) {
+        throw refreshError;
+      }
+
+
+      likeCount.textContent =
+        count ?? 0;
+
+
+      updateLikeButton(userLiked);
+
+
+    } catch (error) {
+
+      console.error(
+        "Erreur Like :",
+        error
+      );
+
+      alert(
+        "Impossible de modifier le Like pour le moment."
+      );
+
+    } finally {
+
+      likeButton.disabled = false;
+    }
+  };
+    }
+function updateLikeButton(isLiked) {
+
+  if (!likeButton || !likeIcon) {
     return;
   }
 
@@ -965,32 +1165,7 @@ function setupLikeButton(chapter) {
    * sans inventer de logique Supabase.
    */
 
-  likeButton.addEventListener(
-    "click",
-    () => {
-
-      likeButton.classList.toggle(
-        "active"
-      );
-
-
-      if (
-        likeButton.classList.contains(
-          "active"
-        )
-      ) {
-
-        likeIcon.textContent =
-          "♥";
-
-      } else {
-
-        likeIcon.textContent =
-          "♡";
-      }
-    }
-  );
-}
+  
 
 
 // ======================================================
