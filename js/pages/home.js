@@ -17,102 +17,217 @@ function withTimeout(promise, ms = 8000) {
   ]);
 }
 
-/**
- * Calcule le nombre total de vues de chaque œuvre
- * en additionnant les vues de tous ses chapitres.
- *
- * Exemple :
- * Œuvre A
- * ├── Chapitre 1 → 2 vues
- * ├── Chapitre 2 → 5 vues
- * └── Chapitre 3 → 3 vues
- *
- * Total → 10 vues
- */
+/* =========================================================
+   CALCUL DES VUES DES ŒUVRES
+   ========================================================= */
+
 async function attachSeriesViews(series) {
+  console.log('==========================================');
+  console.log('HOME : DÉBUT DU CALCUL DES VUES');
+  console.log('==========================================');
+
   if (!series || series.length === 0) {
+    console.log('HOME : aucune série trouvée.');
     return series;
   }
 
+  console.log('HOME : séries récupérées :', series);
+  console.log('HOME : nombre de séries :', series.length);
+
   const seriesIds = series.map(seriesItem => seriesItem.id);
 
-  // 1. Récupérer les chapitres de toutes les œuvres
+  console.log('HOME : IDs des séries :', seriesIds);
+
+  /* ---------------------------------------------------------
+     1. RÉCUPÉRER LES CHAPITRES
+     --------------------------------------------------------- */
+
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')
     .select('id, series_id')
     .in('series_id', seriesIds);
 
+  console.log('------------------------------------------');
+  console.log('HOME : RÉSULTAT CHAPITRES');
+  console.log('Chapitres :', chapters);
+  console.log('Erreur chapitres :', chaptersError);
+  console.log('Nombre de chapitres :', chapters?.length || 0);
+  console.log('------------------------------------------');
+
   if (chaptersError) {
     console.error(
-      'Erreur récupération des chapitres pour les vues :',
+      'HOME : ERREUR lors de la récupération des chapitres :',
       chaptersError
     );
 
     return series.map(seriesItem => ({
       ...seriesItem,
-      views: 0
+      views: 0,
+      vues: 0
     }));
   }
 
   if (!chapters || chapters.length === 0) {
+    console.warn(
+      'HOME : aucun chapitre trouvé pour les séries.'
+    );
+
     return series.map(seriesItem => ({
       ...seriesItem,
-      views: 0
+      views: 0,
+      vues: 0
     }));
   }
 
   const chapterIds = chapters.map(chapter => chapter.id);
 
-  // 2. Récupérer toutes les vues de ces chapitres
+  console.log(
+    'HOME : IDs des chapitres utilisés pour chercher les vues :',
+    chapterIds
+  );
+
+  /* ---------------------------------------------------------
+     2. RÉCUPÉRER LES VUES
+     --------------------------------------------------------- */
+
   const { data: views, error: viewsError } = await supabase
     .from('chapter_views')
-    .select('chapter_id')
+    .select('id, chapter_id, visitor_id, viewed_at')
     .in('chapter_id', chapterIds);
+
+  console.log('------------------------------------------');
+  console.log('HOME : RÉSULTAT CHAPTER_VIEWS');
+  console.log('Vues récupérées :', views);
+  console.log('Erreur vues :', viewsError);
+  console.log('Nombre total de vues récupérées :', views?.length || 0);
+  console.log('------------------------------------------');
 
   if (viewsError) {
     console.error(
-      'Erreur récupération des vues :',
+      'HOME : ERREUR lors de la récupération des vues :',
       viewsError
     );
 
     return series.map(seriesItem => ({
       ...seriesItem,
-      views: 0
+      views: 0,
+      vues: 0
     }));
   }
 
-  // 3. Compter les vues par chapitre
+  /* ---------------------------------------------------------
+     3. COMPTER LES VUES PAR CHAPITRE
+     --------------------------------------------------------- */
+
   const viewsByChapter = {};
 
   for (const view of views || []) {
+    if (!view.chapter_id) {
+      continue;
+    }
+
     viewsByChapter[view.chapter_id] =
       (viewsByChapter[view.chapter_id] || 0) + 1;
   }
 
-  // 4. Additionner les vues des chapitres par œuvre
+  console.log('HOME : VUES PAR CHAPITRE :');
+  console.table(viewsByChapter);
+
+  /* ---------------------------------------------------------
+     4. ADDITIONNER LES VUES PAR ŒUVRE
+     --------------------------------------------------------- */
+
   const viewsBySeries = {};
 
   for (const chapter of chapters) {
     const chapterViews =
       viewsByChapter[chapter.id] || 0;
 
+    console.log(
+      'HOME : chapitre',
+      chapter.id,
+      '→ série',
+      chapter.series_id,
+      '→',
+      chapterViews,
+      'vue(s)'
+    );
+
     viewsBySeries[chapter.series_id] =
-      (viewsBySeries[chapter.series_id] || 0) + chapterViews;
+      (viewsBySeries[chapter.series_id] || 0) +
+      chapterViews;
   }
 
-  // 5. Ajouter le total à chaque œuvre
-  return series.map(seriesItem => ({
-    ...seriesItem,
-    views: viewsBySeries[seriesItem.id] || 0
-  }));
+  console.log('------------------------------------------');
+  console.log('HOME : TOTAL DES VUES PAR ŒUVRE');
+  console.log(viewsBySeries);
+  console.table(viewsBySeries);
+  console.log('------------------------------------------');
+
+  /* ---------------------------------------------------------
+     5. AJOUTER LE TOTAL AUX SÉRIES
+     --------------------------------------------------------- */
+
+  const result = series.map(seriesItem => {
+    const totalViews =
+      viewsBySeries[seriesItem.id] || 0;
+
+    console.log(
+      'HOME : ŒUVRE :',
+      seriesItem.title,
+      '| ID :',
+      seriesItem.id,
+      '| TOTAL VUES :',
+      totalViews
+    );
+
+    return {
+      ...seriesItem,
+
+      /*
+       * On met les DEUX propriétés volontairement.
+       *
+       * Cela évite qu'une ancienne propriété "vues"
+       * contenant 0 écrase notre nouveau "views".
+       */
+      views: totalViews,
+      vues: totalViews
+    };
+  });
+
+  console.log('==========================================');
+  console.log('HOME : RÉSULTAT FINAL DES SÉRIES');
+  console.log('==========================================');
+  console.log(result);
+  console.table(
+    result.map(item => ({
+      id: item.id,
+      title: item.title,
+      views: item.views,
+      vues: item.vues
+    }))
+  );
+
+  return result;
 }
 
+/* =========================================================
+   CHARGEMENT DE LA PAGE D'ACCUEIL
+   ========================================================= */
+
 async function loadHomePage() {
+  console.log('==========================================');
+  console.log('HOME : CHARGEMENT DE LA PAGE');
+  console.log('==========================================');
+
   const { data: rawSeries, error } = await withTimeout(
     supabase
       .from('series')
       .select('*')
   );
+
+  console.log('HOME : séries brutes :', rawSeries);
+  console.log('HOME : erreur séries :', error);
 
   if (error) {
     console.error(
@@ -137,16 +252,25 @@ async function loadHomePage() {
     return;
   }
 
-  // ==========================================
-  // CALCUL DES VUES RÉELLES
-  // ==========================================
+  /* ========================================================
+     CALCUL DES VUES RÉELLES
+     ======================================================== */
 
   const series = await attachSeriesViews(rawSeries);
 
-  // ==========================================
-  // CARROUSEL "À LA UNE"
-  // Les œuvres les plus vues
-  // ==========================================
+  console.log('==========================================');
+  console.log('HOME : SÉRIES APRÈS CALCUL DES VUES');
+  console.log('==========================================');
+
+  for (const item of series) {
+    console.log(
+      `${item.title} → ${item.views} vue(s)`
+    );
+  }
+
+  /* ========================================================
+     CARROUSEL "À LA UNE"
+     ======================================================== */
 
   const featured = [...series]
     .sort(
@@ -155,6 +279,8 @@ async function loadHomePage() {
         (Number(a.views) || 0)
     )
     .slice(0, 6);
+
+  console.log('HOME : À LA UNE :', featured);
 
   if (featuredContainer) {
     featuredContainer.innerHTML =
@@ -172,9 +298,9 @@ async function loadHomePage() {
     });
   }
 
-  // ==========================================
-  // "SORTIES RÉCENTES"
-  // ==========================================
+  /* ========================================================
+     SORTIES RÉCENTES
+     ======================================================== */
 
   const recent = [...series]
     .sort(
@@ -184,17 +310,38 @@ async function loadHomePage() {
     )
     .slice(0, 8);
 
+  console.log('HOME : SORTIES RÉCENTES :', recent);
+
   if (recentContainer) {
     recentContainer.innerHTML =
       recent
-        .map(item => createCard(item))
+        .map(item => {
+          console.log(
+            'HOME : ENVOI À createCard() :',
+            item.title,
+            '| views =',
+            item.views,
+            '| vues =',
+            item.vues
+          );
+
+          return createCard(item);
+        })
         .join('');
   }
+
+  console.log('==========================================');
+  console.log('HOME : CHARGEMENT TERMINÉ');
+  console.log('==========================================');
 }
+
+/* =========================================================
+   LANCEMENT
+   ========================================================= */
 
 loadHomePage().catch(err => {
   console.error(
-    'Erreur inattendue au chargement de la page:',
+    'HOME : ERREUR INATTENDUE :',
     err
   );
 
@@ -208,9 +355,9 @@ loadHomePage().catch(err => {
   }
 });
 
-// =========================
-// MENU MOBILE
-// =========================
+/* =========================================================
+   MENU MOBILE
+   ========================================================= */
 
 const mobileMenuBtn =
   document.getElementById('mobileMenuBtn');
@@ -260,4 +407,4 @@ if (mobileMenuBtn && navLinks) {
         mobileMenuBtn.textContent = '☰';
       });
     });
-      }
+    }
