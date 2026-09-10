@@ -1,1 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Romans — BSCompany</title>
+
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
+</head>
+
+<body>
+
+  <!-- =========================
+       NAVBAR
+       ========================= -->
+
+  <header class="navbar">
+
+    <div class="brand">
+      <div>
+        <div class="brand-title">BSCompany</div>
+        <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="webcomic.html">Webcomics</a>
+      <a href="romans.html" class="active">Romans</a>
+      <a href="a-propos.html">À propos de nous</a>
+    </nav>
+
+    <button
+      class="mobile-menu-btn"
+      id="mobileMenuBtn"
+      type="button"
+      aria-label="Ouvrir le menu"
+      aria-expanded="false"
+    >
+      ☰
+    </button>
+
+    <div class="nav-actions">
+      <a
+        class="btn-primary"
+        href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
+        target="_blank"
+        rel="noopener"
+      >
+        Nous suivre
+      </a>
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       CATALOGUE ROMANS
+       ========================= -->
+
+  <main class="container">
+
+    <section class="section-header">
+      <div>
+        <h1 class="section-title">
+          Nos <span>Romans</span>
+        </h1>
+
+        <p class="section-sub">
+          Découvrez toutes les histoires disponibles sur BSCompany.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="romans-grid"
+      class="recent-grid"
+      aria-live="polite"
+    >
+      <p class="empty-state">
+        Chargement des romans...
+      </p>
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       MENU MOBILE
+       ========================= -->
+
+  <script>
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuBtn && navLinks) {
+      mobileMenuBtn.addEventListener('click', () => {
+        const isOpen = navLinks.classList.toggle('mobile-open');
+
+        mobileMenuBtn.setAttribute(
+          'aria-expanded',
+          String(isOpen)
+        );
+
+        mobileMenuBtn.setAttribute(
+          'aria-label',
+          isOpen ? 'Fermer le menu' : 'Ouvrir le menu'
+        );
+
+        mobileMenuBtn.textContent = isOpen ? '✕' : '☰';
+      });
+
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('mobile-open');
+
+          mobileMenuBtn.setAttribute(
+            'aria-expanded',
+            'false'
+          );
+
+          mobileMenuBtn.setAttribute(
+            'aria-label',
+            'Ouvrir le menu'
+          );
+
+          mobileMenuBtn.textContent = '☰';
+        });
+      });
+    }
+  </script>
+
+
+  <!-- =========================
+       SUPABASE + CATALOGUE
+       ========================= -->
+
+  <script type="module">
+
+    import { supabase } from './js/config/supabase.js';
+    import { createCard } from './js/components/card.js';
+
+    const romansGrid = document.getElementById('romans-grid');
+
+    async function loadRomans() {
+
+      try {
+
+        const { data: series, error } = await supabase
+          .from('series')
+          .select('*')
+          .in('type', ['webnovel', 'roman'])
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erreur Supabase (romans):', error);
+
+          romansGrid.innerHTML = `
+            <p class="error-state">
+              Impossible de charger les romans pour le moment.
+            </p>
+          `;
+
+          return;
+        }
+
+        if (!series || series.length === 0) {
+
+          romansGrid.innerHTML = `
+            <p class="empty-state">
+              Aucun roman n'est disponible pour le moment.
+            </p>
+          `;
+
+          return;
+        }
+
+        romansGrid.innerHTML = series
+          .map(roman => createCard(roman))
+          .join('');
+
+      } catch (error) {
+
+        console.error(
+          'Erreur inattendue lors du chargement des romans:',
+          error
+        );
+
+        romansGrid.innerHTML = `
+          <p class="error-state">
+            Impossible de contacter la base de données.
+            Vérifie ta connexion et réessaie.
+          </p>
+        `;
+      }
+    }
+
+    loadRomans();
+
+  </script>
+
+</body>
+  </html>
