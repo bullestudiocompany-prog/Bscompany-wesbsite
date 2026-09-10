@@ -813,6 +813,20 @@ async function loadChapters() {
               : ""
           }
 
+          ${
+  chapter.chapter_image_url
+    ? `
+      <div class="item-meta">
+        🖼️ Image du chapitre disponible
+      </div>
+    `
+    : `
+      <div class="item-meta">
+        ⚠️ Aucune image
+      </div>
+    `
+          }
+
           <div class="item-actions">
 
             <button
