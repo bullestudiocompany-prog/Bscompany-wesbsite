@@ -1,5 +1,6 @@
 // Correspondance type -> libellé affiché (Webtoon en base = "Webcomic" à l'affichage)
 const TYPE_LABELS = {
+  novel: 'Roman',
   roman: 'Roman',
   webnovel: 'Webnovel',
   webtoon: 'Webcomic',
