@@ -492,6 +492,12 @@ function initGrandCarousel() {
   }
 
 }
+    if (featuredDots) {
+  featuredDots.style.display =
+    logicalSlide.type === 'oeuvres'
+      ? ''
+      : 'none';
+    }
 
 
     if (visibleSlide) {
