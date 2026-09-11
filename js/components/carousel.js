@@ -75,6 +75,3 @@ function startAutoScroll() {
 }
 
 startAutoScroll();
-}
-  }
-
