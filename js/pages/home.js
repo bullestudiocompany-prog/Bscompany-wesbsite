@@ -74,7 +74,8 @@ async function attachSeriesViews(series) {
     }));
   }
 
-  const chapterIds = chapters.map(chapter => chapter.id);
+  const chapterIds =
+    chapters.map(chapter => chapter.id);
 
   const { data: viewRows, error: viewsError } =
     await withTimeout(
@@ -135,7 +136,8 @@ async function attachSeriesViews(series) {
 async function attachSeriesLikes(series) {
   if (!series?.length) return series;
 
-  const seriesIds = series.map(item => item.id);
+  const seriesIds =
+    series.map(item => item.id);
 
   const { data: chapters, error: chaptersError } =
     await withTimeout(
@@ -165,7 +167,8 @@ async function attachSeriesLikes(series) {
     }));
   }
 
-  const chapterIds = chapters.map(chapter => chapter.id);
+  const chapterIds =
+    chapters.map(chapter => chapter.id);
 
   const { data: likeRows, error: likesError } =
     await withTimeout(
@@ -224,13 +227,15 @@ async function loadHomePage() {
     // CHARGEMENT DES SÉRIES
     // =================================================
 
-    const { data: rawSeries, error: seriesError } =
-      await withTimeout(
-        supabase
-          .from('series')
-          .select('*'),
-        8000
-      );
+    const {
+      data: rawSeries,
+      error: seriesError
+    } = await withTimeout(
+      supabase
+        .from('series')
+        .select('*'),
+      8000
+    );
 
     if (seriesError) {
       console.error(
@@ -295,6 +300,7 @@ async function loadHomePage() {
     );
 
     if (featuredContainer) {
+
       featuredContainer.innerHTML =
         featured
           .map(item =>
@@ -302,29 +308,44 @@ async function loadHomePage() {
           )
           .join('');
 
-      initCarousel();
+      // -----------------------------------------------
+      // IMPORTANT :
+      // Une erreur du carrousel ne doit pas bloquer
+      // le reste de la page.
+      // -----------------------------------------------
+
+      try {
+
+        initCarousel();
+
+      } catch (carouselError) {
+
+        console.error(
+          'HOME : ERREUR CARROUSEL :',
+          carouselError
+        );
+
+      }
     }
 
 
     // =================================================
     // SORTIES RÉCENTES
     //
-    // IMPORTANT :
-    // On ne se base PAS sur series.created_at.
-    //
-    // Une sortie récente correspond à un CHAPITRE
-    // publié depuis moins de 4 jours = 96 heures.
+    // Un chapitre est considéré comme récent
+    // pendant 96 heures après sa publication.
     // =================================================
 
     const FOUR_DAYS =
       4 * 24 * 60 * 60 * 1000;
 
-    const now = Date.now();
+    const now =
+      Date.now();
 
 
-    // -------------------------------------------------
-    // Récupération des chapitres publiés
-    // -------------------------------------------------
+    // =================================================
+    // RÉCUPÉRATION DES CHAPITRES
+    // =================================================
 
     const {
       data: chapters,
@@ -339,19 +360,27 @@ async function loadHomePage() {
           title,
           published_at
         `)
-        .not('published_at', 'is', null)
-        .order('published_at', {
-          ascending: false
-        }),
+        .not(
+          'published_at',
+          'is',
+          null
+        )
+        .order(
+          'published_at',
+          {
+            ascending: false
+          }
+        ),
       8000
     );
 
 
-    // -------------------------------------------------
-    // Gestion erreur chapitres
-    // -------------------------------------------------
+    // =================================================
+    // ERREUR CHARGEMENT CHAPITRES
+    // =================================================
 
     if (chaptersError) {
+
       console.error(
         'HOME : ERREUR CHARGEMENT CHAPITRES RÉCENTS :',
         chaptersError
@@ -380,7 +409,7 @@ async function loadHomePage() {
 
 
     // =================================================
-    // FILTRE DES 4 DERNIERS JOURS
+    // FILTRE DES CHAPITRES DES 96 DERNIÈRES HEURES
     // =================================================
 
     const recentChapters =
@@ -392,21 +421,32 @@ async function loadHomePage() {
               chapter.published_at
             ).getTime();
 
+
           // Date invalide
-          if (Number.isNaN(publishedAt)) {
+          if (
+            Number.isNaN(
+              publishedAt
+            )
+          ) {
             return false;
           }
 
-          // Évite les dates futures
-          if (publishedAt > now) {
+
+          // Ne pas afficher une date future
+          if (
+            publishedAt > now
+          ) {
             return false;
           }
 
-          // Moins de 96 heures
+
+          // Seulement les chapitres
+          // publiés depuis moins de 96 heures
           return (
             now - publishedAt <
             FOUR_DAYS
           );
+
         })
         .slice(0, 8);
 
@@ -423,20 +463,29 @@ async function loadHomePage() {
 
     if (recentContainer) {
 
-      recentContainer.innerHTML =
+      const cards =
         recentChapters
           .map(chapter => {
 
             const seriesItem =
               seriesMap.get(
-                String(chapter.series_id)
+                String(
+                  chapter.series_id
+                )
               );
 
 
-            // La série correspondante
+            // Si la série correspondante
             // n'existe plus
             if (!seriesItem) {
+
+              console.warn(
+                'HOME : SÉRIE INTROUVABLE POUR LE CHAPITRE :',
+                chapter
+              );
+
               return '';
+
             }
 
 
@@ -450,18 +499,13 @@ async function loadHomePage() {
             );
 
 
-            // -----------------------------------------
+            // ------------------------------------------------
             // La carte reçoit :
             //
-            // Nom de l'œuvre :
-            // seriesItem.title
-            //
-            // Chapitre :
-            // chapter.chapter_number
-            //
-            // Temps :
-            // chapter.published_at
-            // -----------------------------------------
+            // Nom de l'œuvre
+            // Chapitre
+            // Temps depuis publication
+            // ------------------------------------------------
 
             return createCard(
               seriesItem,
@@ -475,18 +519,27 @@ async function loadHomePage() {
                   )
               }
             );
+
           })
           .join('');
 
 
-      // =================================================
-      // AUCUNE SORTIE RÉCENTE
-      // =================================================
+      // ------------------------------------------------
+      // Aucune sortie récente
+      // ------------------------------------------------
 
-      if (!recentChapters.length) {
+      if (!cards) {
+
         recentContainer.innerHTML =
           '<p class="empty-message">Aucune sortie récente pour le moment.</p>';
+
+      } else {
+
+        recentContainer.innerHTML =
+          cards;
+
       }
+
     }
 
   } catch (error) {
@@ -497,8 +550,10 @@ async function loadHomePage() {
     );
 
     if (recentContainer) {
+
       recentContainer.innerHTML =
         '<p class="empty-message">Une erreur est survenue lors du chargement.</p>';
+
     }
   }
 }
@@ -516,12 +571,20 @@ loadHomePage();
 // =====================================================
 
 const menuToggle =
-  document.querySelector('.menu-toggle');
+  document.querySelector(
+    '.menu-toggle'
+  );
 
 const mobileMenu =
-  document.querySelector('.mobile-menu');
+  document.querySelector(
+    '.mobile-menu'
+  );
 
-if (menuToggle && mobileMenu) {
+
+if (
+  menuToggle &&
+  mobileMenu
+) {
 
   menuToggle.addEventListener(
     'click',
@@ -534,12 +597,15 @@ if (menuToggle && mobileMenu) {
       menuToggle.classList.toggle(
         'active'
       );
+
     }
   );
 
 
-  // Fermeture du menu lorsqu'on clique
-  // sur un lien
+  // ---------------------------------------------------
+  // Fermeture du menu lorsqu'on clique sur un lien
+  // ---------------------------------------------------
+
   mobileMenu
     .querySelectorAll('a')
     .forEach(link => {
@@ -555,8 +621,10 @@ if (menuToggle && mobileMenu) {
           menuToggle.classList.remove(
             'active'
           );
+
         }
       );
 
     });
+
 }
