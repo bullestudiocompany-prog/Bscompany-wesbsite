@@ -2122,4 +2122,23 @@ document.addEventListener(
    START
 ========================================================= */
 
+checkSession();        error
+      );
+
+      alert(
+        "Erreur : " +
+        (
+          error.message ||
+          "Impossible de supprimer le son."
+        )
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
 checkSession();
