@@ -48,12 +48,6 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
 
     autoScrollTimer = setInterval(() => {
 
-      const maxScroll =
-        viewport.scrollWidth -
-        viewport.clientWidth;
-
-      if (maxScroll <= 0) return;
-
       const card =
         viewport.querySelector('.featured-card');
 
@@ -64,14 +58,18 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
 
       const gap = 18;
 
-      const pageWidth =
-        (cardWidth + gap) *
-        visibleCount;
+      const maxScroll =
+        viewport.scrollWidth -
+        viewport.clientWidth;
 
-      if (
-        viewport.scrollLeft >=
-        maxScroll - 5
-      ) {
+      if (maxScroll <= 0) return;
+
+      const nextPosition =
+        viewport.scrollLeft +
+        cardWidth +
+        gap;
+
+      if (nextPosition >= maxScroll) {
 
         viewport.scrollTo({
           left: 0,
@@ -80,8 +78,8 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
 
       } else {
 
-        viewport.scrollBy({
-          left: pageWidth,
+        viewport.scrollTo({
+          left: nextPosition,
           behavior: 'smooth'
         });
 
