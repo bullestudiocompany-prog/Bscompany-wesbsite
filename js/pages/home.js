@@ -308,12 +308,6 @@ async function loadHomePage() {
           )
           .join('');
 
-      // -----------------------------------------------
-      // IMPORTANT :
-      // Une erreur du carrousel ne doit pas bloquer
-      // le reste de la page.
-      // -----------------------------------------------
-
       try {
 
         initCarousel();
@@ -357,6 +351,7 @@ async function loadHomePage() {
           id,
           series_id,
           chapter_number,
+          chapter_label,
           title,
           published_at
         `)
@@ -447,13 +442,58 @@ async function loadHomePage() {
             FOUR_DAYS
           );
 
-        })
-        .slice(0, 8);
+        });
+
+
+    // =================================================
+    // UNE SEULE SORTIE PAR ŒUVRE
+    //
+    // Les chapitres sont triés du plus récent
+    // au plus ancien.
+    //
+    // Le premier chapitre rencontré pour une série
+    // est donc son dernier chapitre publié.
+    // =================================================
+
+    const recentBySeries =
+      new Map();
+
+
+    for (const chapter of recentChapters) {
+
+      const seriesId =
+        String(
+          chapter.series_id
+        );
+
+
+      if (
+        !recentBySeries.has(seriesId)
+      ) {
+
+        recentBySeries.set(
+          seriesId,
+          chapter
+        );
+
+      }
+
+    }
+
+
+    // =================================================
+    // MAXIMUM 8 ŒUVRES RÉCENTES
+    // =================================================
+
+    const recentUniqueChapters =
+      Array.from(
+        recentBySeries.values()
+      ).slice(0, 8);
 
 
     console.log(
-      'HOME : CHAPITRES PUBLIÉS DEPUIS MOINS DE 4 JOURS :',
-      recentChapters
+      'HOME : SORTIES RÉCENTES UNIQUES :',
+      recentUniqueChapters
     );
 
 
@@ -464,7 +504,7 @@ async function loadHomePage() {
     if (recentContainer) {
 
       const cards =
-        recentChapters
+        recentUniqueChapters
           .map(chapter => {
 
             const seriesItem =
@@ -493,7 +533,8 @@ async function loadHomePage() {
               'HOME : SORTIE RÉCENTE :',
               seriesItem.title,
               '| chapitre =',
-              chapter.chapter_number,
+              chapter.chapter_label ??
+                chapter.chapter_number,
               '| publié =',
               chapter.published_at
             );
@@ -503,14 +544,15 @@ async function loadHomePage() {
             // La carte reçoit :
             //
             // Nom de l'œuvre
-            // Chapitre
+            // Chapitre / libellé personnalisé
             // Temps depuis publication
             // ------------------------------------------------
 
             return createCard(
               seriesItem,
               {
-                latestChapter:
+                chapterLabel:
+                  chapter.chapter_label ??
                   chapter.chapter_number,
 
                 timeAgoLabel:
@@ -524,9 +566,9 @@ async function loadHomePage() {
           .join('');
 
 
-      // ------------------------------------------------
-      // Aucune sortie récente
-      // ------------------------------------------------
+      // =================================================
+      // AUCUNE SORTIE RÉCENTE
+      // =================================================
 
       if (!cards) {
 
@@ -627,4 +669,4 @@ if (
 
     });
 
-}
+                }
