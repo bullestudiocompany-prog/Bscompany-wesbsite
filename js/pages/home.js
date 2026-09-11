@@ -1,4 +1,4 @@
-I8import { supabase } from '../config/supabase.js';
+8import { supabase } from '../config/supabase.js';
 import {
   createCard,
   createFeaturedCard,
@@ -233,54 +233,160 @@ async function loadHomePage() {
   try {
 
     // =================================================
-// CHARGEMENT DES SLIDES DU GRAND CARROUSEL
-// =================================================
-
-const {
-  data: carouselSlides,
-  error: carouselSlidesError
-} = await withTimeout(
-  supabase
-    .from('carousel_slides')
-    .select('*')
-    .eq('active', true)
-    .order('display_order', {
-      ascending: true
-    }),
-  8000
-);
-
-if (carouselSlidesError) {
-  console.error(
-    'HOME : ERREUR CHARGEMENT SLIDES :',
-    carouselSlidesError
-  );
-}
-
-console.log(
-  'HOME : SLIDES DU GRAND CARROUSEL :',
-  carouselSlides || []
-);
-
-    /// =================================================
 // PRÉPARATION DU GRAND CARROUSEL
 // =================================================
 
 const grandCarousel =
   document.getElementById('grandCarousel');
 
-const grandCarouselWorks =
-  document.getElementById('grandCarouselWorks');
-
 const grandCarouselSlides = [
   {
-    type: 'oeuvres'
+    type: 'oeuvres',
+    duration: 10
   },
   ...(carouselSlides || [])
 ];
 
 console.log(
   'HOME : GRAND CARROUSEL :',
+  grandCarouselSlides
+);
+
+
+// =================================================
+// CRÉATION DES SLIDES INFORMATIONS / ÉVÉNEMENTS
+// =================================================
+
+function createGrandCarouselSlide(slide) {
+
+  return `
+    <div
+      class="grand-carousel-slide grand-carousel-${slide.type}"
+      data-grand-type="${slide.type}"
+    >
+
+      ${slide.image_url ? `
+        <img
+          src="${slide.image_url}"
+          alt="${slide.title || ''}"
+      >
+      ` : ''}
+
+      <div class="grand-carousel-content">
+
+        <h2>${slide.title || ''}</h2>
+
+        ${slide.description ? `
+          <p>${slide.description}</p>
+        ` : ''}
+
+        ${slide.button_text && slide.button_url ? `
+          <a
+            href="${slide.button_url}"
+            class="grand-carousel-button"
+          >
+            ${slide.button_text}
+          </a>
+        ` : ''}
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+// =================================================
+// ORDRE : ŒUVRES → INFORMATIONS → ÉVÉNEMENTS
+// =================================================
+
+if (grandCarousel) {
+
+  const informationSlides =
+    (carouselSlides || [])
+      .filter(slide =>
+        slide.type === 'information'
+      );
+
+  const evenementSlides =
+    (carouselSlides || [])
+      .filter(slide =>
+        slide.type === 'evenement'
+      );
+
+  const orderedSlides = [
+    {
+      type: 'oeuvres',
+      duration: 10
+    }
+  ];
+
+  const maxPairs =
+    Math.max(
+      informationSlides.length,
+      evenementSlides.length
+    );
+
+  for (let i = 0; i < maxPairs; i++) {
+
+    if (informationSlides[i]) {
+      orderedSlides.push(
+        informationSlides[i]
+      );
+    }
+
+    if (evenementSlides[i]) {
+      orderedSlides.push(
+        evenementSlides[i]
+      );
+    }
+
+  }
+
+  grandCarouselSlides.length = 0;
+
+  grandCarouselSlides.push(
+    ...orderedSlides
+  );
+
+
+  // Les slides d'informations et d'événements
+  // sont ajoutées après la zone des œuvres.
+
+  const worksSlide =
+    grandCarousel.querySelector(
+      '.grand-carousel-oeuvres'
+    );
+
+  grandCarousel
+    .querySelectorAll(
+      '.grand-carousel-slide:not(.grand-carousel-oeuvres)'
+    )
+    .forEach(slide => slide.remove());
+
+
+  grandCarouselSlides
+    .filter(slide =>
+      slide.type !== 'oeuvres'
+    )
+    .forEach(slide => {
+
+      if (worksSlide) {
+
+        worksSlide.insertAdjacentHTML(
+          'afterend',
+          createGrandCarouselSlide(slide)
+        );
+
+      }
+
+    });
+
+}
+
+
+console.log(
+  'HOME : ORDRE FINAL DU GRAND CARROUSEL :',
   grandCarouselSlides
 );
 
@@ -324,7 +430,9 @@ function initGrandCarousel() {
         currentGrandIndex
       ];
 
-    if (!currentSlide) return;
+    if (!currentSlide) {
+      return;
+    }
 
 
     const duration =
@@ -334,6 +442,7 @@ function initGrandCarousel() {
 
 
     clearTimeout(grandTimer);
+
 
     grandTimer =
       setTimeout(() => {
@@ -353,7 +462,7 @@ function initGrandCarousel() {
 
   showGrandSlide();
 
-}
+                         }
     // =================================================
     // CHARGEMENT DES SÉRIES
     // =================================================
