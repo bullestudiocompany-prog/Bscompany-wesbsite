@@ -261,6 +261,22 @@ console.log(
   'HOME : SLIDES DU GRAND CARROUSEL :',
   carouselSlides || []
 );
+
+    // =================================================
+// PRÉPARATION DU GRAND CARROUSEL
+// =================================================
+
+const grandCarouselSlides = [
+  {
+    type: 'oeuvres'
+  },
+  ...(carouselSlides || [])
+];
+
+console.log(
+  'HOME : GRAND CARROUSEL :',
+  grandCarouselSlides
+);
     // =================================================
     // CHARGEMENT DES SÉRIES
     // =================================================
