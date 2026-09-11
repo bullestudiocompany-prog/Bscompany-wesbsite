@@ -25,8 +25,6 @@ const featuredNext =
 
 const featuredDots =
   document.getElementById('featuredDots');
-const recentContainer =
-  document.getElementById('recent-grid');
 
 
 // =====================================================
