@@ -293,9 +293,10 @@ function createGrandCarouselSlide(slide) {
 
   return `
     <div
-      class="grand-carousel-slide grand-carousel-${slide.type}"
-      data-grand-type="${slide.type}"
-    >
+  class="grand-carousel-slide grand-carousel-${slide.type}"
+  data-grand-type="${slide.type}"
+  data-grand-id="${slide.id}"
+>
 
       ${slide.image_url ? `
         <img
