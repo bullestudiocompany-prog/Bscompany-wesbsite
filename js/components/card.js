@@ -1,4 +1,3 @@
-// Correspondance type -> libellé affiché (Webtoon en base = "Webcomic" à l'affichage)
 const TYPE_LABELS = {
   novel: 'Roman',
   roman: 'Roman',
@@ -9,15 +8,18 @@ const TYPE_LABELS = {
 };
 
 function typeSlug(rawType) {
-  return (rawType || 'webnovel').toString().trim().toLowerCase();
+  return (rawType || 'webnovel')
+    .toString()
+    .trim()
+    .toLowerCase();
 }
 
 function typeLabel(rawType) {
   const slug = typeSlug(rawType);
+
   return TYPE_LABELS[slug] || (rawType || 'Webnovel');
 }
 
-// Certaines colonnes existent en double (fr/en) sur la table series — on prend celle qui est remplie
 export function normalizeSeries(item) {
   return {
     id: item.id,
@@ -38,7 +40,11 @@ function formatViews(n) {
   const num = Number(n) || 0;
 
   if (num >= 1000) {
-    return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K';
+    return (
+      num / 1000
+    ).toFixed(
+      num % 1000 === 0 ? 0 : 1
+    ) + 'K';
   }
 
   return String(num);
@@ -48,77 +54,171 @@ function formatLikes(n) {
   const num = Number(n) || 0;
 
   if (num >= 1000) {
-    return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K';
+    return (
+      num / 1000
+    ).toFixed(
+      num % 1000 === 0 ? 0 : 1
+    ) + 'K';
   }
 
   return String(num);
 }
 
 export function timeAgo(dateString) {
-  if (!dateString) return '';
+  if (!dateString) {
+    return '';
+  }
 
-  const diffMs = Date.now() - new Date(dateString).getTime();
-  const hours = Math.floor(diffMs / 36e5);
+  const diffMs =
+    Date.now() -
+    new Date(dateString).getTime();
 
-  if (hours < 1) return "À l'instant";
+  const hours = Math.floor(
+    diffMs / 36e5
+  );
+
+  if (hours < 1) {
+    return "À l'instant";
+  }
 
   if (hours < 24) {
-    return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+    return `Il y a ${hours} heure${
+      hours > 1 ? 's' : ''
+    }`;
   }
 
-  const days = Math.floor(hours / 24);
+  const days = Math.floor(
+    hours / 24
+  );
 
   if (days < 7) {
-    return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+    return `Il y a ${days} jour${
+      days > 1 ? 's' : ''
+    }`;
   }
 
-  return new Date(dateString).toLocaleDateString('fr-FR');
+  return new Date(
+    dateString
+  ).toLocaleDateString('fr-FR');
 }
 
-// Carte pour la grille "Sorties récentes"
-export function createCard(rawItem, extra = {}) {
+function formatChapterLabel(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ''
+  ) {
+    return '';
+  }
+
+  const label = String(value).trim();
+
+  if (!label) {
+    return '';
+  }
+
+  if (
+    label.toLowerCase().startsWith('chapitre')
+  ) {
+    return label;
+  }
+
+  return `Chapitre ${label}`;
+}
+
+export function createCard(
+  rawItem,
+  extra = {}
+) {
   const item = normalizeSeries(rawItem);
   const slug = typeSlug(item.type);
-  const chapterLabel = extra.latestChapter
-    ? `Chapitre ${extra.latestChapter}`
-    : null;
+
+  const chapterValue =
+    extra.chapterLabel ??
+    extra.latestChapter ??
+    '';
+
+  const chapterLabel =
+    formatChapterLabel(chapterValue);
 
   return `
-    <a class="story-card" data-id="${item.id}" href="serie.html?id=${item.id}">
+    <a
+      class="story-card"
+      data-id="${item.id}"
+      href="serie.html?id=${item.id}"
+    >
       <div class="story-top">
         <div class="story-cover">
-          <img src="${item.coverUrl}" alt="${item.title}" loading="lazy" onerror="this.remove()">
+          <img
+            src="${item.coverUrl}"
+            alt="${item.title}"
+            loading="lazy"
+            onerror="this.remove()"
+          >
         </div>
 
         <div class="story-info">
-          <span class="type-badge type-${slug}">${typeLabel(item.type)}</span>
+          <span class="type-badge type-${slug}">
+            ${typeLabel(item.type)}
+          </span>
 
-          <h3 class="story-title">${item.title}</h3>
+          <h3 class="story-title">
+            ${item.title}
+          </h3>
 
-          ${chapterLabel ? `<span class="chapter-badge">${chapterLabel}</span>` : ''}
+          ${
+            chapterLabel
+              ? `
+                <span class="chapter-badge">
+                  ${chapterLabel}
+                </span>
+              `
+              : ''
+          }
 
-          <p class="story-desc">${item.description}</p>
+          <p class="story-desc">
+            ${item.description}
+          </p>
 
-          <p class="story-time">${extra.timeAgoLabel || timeAgo(item.createdAt)}</p>
+          <p class="story-time">
+            ${
+              extra.timeAgoLabel ||
+              timeAgo(item.createdAt)
+            }
+          </p>
         </div>
       </div>
 
       <div class="story-footer">
         <div class="story-stats">
           <span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              width="14" height="14">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="14"
+              height="14"
+            >
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
+
             ${formatViews(item.views)}
           </span>
 
           <span>
-            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              width="14"
+              height="14"
+            >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
+
             ${formatLikes(item.likes)}
           </span>
         </div>
@@ -127,11 +227,21 @@ export function createCard(rawItem, extra = {}) {
           class="bookmark-btn"
           aria-label="Sauvegarder"
           type="button"
-          onclick="event.preventDefault(); event.stopPropagation();"
+          onclick="
+            event.preventDefault();
+            event.stopPropagation();
+          "
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-            width="16" height="16">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            width="16"
+            height="16"
+          >
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
         </button>
@@ -140,15 +250,20 @@ export function createCard(rawItem, extra = {}) {
   `;
 }
 
-// Carte pour le carrousel "À la une"
 export function createFeaturedCard(rawItem) {
   const item = normalizeSeries(rawItem);
   const slug = typeSlug(item.type);
 
   return `
-    <a class="featured-card" data-id="${item.id}" href="serie.html?id=${item.id}">
+    <a
+      class="featured-card"
+      data-id="${item.id}"
+      href="serie.html?id=${item.id}"
+    >
       <div class="featured-cover">
-        <span class="type-badge type-${slug}">${typeLabel(item.type)}</span>
+        <span class="type-badge type-${slug}">
+          ${typeLabel(item.type)}
+        </span>
 
         <img
           src="${item.coverUrl}"
@@ -159,31 +274,49 @@ export function createFeaturedCard(rawItem) {
       </div>
 
       <div class="featured-info">
-        <h3>${item.title}</h3>
+        <h3>
+          ${item.title}
+        </h3>
 
         <div class="featured-meta">
-  <span>${item.genre || typeLabel(item.type)}</span>
+          <span>
+            ${item.genre || typeLabel(item.type)}
+          </span>
 
-  <div class="featured-stats">
-    <span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        width="12" height="12">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-      ${formatViews(item.views)}
-    </span>
+          <div class="featured-stats">
+            <span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                width="12"
+                height="12"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
 
-    <span>
-      <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      ${formatLikes(item.likes)}
-    </span>
-  </div>
-</div>
+              ${formatViews(item.views)}
+            </span>
+
+            <span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="12"
+                height="12"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+
+              ${formatLikes(item.likes)}
+            </span>
+          </div>
+        </div>
       </div>
     </a>
   `;
-                                     }
+}
