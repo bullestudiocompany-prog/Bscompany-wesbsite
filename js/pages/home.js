@@ -321,23 +321,16 @@ async function loadHomePage() {
 
       try {
 
-        initCarousel({
-  viewport: featuredContainer,
-  prevBtn: featuredPrev,
-  nextBtn: featuredNext,
-  dotsContainer: featuredDots,
-  itemCount: featured.length,
-  visibleCount: 4
-});
+  initCarousel();
 
-      } catch (carouselError) {
+} catch (carouselError) {
 
-        console.error(
-          'HOME : ERREUR CARROUSEL :',
-          carouselError
-        );
+  console.error(
+    'HOME : ERREUR CARROUSEL :',
+    carouselError
+  );
 
-      }
+}
     }
 
 
