@@ -1,19 +1,13 @@
 import { supabase } from "./supabaseClient.js";
 
-/* =========================
+/* =========================================================
    HELPERS
-========================= */
+========================================================= */
 
-function $(id) {
-  return document.getElementById(id);
-}
+const $ = (id) => document.getElementById(id);
 
 function escapeHTML(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value)
+  return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -59,245 +53,301 @@ function formatChapterLabel(value) {
 }
 
 
-/* =========================
-   ELEMENTS
-========================= */
+/* =========================================================
+   DOM — AUTH
+========================================================= */
 
 const loginSection = $("loginSection");
-const adminSection = $("adminSection");
+const adminApp = $("adminApp");
+
 const loginForm = $("loginForm");
+const loginEmail = $("loginEmail");
+const loginPassword = $("loginPassword");
 const loginError = $("loginError");
+
 const logoutBtn = $("logoutBtn");
 
+
+/* =========================================================
+   DOM — NAVIGATION
+========================================================= */
+
+const navItems = document.querySelectorAll("[data-section]");
+
+
+/* =========================================================
+   DOM — SERIES
+========================================================= */
+
 const seriesList = $("seriesList");
-const addSeriesForm = $("addSeriesForm");
-const seriesSubmitBtn = $("seriesSubmitBtn");
+const seriesCount = $("seriesCount");
+
+const newSeriesBtn = $("newSeriesBtn");
+const newSeriesSection = $("newSeriesSection");
+const seriesForm = $("seriesForm");
 const seriesStatusMsg = $("seriesStatusMsg");
 
+
+/* =========================================================
+   DOM — CHAPTERS
+========================================================= */
+
 const chaptersList = $("chaptersList");
-const selectedSeriesTitle = $("selectedSeriesTitle");
+const chaptersCount = $("chaptersCount");
+
 const newChapterBtn = $("newChapterBtn");
-const addChapterForm = $("addChapterForm");
-const chapterSubmitBtn = $("chapterSubmitBtn");
-const chapterStatusMsg = $("chapterStatusMsg");
+const newChapterSection = $("newChapterSection");
+
+const chapterForm = $("chapterForm");
+
+const chapterNumber = $("chapterNumber");
+const chapterLabel = $("chapterLabel");
+const chapterTitle = $("chapterTitle");
+const chapterContent = $("chapterContent");
+const chapterImage = $("chapterImage");
 const chapterSound = $("chapterSound");
 
-const soundForm = $("soundForm");
-const soundSubmitBtn = $("soundSubmitBtn");
-const soundStatusMsg = $("soundStatusMsg");
+const chapterSubmitBtn = $("chapterSubmitBtn");
+const chapterStatusMsg = $("chapterStatusMsg");
+
+
+/* =========================================================
+   DOM — SOUNDS
+========================================================= */
+
 const soundsList = $("soundsList");
+const soundForm = $("soundForm");
+const soundFile = $("soundFile");
+const soundName = $("soundName");
+const soundStatusMsg = $("soundStatusMsg");
 
-const seriesCount = $("seriesCount");
-const chaptersCount = $("chaptersCount");
-const soundsCount = $("soundsCount");
+
+/* =========================================================
+   DOM — DASHBOARD
+========================================================= */
+
+const dashboardSeriesCount = $("dashboardSeriesCount");
+const dashboardChapterCount = $("dashboardChapterCount");
+const dashboardViewsCount = $("dashboardViewsCount");
+const dashboardLikesCount = $("dashboardLikesCount");
 
 
-/* =========================
-   ETAT
-========================= */
+/* =========================================================
+   STATE
+========================================================= */
 
 let currentUser = null;
 let selectedSeries = null;
 
-/*
- * Etat de modification d'un chapitre.
- *
- * null = création normale
- * id   = modification d'un chapitre existant
- */
 let editingChapterId = null;
-
-/*
- * Image actuellement utilisée par le chapitre.
- * Si aucune nouvelle image n'est sélectionnée
- * pendant la modification, elle sera conservée.
- */
 let editingChapterImageUrl = null;
 
 
-/* =========================
+/* =========================================================
    NAVIGATION
-========================= */
+========================================================= */
 
-function showPage(pageName) {
-  document
-    .querySelectorAll(".page")
-    .forEach((page) => {
-      page.classList.remove("active");
+navItems.forEach((item) => {
+  item.addEventListener("click", () => {
+    const sectionId = item.dataset.section;
+
+    if (!sectionId) {
+      return;
+    }
+
+    document
+      .querySelectorAll(".admin-section")
+      .forEach((section) => {
+        section.classList.remove("active");
+      });
+
+    const target = $(sectionId);
+
+    if (target) {
+      target.classList.add("active");
+    }
+
+    navItems.forEach((nav) => {
+      nav.classList.remove("active");
     });
 
-  const target = $(`page-${pageName}`);
+    item.classList.add("active");
+  });
+});
 
-  if (target) {
-    target.classList.add("active");
+
+/* =========================================================
+   AUTH — AFFICHAGE
+========================================================= */
+
+function showLogin() {
+  if (loginSection) {
+    loginSection.style.display = "";
   }
 
-  document
-    .querySelectorAll("[data-page]")
-    .forEach((button) => {
-      button.classList.toggle(
-        "active",
-        button.dataset.page === pageName
-      );
-    });
+  if (adminApp) {
+    adminApp.style.display = "none";
+  }
+}
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+function showAdmin() {
+  if (loginSection) {
+    loginSection.style.display = "none";
+  }
+
+  if (adminApp) {
+    adminApp.style.display = "";
+  }
+}
+
+
+/* =========================================================
+   AUTH — SESSION
+========================================================= */
+
+async function checkSession() {
+  try {
+    const {
+      data,
+      error
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error(error);
+      showLogin();
+      return;
+    }
+
+    currentUser = data?.session?.user || null;
+
+    if (currentUser) {
+      showAdmin();
+
+      await loadDashboard();
+      await loadSeries();
+      await loadChapters();
+      await loadSounds();
+      await loadSoundOptions();
+    } else {
+      showLogin();
+    }
+
+  } catch (error) {
+    console.error("Erreur session :", error);
+    showLogin();
+  }
+}
+
+
+/* =========================================================
+   AUTH — LOGIN
+========================================================= */
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (loginError) {
+      loginError.textContent = "";
+    }
+
+    const email = loginEmail?.value.trim();
+    const password = loginPassword?.value;
+
+    if (!email || !password) {
+      if (loginError) {
+        loginError.textContent =
+          "Veuillez remplir tous les champs.";
+      }
+
+      return;
+    }
+
+    try {
+      const {
+        data,
+        error
+      } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      currentUser = data.user;
+
+      showAdmin();
+
+      await loadDashboard();
+      await loadSeries();
+      await loadChapters();
+      await loadSounds();
+      await loadSoundOptions();
+
+    } catch (error) {
+      console.error(error);
+
+      if (loginError) {
+        loginError.textContent =
+          error.message ||
+          "Identifiants incorrects.";
+      }
+    }
   });
 }
 
 
-document.addEventListener(
-  "click",
-  async (event) => {
-    const button =
-      event.target.closest("[data-page]");
+/* =========================================================
+   AUTH — LOGOUT
+========================================================= */
 
-    if (!button) return;
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await supabase.auth.signOut();
 
-    const page = button.dataset.page;
+      currentUser = null;
+      selectedSeries = null;
 
-    showPage(page);
+      showLogin();
 
-    if (page === "series") {
-      await loadSeries();
+    } catch (error) {
+      console.error("Erreur déconnexion :", error);
     }
+  });
+}
 
-    if (page === "sounds") {
-      await loadSounds();
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+supabase.auth.onAuthStateChange(
+  async (_event, session) => {
+    currentUser = session?.user || null;
+
+    if (currentUser) {
+      showAdmin();
+    } else {
+      showLogin();
     }
   }
 );
 
 
-/* =========================
-   AUTH
-========================= */
-
-function showAdmin(user) {
-  currentUser = user;
-
-  loginSection.classList.add("hidden");
-  adminSection.classList.remove("hidden");
-
-  console.log(
-    "Connecté :",
-    user.email
-  );
-
-  loadDashboard();
-  loadSeries();
-  loadSounds();
-}
-
-
-function showLogin() {
-  currentUser = null;
-
-  loginSection.classList.remove("hidden");
-  adminSection.classList.add("hidden");
-}
-
-
-async function checkSession() {
-  const {
-    data,
-    error
-  } = await supabase.auth.getSession();
-
-  if (error) {
-    console.error(
-      "Erreur session :",
-      error
-    );
-
-    showLogin();
-    return;
-  }
-
-  if (data.session) {
-    showAdmin(data.session.user);
-  } else {
-    showLogin();
-  }
-}
-
-
-loginForm.addEventListener(
-  "submit",
-  async (event) => {
-    event.preventDefault();
-
-    loginError.className = "info";
-    loginError.textContent =
-      "⏳ Connexion...";
-
-    const email =
-      $("loginEmail").value.trim();
-
-    const password =
-      $("loginPassword").value;
-
-    if (!email || !password) {
-      loginError.className = "error";
-      loginError.textContent =
-        "❌ Remplis tous les champs.";
-      return;
-    }
-
-    const {
-      data,
-      error
-    } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      console.error(error);
-
-      loginError.className = "error";
-      loginError.textContent =
-        "❌ " + error.message;
-
-      return;
-    }
-
-    loginError.className = "success";
-    loginError.textContent =
-      "✅ Connexion réussie !";
-
-    showAdmin(data.user);
-  }
-);
-
-
-logoutBtn.addEventListener(
-  "click",
-  async () => {
-    await supabase.auth.signOut();
-
-    selectedSeries = null;
-
-    editingChapterId = null;
-    editingChapterImageUrl = null;
-
-    showLogin();
-  }
-);
-
-
-/* =========================
+/* =========================================================
    DASHBOARD
-========================= */
+========================================================= */
 
 async function loadDashboard() {
   try {
     const [
       seriesResult,
       chaptersResult,
-      soundsResult
+      viewsResult,
+      likesResult
     ] = await Promise.all([
       supabase
         .from("series")
@@ -313,31 +363,73 @@ async function loadDashboard() {
           head: true
         }),
 
-      supabase.storage
-        .from("sounds")
-        .list("", {
-          limit: 1000
+      supabase
+        .from("chapters")
+        .select("views"),
+
+      supabase
+        .from("likes")
+        .select("id", {
+          count: "exact",
+          head: true
         })
     ]);
 
-    if (seriesCount) {
-      seriesCount.textContent =
+    if (seriesResult.error) {
+      console.error(
+        "Erreur compteur séries :",
+        seriesResult.error
+      );
+    }
+
+    if (chaptersResult.error) {
+      console.error(
+        "Erreur compteur chapitres :",
+        chaptersResult.error
+      );
+    }
+
+    if (viewsResult.error) {
+      console.error(
+        "Erreur compteur vues :",
+        viewsResult.error
+      );
+    }
+
+    if (likesResult.error) {
+      console.error(
+        "Erreur compteur likes :",
+        likesResult.error
+      );
+    }
+
+    const totalViews =
+      (viewsResult.data || []).reduce(
+        (total, chapter) =>
+          total + (Number(chapter.views) || 0),
+        0
+      );
+
+    if (dashboardSeriesCount) {
+      dashboardSeriesCount.textContent =
         seriesResult.count ?? 0;
     }
 
-    if (chaptersCount) {
-      chaptersCount.textContent =
+    if (dashboardChapterCount) {
+      dashboardChapterCount.textContent =
         chaptersResult.count ?? 0;
     }
 
-    if (soundsCount) {
-      if (soundsResult.error) {
-        soundsCount.textContent = "0";
-      } else {
-        soundsCount.textContent =
-          soundsResult.data?.length ?? 0;
-      }
+    if (dashboardViewsCount) {
+      dashboardViewsCount.textContent =
+        totalViews;
     }
+
+    if (dashboardLikesCount) {
+      dashboardLikesCount.textContent =
+        likesResult.count ?? 0;
+    }
+
   } catch (error) {
     console.error(
       "Erreur dashboard :",
@@ -347,1636 +439,1687 @@ async function loadDashboard() {
 }
 
 
-/* =========================
-   SERIES
-========================= */
+/* =========================================================
+   SERIES — LOAD
+========================================================= */
 
 async function loadSeries() {
-  if (!seriesList) return;
-
-  seriesList.innerHTML =
-    "Chargement...";
-
-  const {
-    data,
-    error
-  } = await supabase
-    .from("series")
-    .select(`
-      id,
-      title,
-      slug,
-      type,
-      description,
-      cover_url,
-      status,
-      author_id,
-      created_at
-    `)
-    .order(
-      "created_at",
-      {
-        ascending: false
-      }
-    );
-
-  if (error) {
-    console.error(error);
-
-    seriesList.innerHTML = `
-      <div class="item">
-        <p class="error">
-          Erreur : ${escapeHTML(error.message)}
-        </p>
-      </div>
-    `;
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    seriesList.innerHTML = `
-      <div class="item">
-        Aucune œuvre pour le moment.
-      </div>
-    `;
-
+  if (!seriesList) {
     return;
   }
 
   seriesList.innerHTML =
-    data
-      .map((series) => {
-        return `
-          <div class="item">
+    "<p>Chargement...</p>";
 
-            <div class="item-main">
-
-              ${
-                series.cover_url
-                  ? `
-                    <img
-                      class="cover"
-                      src="${escapeAttribute(
-                        series.cover_url
-                      )}"
-                      alt="${escapeAttribute(
-                        series.title
-                      )}"
-                    >
-                  `
-                  : `
-                    <div class="cover"></div>
-                  `
-              }
-
-              <div class="item-info">
-
-                <div class="item-title">
-                  ${escapeHTML(
-                    series.title
-                  )}
-                </div>
-
-                <div class="item-meta">
-                  Type :
-                  ${escapeHTML(
-                    series.type || "—"
-                  )}
-                  <br>
-
-                  Statut :
-                  ${escapeHTML(
-                    series.status || "—"
-                  )}
-                  <br>
-
-                  Slug :
-                  ${escapeHTML(
-                    series.slug || "—"
-                  )}
-                </div>
-
-              </div>
-
-            </div>
-
-            <div class="item-actions">
-
-              <button
-                type="button"
-                data-open-series="${escapeAttribute(
-                  series.id
-                )}"
-              >
-                📖 Chapitres
-              </button>
-
-              <button
-                type="button"
-                class="danger"
-                data-delete-series="${escapeAttribute(
-                  series.id
-                )}"
-              >
-                🗑️ Supprimer
-              </button>
-
-            </div>
-
-          </div>
-        `;
-      })
-      .join("");
-}
-
-
-/* =========================
-   OUVRIR UNE OEUVRE
-========================= */
-
-async function openSeries(seriesId) {
-  const {
-    data,
-    error
-  } = await supabase
-    .from("series")
-    .select("*")
-    .eq("id", seriesId)
-    .single();
-
-  if (error) {
-    console.error(error);
-
-    alert(
-      "Impossible de charger l'œuvre : " +
-      error.message
-    );
-
-    return;
-  }
-
-  selectedSeries = data;
-
-  selectedSeriesTitle.textContent =
-    data.title || "—";
-
-  const description =
-    $("chapterSeriesDescription");
-
-  if (description) {
-    description.textContent =
-      data.description ||
-      "Gestion des chapitres.";
-  }
-
-  const newChapterSeriesTitle =
-    $("newChapterSeriesTitle");
-
-  if (newChapterSeriesTitle) {
-    newChapterSeriesTitle.textContent =
-      data.title || "—";
-  }
-
-  showPage("chapters");
-
-  await loadChapters();
-}
-
-
-document.addEventListener(
-  "click",
-  async (event) => {
-    const button =
-      event.target.closest(
-        "[data-open-series]"
-      );
-
-    if (!button) return;
-
-    await openSeries(
-      button.dataset.openSeries
-    );
-  }
-);
-
-
-/* =========================
-   SUPPRIMER UNE OEUVRE
-========================= */
-
-document.addEventListener(
-  "click",
-  async (event) => {
-    const button =
-      event.target.closest(
-        "[data-delete-series]"
-      );
-
-    if (!button) return;
-
-    const id =
-      button.dataset.deleteSeries;
-
-    if (
-      !confirm(
-        "Supprimer définitivement cette œuvre ?"
-      )
-    ) {
-      return;
-    }
-
+  try {
     const {
+      data,
       error
     } = await supabase
       .from("series")
-      .delete()
-      .eq("id", id);
+      .select(`
+        id,
+        title,
+        slug,
+        type,
+        genre,
+        description,
+        cover_url,
+        status,
+        created_at
+      `)
+      .order("created_at", {
+        ascending: false
+      });
 
     if (error) {
-      console.error(error);
+      throw error;
+    }
 
-      alert(
-        "Erreur : " +
-        error.message
-      );
+    const series = data || [];
 
+    if (seriesCount) {
+      seriesCount.textContent =
+        series.length;
+    }
+
+    if (!series.length) {
+      seriesList.innerHTML =
+        "<p>Aucune œuvre.</p>";
       return;
     }
 
-    if (
-      selectedSeries &&
-      selectedSeries.id === id
-    ) {
-      selectedSeries = null;
-    }
+    seriesList.innerHTML =
+      series
+        .map((item) => {
+          return `
+            <div
+              class="admin-item"
+              data-series-id="${escapeAttribute(item.id)}"
+            >
+              <div class="item-main">
 
-    await loadSeries();
-    await loadDashboard();
-  }
-);
-
-
-/* =========================
-   CREER UNE OEUVRE
-========================= */
-
-addSeriesForm.addEventListener(
-  "submit",
-  async (event) => {
-    event.preventDefault();
-
-    if (!currentUser) {
-      alert(
-        "Tu dois être connecté."
-      );
-      return;
-    }
-
-    const title =
-      $("seriesTitle").value.trim();
-
-    const type =
-      $("seriesType").value;
-
-    const genre =
-      $("seriesGenre").value.trim();
-
-    const status =
-      $("seriesStatus").value;
-
-    const description =
-      $("seriesDescription").value.trim();
-
-    const coverFile =
-      $("seriesCover").files[0];
-
-    if (
-      !title ||
-      !description ||
-      !coverFile
-    ) {
-      seriesStatusMsg.className =
-        "status error";
-
-      seriesStatusMsg.textContent =
-        "❌ Remplis tous les champs obligatoires.";
-
-      return;
-    }
-
-    seriesSubmitBtn.disabled = true;
-
-    seriesStatusMsg.className =
-      "status info";
-
-    seriesStatusMsg.textContent =
-      "⏳ Envoi de la couverture...";
-
-    try {
-      const extension =
-        coverFile.name
-          .split(".")
-          .pop();
-
-      const slug =
-        createSlug(title);
-
-      const filePath =
-        `${slug}-${Date.now()}.${extension}`;
-
-      const {
-        error: uploadError
-      } = await supabase.storage
-        .from("Cover series")
-        .upload(
-          filePath,
-          coverFile,
-          {
-            upsert: false
-          }
-        );
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const {
-        data: publicUrlData
-      } = supabase.storage
-        .from("Cover series")
-        .getPublicUrl(filePath);
-
-      const coverUrl =
-        publicUrlData.publicUrl;
-
-      seriesStatusMsg.textContent =
-        "⏳ Création de l'œuvre...";
-
-      const {
-        error: insertError
-      } = await supabase
-        .from("series")
-        .insert({
-          title,
-          slug,
-          type,
-          description,
-          cover_url: coverUrl,
-          status,
-          author_id: currentUser.id,
-          genre
-        });
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      seriesStatusMsg.className =
-        "status success";
-
-      seriesStatusMsg.textContent =
-        "✅ Œuvre publiée avec succès !";
-
-      addSeriesForm.reset();
-
-      await loadSeries();
-      await loadDashboard();
-
-    } catch (error) {
-      console.error(error);
-
-      seriesStatusMsg.className =
-        "status error";
-
-      seriesStatusMsg.textContent =
-        "❌ Erreur : " +
-        error.message;
-    }
-
-    seriesSubmitBtn.disabled = false;
-  }
-);
-
-
-/* =========================
-   CHAPITRES
-========================= */
-
-async function loadChapters() {
-  if (!selectedSeries) {
-    chaptersList.innerHTML = `
-      <div class="item">
-        Aucune œuvre sélectionnée.
-      </div>
-    `;
-
-    return;
-  }
-
-  chaptersList.innerHTML =
-    "Chargement...";
-
-  const {
-    data,
-    error
-  } = await supabase
-    .from("chapters")
-    .select(`
-      id,
-      series_id,
-      chapter_number,
-      chapter_label,
-      title,
-      content,
-      chapter_image_url,
-      published_at,
-      views,
-      sound_url,
-      created_at
-    `)
-    .eq(
-      "series_id",
-      selectedSeries.id
-    )
-    .order(
-      "chapter_number",
-      {
-        ascending: true
-      }
-    );
-
-  if (error) {
-    console.error(error);
-
-    chaptersList.innerHTML = `
-      <div class="item">
-        <p class="error">
-          Erreur : ${escapeHTML(
-            error.message
-          )}
-        </p>
-      </div>
-    `;
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    chaptersList.innerHTML = `
-      <div class="item">
-        Aucun chapitre pour cette œuvre.
-      </div>
-    `;
-
-    return;
-  }
-
-  chaptersList.innerHTML =
-    data
-      .map((chapter) => {
-        const displayLabel =
-          formatChapterLabel(
-            chapter.chapter_label ??
-            chapter.chapter_number
-          );
-
-        const published =
-          chapter.published_at
-            ? new Date(
-                chapter.published_at
-              ).toLocaleString(
-                "fr-FR"
-              )
-            : "Non publié";
-
-        return `
-          <div class="item">
-
-            <div class="item-main">
-
-              ${
-                chapter.chapter_image_url
-                  ? `
-                    <img
-                      class="cover"
-                      src="${escapeAttribute(
-                        chapter.chapter_image_url
-                      )}"
-                      alt="${escapeAttribute(
-                        chapter.title ||
-                        displayLabel
-                      )}"
-                    >
-                  `
-                  : `
-                    <div class="cover"></div>
-                  `
-              }
-
-              <div class="item-info">
-
-                <div class="item-title">
-
-                  ${escapeHTML(
-                    displayLabel
-                  )}
-
+                <div class="item-cover">
                   ${
-                    chapter.title
+                    item.cover_url
                       ? `
-                        — ${escapeHTML(
-                          chapter.title
-                        )}
+                        <img
+                          src="${escapeAttribute(
+                            item.cover_url
+                          )}"
+                          alt="${escapeAttribute(
+                            item.title
+                          )}"
+                        >
                       `
                       : ""
                   }
-
                 </div>
 
-                <div class="item-meta">
+                <div class="item-info">
 
-                  Numéro interne :
-                  ${escapeHTML(
-                    chapter.chapter_number
-                  )}
-                  <br>
+                  <h3>
+                    ${escapeHTML(
+                      item.title
+                    )}
+                  </h3>
 
-                  Publication :
-                  ${escapeHTML(
-                    published
-                  )}
-                  <br>
+                  <p>
+                    ${escapeHTML(
+                      item.type || ""
+                    )}
+                  </p>
 
-                  Vues :
-                  ${escapeHTML(
-                    chapter.views ?? 0
-                  )}
-                  <br>
-
-                  ${
-                    chapter.sound_url
-                      ? "🎵 Son associé"
-                      : "🔇 Aucun son"
-                  }
+                  <small>
+                    ${escapeHTML(
+                      item.status || ""
+                    )}
+                  </small>
 
                 </div>
 
               </div>
 
+              <div class="item-actions">
+
+                <button
+                  type="button"
+                  class="btn-view-series"
+                  data-id="${escapeAttribute(
+                    item.id
+                  )}"
+                >
+                  Chapitres
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-delete-series"
+                  data-id="${escapeAttribute(
+                    item.id
+                  )}"
+                >
+                  Supprimer
+                </button>
+
+              </div>
             </div>
+          `;
+        })
+        .join("");
 
-            <div class="item-actions">
+  } catch (error) {
+    console.error(
+      "Erreur chargement séries :",
+      error
+    );
 
-              <button
-                type="button"
-                class="secondary"
-                data-edit-chapter="${escapeAttribute(
-                  chapter.id
-                )}"
-              >
-                ✏️ Modifier
-              </button>
-
-              <button
-                type="button"
-                class="danger"
-                data-delete-chapter="${escapeAttribute(
-                  chapter.id
-                )}"
-              >
-                🗑️ Supprimer
-              </button>
-
-            </div>
-
-          </div>
-        `;
-      })
-      .join("");
+    seriesList.innerHTML =
+      `<p>Erreur : ${escapeHTML(
+        error.message
+      )}</p>`;
+  }
 }
 
 
-/* =========================
-   NOUVEAU CHAPITRE
-========================= */
-
-newChapterBtn.addEventListener(
-  "click",
-  async () => {
-
-    /*
-     * Si une modification est en cours,
-     * le bouton sert à annuler.
-     */
-    if (editingChapterId) {
-      editingChapterId = null;
-      editingChapterImageUrl = null;
-
-      addChapterForm.reset();
-
-      $("chapterImage").required =
-        true;
-
-      chapterSubmitBtn.textContent =
-        "Publier le chapitre";
-
-      newChapterBtn.textContent =
-        "➕ Nouveau chapitre";
-
-      chapterStatusMsg.className =
-        "status";
-
-      chapterStatusMsg.textContent =
-        "";
-
-      if (selectedSeries) {
-        $("newChapterSeriesTitle")
-          .textContent =
-          selectedSeries.title;
-      }
-
-      showPage("chapters");
-
-      return;
-    }
-
-    if (!selectedSeries) {
-      alert(
-        "Sélectionne d'abord une œuvre."
-      );
-
-      return;
-    }
-
-    editingChapterId = null;
-    editingChapterImageUrl = null;
-
-    addChapterForm.reset();
-
-    $("chapterImage").required =
-      true;
-
-    chapterSubmitBtn.textContent =
-      "Publier le chapitre";
-
-    newChapterBtn.textContent =
-      "➕ Nouveau chapitre";
-
-    chapterStatusMsg.className =
-      "status";
-
-    chapterStatusMsg.textContent =
-      "";
-
-    $("newChapterSeriesTitle")
-      .textContent =
-      selectedSeries.title;
-
-    await loadSoundOptions();
-
-    showPage("new-chapter");
-  }
-);
-
-
-/* =========================
-   MODIFIER UN CHAPITRE
-========================= */
+/* =========================================================
+   SERIES — OPEN CHAPTERS
+========================================================= */
 
 document.addEventListener(
   "click",
   async (event) => {
     const button =
       event.target.closest(
-        "[data-edit-chapter]"
+        ".btn-view-series"
       );
 
-    if (!button) return;
-
-    const chapterId =
-      button.dataset.editChapter;
-
-    if (!selectedSeries) {
-      alert(
-        "Aucune œuvre sélectionnée."
-      );
-
+    if (!button) {
       return;
     }
 
-    chapterStatusMsg.className =
-      "status info";
+    const seriesId =
+      button.dataset.id;
 
-    chapterStatusMsg.textContent =
-      "⏳ Chargement du chapitre...";
-
-    const {
-      data: chapter,
-      error
-    } = await supabase
-      .from("chapters")
-      .select(`
-        id,
-        series_id,
-        chapter_number,
-        chapter_label,
-        title,
-        content,
-        chapter_image_url,
-        sound_url,
-        published_at,
-        views
-      `)
-      .eq("id", chapterId)
-      .single();
-
-    if (error) {
-      console.error(error);
-
-      alert(
-        "Impossible de charger le chapitre : " +
-        error.message
-      );
-
+    if (!seriesId) {
       return;
     }
 
-    editingChapterId =
-      chapter.id;
+    selectedSeries = seriesId;
 
-    editingChapterImageUrl =
-      chapter.chapter_image_url ||
-      null;
+    await loadChapters();
 
-    $("chapterNumber").value =
-      chapter.chapter_number ?? "";
+    const chaptersSection =
+      $("chaptersSection");
 
-    $("chapterLabel").value =
-      chapter.chapter_label ?? "";
+    if (chaptersSection) {
+      document
+        .querySelectorAll(
+          ".admin-section"
+        )
+        .forEach((section) => {
+          section.classList.remove(
+            "active"
+          );
+        });
 
-    $("chapterTitle").value =
-      chapter.title ?? "";
-
-    $("chapterContent").value =
-      chapter.content ?? "";
-
-    /*
-     * On recharge les sons avant
-     * de sélectionner celui du chapitre.
-     */
-    await loadSoundOptions();
-
-    $("chapterSound").value =
-      chapter.sound_url || "";
-
-    /*
-     * L'image devient facultative
-     * pendant une modification.
-     */
-    $("chapterImage").required =
-      false;
-
-    chapterSubmitBtn.textContent =
-      "Enregistrer les modifications";
-
-    newChapterBtn.textContent =
-      "↩️ Annuler la modification";
-
-    chapterStatusMsg.className =
-      "status info";
-
-    chapterStatusMsg.textContent =
-      "✏️ Modification du chapitre.";
-
-    $("newChapterSeriesTitle")
-      .textContent =
-      selectedSeries.title;
-
-    showPage("new-chapter");
+      chaptersSection.classList.add(
+        "active"
+      );
+    }
   }
 );
 
 
-/* =========================
-   CREER / MODIFIER CHAPITRE
-========================= */
+/* =========================================================
+   SERIES — DELETE
+========================================================= */
 
-addChapterForm.addEventListener(
-  "submit",
+document.addEventListener(
+  "click",
   async (event) => {
-    event.preventDefault();
-
-    if (!selectedSeries) {
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ Aucune œuvre sélectionnée.";
-
-      return;
-    }
-
-    const chapterNumber =
-      Number(
-        $("chapterNumber").value
+    const button =
+      event.target.closest(
+        ".btn-delete-series"
       );
 
-    const chapterLabel =
-      $("chapterLabel").value.trim();
-
-    const title =
-      $("chapterTitle").value.trim();
-
-    const content =
-      $("chapterContent").value.trim();
-
-    const imageFile =
-      $("chapterImage").files[0];
-
-    const soundUrl =
-      $("chapterSound").value;
-
-    /* =========================
-       VALIDATION
-    ========================= */
-
-    if (
-      !chapterNumber ||
-      chapterNumber < 1
-    ) {
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ Le numéro interne est invalide.";
-
+    if (!button) {
       return;
     }
 
-    if (!chapterLabel) {
-      chapterStatusMsg.className =
-        "status error";
+    const id =
+      button.dataset.id;
 
-      chapterStatusMsg.textContent =
-        "❌ Le numéro / libellé affiché est obligatoire.";
-
+    if (!id) {
       return;
     }
 
-    if (!title) {
-      chapterStatusMsg.className =
-        "status error";
+    const confirmed =
+      confirm(
+        "Voulez-vous vraiment supprimer cette œuvre ?\n\nLes chapitres associés peuvent également être concernés."
+      );
 
-      chapterStatusMsg.textContent =
-        "❌ Le titre est obligatoire.";
-
+    if (!confirmed) {
       return;
     }
-
-    if (!content) {
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ Le contenu est obligatoire.";
-
-      return;
-    }
-
-    /*
-     * En création : image obligatoire.
-     * En modification : image facultative.
-     */
-    if (
-      !editingChapterId &&
-      !imageFile
-    ) {
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ L'image du chapitre est obligatoire.";
-
-      return;
-    }
-
-    if (imageFile) {
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-      ];
-
-      if (
-        !allowedTypes.includes(
-          imageFile.type
-        )
-      ) {
-        chapterStatusMsg.className =
-          "status error";
-
-        chapterStatusMsg.textContent =
-          "❌ Format d'image non autorisé.";
-
-        return;
-      }
-
-      if (
-        imageFile.size >
-        10 * 1024 * 1024
-      ) {
-        chapterStatusMsg.className =
-          "status error";
-
-        chapterStatusMsg.textContent =
-          "❌ L'image ne doit pas dépasser 10 Mo.";
-
-        return;
-      }
-    }
-
-    chapterSubmitBtn.disabled =
-      true;
-
-    chapterStatusMsg.className =
-      "status info";
-
-    chapterStatusMsg.textContent =
-      "⏳ Enregistrement...";
-
 
     try {
+      const {
+        data: deletedRows,
+        error
+      } = await supabase
+        .from("series")
+        .delete()
+        .eq("id", id)
+        .select("id");
 
-      /* =========================
-         MODIFICATION
-      ========================= */
+      if (error) {
+        throw error;
+      }
 
-      if (editingChapterId) {
+      if (
+        !deletedRows ||
+        deletedRows.length === 0
+      ) {
+        alert(
+          "❌ L'œuvre n'a pas été supprimée.\n\n" +
+          "Aucune ligne n'a été supprimée. " +
+          "Vérifie les permissions RLS et ton rôle admin."
+        );
 
-        let chapterImageUrl =
-          editingChapterImageUrl;
+        return;
+      }
 
-        /*
-         * Une nouvelle image n'est uploadée
-         * que si l'utilisateur en sélectionne une.
-         */
-        if (imageFile) {
+      alert(
+        "✅ Œuvre supprimée avec succès."
+      );
 
+      if (selectedSeries === id) {
+        selectedSeries = null;
+      }
+
+      await loadSeries();
+      await loadChapters();
+      await loadDashboard();
+
+    } catch (error) {
+      console.error(
+        "Erreur suppression série :",
+        error
+      );
+
+      alert(
+        "Erreur : " +
+        (error.message ||
+          "Impossible de supprimer l'œuvre.")
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   SERIES — NEW SERIES
+========================================================= */
+
+if (newSeriesBtn) {
+  newSeriesBtn.addEventListener(
+    "click",
+    () => {
+      if (!newSeriesSection) {
+        return;
+      }
+
+      newSeriesSection.style.display =
+        "";
+
+      newSeriesSection.scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+  );
+}
+
+
+/* =========================================================
+   SERIES — CREATE
+========================================================= */
+
+if (seriesForm) {
+  seriesForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (seriesStatusMsg) {
+        seriesStatusMsg.textContent =
+          "Création en cours...";
+      }
+
+      try {
+        const formData =
+          new FormData(
+            seriesForm
+          );
+
+        const title =
+          formData.get("title")?.trim();
+
+        const type =
+          formData.get("type")?.trim();
+
+        const genre =
+          formData.get("genre")?.trim();
+
+        const description =
+          formData
+            .get("description")
+            ?.trim();
+
+        const status =
+          formData
+            .get("status")
+            ?.trim() ||
+          "ongoing";
+
+        const coverFile =
+          formData.get("cover");
+
+        if (!title) {
+          throw new Error(
+            "Le titre est obligatoire."
+          );
+        }
+
+        let coverUrl = "";
+
+        /* -----------------------------------------
+           UPLOAD COVER
+        ----------------------------------------- */
+
+        if (
+          coverFile &&
+          coverFile instanceof File &&
+          coverFile.size > 0
+        ) {
           const extension =
-            imageFile.name
+            coverFile.name
               .split(".")
               .pop();
 
-          const filePath =
-            `${selectedSeries.id}/${editingChapterId}-${Date.now()}.${extension}`;
+          const fileName =
+            `${crypto.randomUUID()}.${extension}`;
 
-          chapterStatusMsg.textContent =
-            "⏳ Envoi de la nouvelle image...";
+          const filePath =
+            fileName;
 
           const {
-            error: uploadError
-          } = await supabase.storage
-            .from("chapter-images")
-            .upload(
-              filePath,
-              imageFile,
-              {
-                upsert: false
-              }
-            );
+            error:
+              uploadError
+          } =
+            await supabase.storage
+              .from("Cover series")
+              .upload(
+                filePath,
+                coverFile,
+                {
+                  upsert: false
+                }
+              );
 
           if (uploadError) {
             throw uploadError;
           }
 
           const {
-            data: publicUrlData
-          } = supabase.storage
-            .from("chapter-images")
-            .getPublicUrl(
-              filePath
-            );
+            data:
+              publicUrlData
+          } =
+            supabase.storage
+              .from("Cover series")
+              .getPublicUrl(
+                filePath
+              );
 
-          chapterImageUrl =
+          coverUrl =
             publicUrlData.publicUrl;
         }
 
-        chapterStatusMsg.textContent =
-          "⏳ Mise à jour du chapitre...";
+        /* -----------------------------------------
+           INSERT SERIES
+        ----------------------------------------- */
 
-        /*
-         * IMPORTANT :
-         *
-         * published_at n'est PAS modifié.
-         * views n'est PAS modifié.
-         *
-         * On modifie uniquement
-         * les informations éditoriales.
-         */
         const {
-          error: updateError
-        } = await supabase
-          .from("chapters")
-          .update({
-            chapter_number:
-              chapterNumber,
+          data:
+            insertedRows,
+          error
+        } =
+          await supabase
+            .from("series")
+            .insert({
+              title,
+              slug: createSlug(
+                title
+              ),
+              type:
+                type || null,
+              genre:
+                genre || null,
+              description:
+                description || null,
+              cover_url:
+                coverUrl || null,
+              status
+            })
+            .select("id");
 
-            chapter_label:
-              chapterLabel,
-
-            title,
-
-            content,
-
-            chapter_image_url:
-              chapterImageUrl,
-
-            sound_url:
-              soundUrl || null
-          })
-          .eq(
-            "id",
-            editingChapterId
-          );
-
-        if (updateError) {
-          throw updateError;
+        if (error) {
+          throw error;
         }
 
-        chapterStatusMsg.className =
-          "status success";
+        if (
+          !insertedRows ||
+          insertedRows.length === 0
+        ) {
+          throw new Error(
+            "La série n'a pas été créée."
+          );
+        }
 
-        chapterStatusMsg.textContent =
-          "✅ Chapitre modifié avec succès !";
+        if (seriesStatusMsg) {
+          seriesStatusMsg.textContent =
+            "✅ Œuvre créée avec succès.";
+        }
 
-        editingChapterId = null;
-        editingChapterImageUrl = null;
+        seriesForm.reset();
 
-        addChapterForm.reset();
-
-        $("chapterImage").required =
-          true;
-
-        chapterSubmitBtn.textContent =
-          "Publier le chapitre";
-
-        newChapterBtn.textContent =
-          "➕ Nouveau chapitre";
-
-        await loadChapters();
+        await loadSeries();
         await loadDashboard();
 
-        chapterSubmitBtn.disabled =
-          false;
+      } catch (error) {
+        console.error(
+          "Erreur création série :",
+          error
+        );
 
-        showPage("chapters");
+        if (seriesStatusMsg) {
+          seriesStatusMsg.textContent =
+            "❌ " +
+            (
+              error.message ||
+              "Erreur lors de la création."
+            );
+        }
+      }
+    }
+  );
+}
 
-        return;
+
+/* =========================================================
+   CHAPTERS — LOAD
+========================================================= */
+
+async function loadChapters() {
+  if (!chaptersList) {
+    return;
+  }
+
+  chaptersList.innerHTML =
+    "<p>Chargement...</p>";
+
+  try {
+    let query =
+      supabase
+        .from("chapters")
+        .select(`
+          id,
+          series_id,
+          chapter_number,
+          chapter_label,
+          title,
+          content,
+          chapter_image_url,
+          sound_url,
+          published_at,
+          views,
+          series (
+            id,
+            title
+          )
+        `)
+        .order(
+          "chapter_number",
+          {
+            ascending: false
+          }
+        );
+
+    if (selectedSeries) {
+      query =
+        query.eq(
+          "series_id",
+          selectedSeries
+        );
+    }
+
+    const {
+      data,
+      error
+    } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    const chapters =
+      data || [];
+
+    if (chaptersCount) {
+      chaptersCount.textContent =
+        chapters.length;
+    }
+
+    if (!chapters.length) {
+      chaptersList.innerHTML =
+        "<p>Aucun chapitre.</p>";
+
+      return;
+    }
+
+    chaptersList.innerHTML =
+      chapters
+        .map((chapter) => {
+          const seriesTitle =
+            chapter.series?.title ||
+            "Œuvre inconnue";
+
+          const displayLabel =
+            formatChapterLabel(
+              chapter.chapter_label ??
+                chapter.chapter_number
+            );
+
+          return `
+            <div
+              class="admin-item chapter-item"
+              data-chapter-id="${escapeAttribute(
+                chapter.id
+              )}"
+            >
+
+              <div class="item-main">
+
+                <div class="item-cover">
+
+                  ${
+                    chapter.chapter_image_url
+                      ? `
+                        <img
+                          src="${escapeAttribute(
+                            chapter.chapter_image_url
+                          )}"
+                          alt="${escapeAttribute(
+                            chapter.title ||
+                              displayLabel
+                          )}"
+                        >
+                      `
+                      : ""
+                  }
+
+                </div>
+
+                <div class="item-info">
+
+                  <h3>
+                    ${escapeHTML(
+                      seriesTitle
+                    )}
+                  </h3>
+
+                  <strong>
+                    ${escapeHTML(
+                      displayLabel
+                    )}
+                  </strong>
+
+                  ${
+                    chapter.title
+                      ? `
+                        <p>
+                          ${escapeHTML(
+                            chapter.title
+                          )}
+                        </p>
+                      `
+                      : ""
+                  }
+
+                  <small>
+                    Vues :
+                    ${
+                      Number(
+                        chapter.views
+                      ) || 0
+                    }
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div class="item-actions">
+
+                <button
+                  type="button"
+                  class="btn-edit-chapter"
+                  data-id="${escapeAttribute(
+                    chapter.id
+                  )}"
+                >
+                  Modifier
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-delete-chapter"
+                  data-id="${escapeAttribute(
+                    chapter.id
+                  )}"
+                >
+                  Supprimer
+                </button>
+
+              </div>
+
+            </div>
+          `;
+        })
+        .join("");
+
+  } catch (error) {
+    console.error(
+      "Erreur chargement chapitres :",
+      error
+    );
+
+    chaptersList.innerHTML =
+      `<p>Erreur : ${escapeHTML(
+        error.message
+      )}</p>`;
+  }
+}
+
+
+/* =========================================================
+   CHAPTERS — NEW
+========================================================= */
+
+if (newChapterBtn) {
+  newChapterBtn.addEventListener(
+    "click",
+    () => {
+      editingChapterId = null;
+      editingChapterImageUrl = null;
+
+      if (chapterForm) {
+        chapterForm.reset();
       }
 
+      if (chapterSubmitBtn) {
+        chapterSubmitBtn.textContent =
+          "Publier le chapitre";
+      }
 
-      /* =========================
-         CREATION
-      ========================= */
+      if (chapterStatusMsg) {
+        chapterStatusMsg.textContent =
+          "";
+      }
 
-      let chapterImageUrl =
+      if (newChapterSection) {
+        newChapterSection.style.display =
+          "";
+
+        newChapterSection.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    }
+  );
+}
+
+
+/* =========================================================
+   CHAPTERS — EDIT CLICK
+========================================================= */
+
+document.addEventListener(
+  "click",
+  async (event) => {
+    const button =
+      event.target.closest(
+        ".btn-edit-chapter"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    const chapterId =
+      button.dataset.id;
+
+    if (!chapterId) {
+      return;
+    }
+
+    try {
+      const {
+        data: chapter,
+        error
+      } = await supabase
+        .from("chapters")
+        .select(`
+          id,
+          series_id,
+          chapter_number,
+          chapter_label,
+          title,
+          content,
+          chapter_image_url,
+          sound_url,
+          published_at,
+          views
+        `)
+        .eq(
+          "id",
+          chapterId
+        )
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!chapter) {
+        throw new Error(
+          "Chapitre introuvable."
+        );
+      }
+
+      editingChapterId =
+        chapter.id;
+
+      editingChapterImageUrl =
+        chapter.chapter_image_url ||
         null;
 
-      if (imageFile) {
+      selectedSeries =
+        chapter.series_id;
+
+      /* -----------------------------------------
+         REMPLISSAGE FORMULAIRE
+      ----------------------------------------- */
+
+      if (chapterNumber) {
+        chapterNumber.value =
+          chapter.chapter_number ??
+          "";
+      }
+
+      if (chapterLabel) {
+        chapterLabel.value =
+          chapter.chapter_label ??
+          "";
+      }
+
+      if (chapterTitle) {
+        chapterTitle.value =
+          chapter.title ??
+          "";
+      }
+
+      if (chapterContent) {
+        chapterContent.value =
+          chapter.content ??
+          "";
+      }
+
+      if (chapterSound) {
+        chapterSound.value =
+          chapter.sound_url ??
+          "";
+      }
+
+      if (chapterSubmitBtn) {
+        chapterSubmitBtn.textContent =
+          "Enregistrer les modifications";
+      }
+
+      if (chapterStatusMsg) {
+        chapterStatusMsg.textContent =
+          "Mode modification.";
+      }
+
+      if (newChapterSection) {
+        newChapterSection.style.display =
+          "";
+
+        newChapterSection.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+
+    } catch (error) {
+      console.error(
+        "Erreur chargement chapitre :",
+        error
+      );
+
+      alert(
+        "Erreur : " +
+        (
+          error.message ||
+          "Impossible de charger le chapitre."
+        )
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   CHAPTERS — CREATE / UPDATE
+========================================================= */
+
+if (chapterForm) {
+  chapterForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (chapterStatusMsg) {
+        chapterStatusMsg.textContent =
+          "Traitement en cours...";
+      }
+
+      try {
+        const numberValue =
+          Number(
+            chapterNumber?.value
+          );
+
+        const label =
+          chapterLabel?.value.trim();
+
+        const title =
+          chapterTitle?.value.trim();
+
+        const content =
+          chapterContent?.value.trim();
+
+        const soundUrl =
+          chapterSound?.value.trim();
+
+        if (
+          !Number.isFinite(
+            numberValue
+          ) ||
+          numberValue < 1
+        ) {
+          throw new Error(
+            "Le numéro interne du chapitre est invalide."
+          );
+        }
+
+        if (!label) {
+          throw new Error(
+            "Le label du chapitre est obligatoire."
+          );
+        }
+
+        if (!content) {
+          throw new Error(
+            "Le contenu du chapitre est obligatoire."
+          );
+        }
+
+        if (!selectedSeries) {
+          throw new Error(
+            "Aucune œuvre n'est sélectionnée."
+          );
+        }
+
+
+        /* =================================================
+           MODE MODIFICATION
+        ================================================= */
+
+        if (editingChapterId) {
+
+          let chapterImageUrl =
+            editingChapterImageUrl;
+
+
+          /* -----------------------------------------------
+             NOUVELLE IMAGE ÉVENTUELLE
+          ----------------------------------------------- */
+
+          const imageFile =
+            chapterImage?.files?.[0];
+
+          if (
+            imageFile &&
+            imageFile instanceof File &&
+            imageFile.size > 0
+          ) {
+            const extension =
+              imageFile.name
+                .split(".")
+                .pop();
+
+            const fileName =
+              `${crypto.randomUUID()}.${extension}`;
+
+            const {
+              error:
+                uploadError
+            } =
+              await supabase.storage
+                .from("chapter-images")
+                .upload(
+                  fileName,
+                  imageFile,
+                  {
+                    upsert: false
+                  }
+                );
+
+            if (uploadError) {
+              throw uploadError;
+            }
+
+            const {
+              data:
+                publicUrlData
+            } =
+              supabase.storage
+                .from("chapter-images")
+                .getPublicUrl(
+                  fileName
+                );
+
+            chapterImageUrl =
+              publicUrlData.publicUrl;
+          }
+
+
+          /* -----------------------------------------------
+             UPDATE
+          ----------------------------------------------- */
+
+          const {
+            data:
+              updatedRows,
+            error:
+              updateError
+          } =
+            await supabase
+              .from("chapters")
+              .update({
+                chapter_number:
+                  numberValue,
+
+                chapter_label:
+                  label,
+
+                title:
+                  title || null,
+
+                content:
+                  content,
+
+                chapter_image_url:
+                  chapterImageUrl,
+
+                sound_url:
+                  soundUrl || null
+              })
+              .eq(
+                "id",
+                editingChapterId
+              )
+              .select("id");
+
+
+          if (updateError) {
+            throw updateError;
+          }
+
+
+          /* -----------------------------------------------
+             IMPORTANT :
+             RLS peut parfois retourner 0 ligne
+             sans erreur.
+          ----------------------------------------------- */
+
+          if (
+            !updatedRows ||
+            updatedRows.length === 0
+          ) {
+            throw new Error(
+              "Aucune ligne n'a été modifiée. Vérifie les permissions RLS et le rôle admin."
+            );
+          }
+
+
+          /* -----------------------------------------------
+             SUCCÈS
+          ----------------------------------------------- */
+
+          if (chapterStatusMsg) {
+            chapterStatusMsg.textContent =
+              "✅ Chapitre modifié avec succès.";
+          }
+
+          alert(
+            "✅ Chapitre modifié avec succès."
+          );
+
+          editingChapterId =
+            null;
+
+          editingChapterImageUrl =
+            null;
+
+          if (chapterSubmitBtn) {
+            chapterSubmitBtn.textContent =
+              "Publier le chapitre";
+          }
+
+          chapterForm.reset();
+
+          await loadChapters();
+          await loadDashboard();
+
+          return;
+        }
+
+
+        /* =================================================
+           MODE CRÉATION
+        ================================================= */
+
+        const imageFile =
+          chapterImage?.files?.[0];
+
+        if (
+          !imageFile ||
+          !(imageFile instanceof File) ||
+          imageFile.size === 0
+        ) {
+          throw new Error(
+            "L'image du chapitre est obligatoire."
+          );
+        }
+
+
+        /* -----------------------------------------------
+           UPLOAD IMAGE
+        ----------------------------------------------- */
 
         const extension =
           imageFile.name
             .split(".")
             .pop();
 
-        const filePath =
-          `${selectedSeries.id}/${Date.now()}-${createSlug(
-            title
-          )}.${extension}`;
-
-        chapterStatusMsg.textContent =
-          "⏳ Envoi de l'image...";
+        const fileName =
+          `${crypto.randomUUID()}.${extension}`;
 
         const {
-          error: uploadError
-        } = await supabase.storage
-          .from("chapter-images")
-          .upload(
-            filePath,
-            imageFile,
-            {
-              upsert: false
-            }
-          );
+          error:
+            uploadError
+        } =
+          await supabase.storage
+            .from("chapter-images")
+            .upload(
+              fileName,
+              imageFile,
+              {
+                upsert: false
+              }
+            );
 
         if (uploadError) {
           throw uploadError;
         }
 
         const {
-          data: publicUrlData
-        } = supabase.storage
-          .from("chapter-images")
-          .getPublicUrl(
-            filePath
-          );
+          data:
+            publicUrlData
+        } =
+          supabase.storage
+            .from("chapter-images")
+            .getPublicUrl(
+              fileName
+            );
 
-        chapterImageUrl =
+        const chapterImageUrl =
           publicUrlData.publicUrl;
+
+
+        /* -----------------------------------------------
+           INSERT CHAPTER
+        ----------------------------------------------- */
+
+        const {
+          data:
+            insertedRows,
+          error
+        } =
+          await supabase
+            .from("chapters")
+            .insert({
+              series_id:
+                selectedSeries,
+
+              chapter_number:
+                numberValue,
+
+              chapter_label:
+                label,
+
+              title:
+                title || null,
+
+              content:
+                content,
+
+              chapter_image_url:
+                chapterImageUrl,
+
+              sound_url:
+                soundUrl || null,
+
+              published_at:
+                new Date().toISOString(),
+
+              views:
+                0
+            })
+            .select("id");
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (
+          !insertedRows ||
+          insertedRows.length === 0
+        ) {
+          throw new Error(
+            "Le chapitre n'a pas été créé."
+          );
+        }
+
+
+        /* -----------------------------------------------
+           SUCCÈS
+        ----------------------------------------------- */
+
+        if (chapterStatusMsg) {
+          chapterStatusMsg.textContent =
+            "✅ Chapitre publié avec succès.";
+        }
+
+        alert(
+          "✅ Chapitre publié avec succès."
+        );
+
+        chapterForm.reset();
+
+        await loadChapters();
+        await loadDashboard();
+
+      } catch (error) {
+        console.error(
+          "Erreur chapitre :",
+          error
+        );
+
+        if (chapterStatusMsg) {
+          chapterStatusMsg.textContent =
+            "❌ " +
+            (
+              error.message ||
+              "Une erreur est survenue."
+            );
+        }
+
+        alert(
+          "❌ Erreur :\n\n" +
+          (
+            error.message ||
+            "Une erreur est survenue."
+          )
+        );
       }
-
-      chapterStatusMsg.textContent =
-        "⏳ Publication du chapitre...";
-
-      const {
-        error: insertError
-      } = await supabase
-        .from("chapters")
-        .insert({
-          series_id:
-            selectedSeries.id,
-
-          chapter_number:
-            chapterNumber,
-
-          chapter_label:
-            chapterLabel,
-
-          title,
-
-          content,
-
-          chapter_image_url:
-            chapterImageUrl,
-
-          sound_url:
-            soundUrl || null,
-
-          published_at:
-            new Date().toISOString(),
-
-          views: 0
-        });
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      chapterStatusMsg.className =
-        "status success";
-
-      chapterStatusMsg.textContent =
-        "✅ Chapitre publié avec succès !";
-
-      addChapterForm.reset();
-
-      editingChapterId = null;
-      editingChapterImageUrl = null;
-
-      $("chapterImage").required =
-        true;
-
-      chapterSubmitBtn.textContent =
-        "Publier le chapitre";
-
-      newChapterBtn.textContent =
-        "➕ Nouveau chapitre";
-
-      await loadChapters();
-      await loadDashboard();
-
-      chapterSubmitBtn.disabled =
-        false;
-
-      showPage("chapters");
-
-    } catch (error) {
-
-      console.error(error);
-
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ Erreur : " +
-        error.message;
-
-      chapterSubmitBtn.disabled =
-        false;
     }
-  }
-);
+  );
+}
 
 
-/* =========================
-   SUPPRIMER UN CHAPITRE
-========================= */
+/* =========================================================
+   CHAPTERS — DELETE
+========================================================= */
 
 document.addEventListener(
   "click",
   async (event) => {
-
     const button =
       event.target.closest(
-        "[data-delete-chapter]"
+        ".btn-delete-chapter"
       );
 
-    if (!button) return;
-
-    const id =
-      button.dataset.deleteChapter;
-
-    if (
-      !confirm(
-        "Supprimer définitivement ce chapitre ?"
-      )
-    ) {
+    if (!button) {
       return;
     }
 
-    const {
-      error
-    } = await supabase
-      .from("chapters")
-      .delete()
-      .eq("id", id);
+    const id =
+      button.dataset.id;
 
-    if (error) {
-      console.error(error);
+    if (!id) {
+      return;
+    }
+
+    const confirmed =
+      confirm(
+        "Voulez-vous vraiment supprimer ce chapitre ?\n\nCette action est irréversible."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const {
+        data:
+          deletedRows,
+        error
+      } =
+        await supabase
+          .from("chapters")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+
+      if (error) {
+        console.error(error);
+
+        alert(
+          "Erreur : " +
+          error.message
+        );
+
+        return;
+      }
+
+
+      /* -----------------------------------------------
+         IMPORTANT :
+         Vérifie que Supabase a réellement supprimé
+         une ligne.
+      ----------------------------------------------- */
+
+      if (
+        !deletedRows ||
+        deletedRows.length === 0
+      ) {
+        alert(
+          "❌ Le chapitre n'a pas été supprimé.\n\n" +
+          "Aucune ligne n'a été supprimée.\n\n" +
+          "Cela indique probablement un problème de permission RLS ou de rôle admin."
+        );
+
+        return;
+      }
+
+
+      /* -----------------------------------------------
+         SUCCÈS
+      ----------------------------------------------- */
+
+      alert(
+        "✅ Chapitre supprimé avec succès."
+      );
+
+      await loadChapters();
+      await loadDashboard();
+
+    } catch (error) {
+      console.error(
+        "Erreur suppression chapitre :",
+        error
+      );
 
       alert(
         "Erreur : " +
-        error.message
+        (
+          error.message ||
+          "Impossible de supprimer le chapitre."
+        )
       );
-
-      return;
     }
-
-    /*
-     * On recharge uniquement
-     * les données nécessaires.
-     */
-    await loadChapters();
-    await loadDashboard();
   }
 );
 
 
-/* =========================
-   SONS
-========================= */
+/* =========================================================
+   SOUNDS — LOAD
+========================================================= */
 
 async function loadSounds() {
-  if (!soundsList) return;
-
-  soundsList.innerHTML =
-    "Chargement...";
-
-  const {
-    data,
-    error
-  } = await supabase.storage
-    .from("sounds")
-    .list("", {
-      limit: 1000,
-      sortBy: {
-        column: "name",
-        order: "asc"
-      }
-    });
-
-  if (error) {
-    console.error(error);
-
-    soundsList.innerHTML = `
-      <div class="item">
-        <p class="error">
-          Erreur : ${escapeHTML(
-            error.message
-          )}
-        </p>
-      </div>
-    `;
-
-    return;
-  }
-
-  const files =
-    (data || []).filter(
-      (file) => file.name
-    );
-
-  if (files.length === 0) {
-    soundsList.innerHTML = `
-      <div class="item">
-        Aucun son pour le moment.
-      </div>
-    `;
-
+  if (!soundsList) {
     return;
   }
 
   soundsList.innerHTML =
-    files
-      .map((file) => {
+    "<p>Chargement...</p>";
 
-        const {
-          data: publicUrlData
-        } = supabase.storage
-          .from("sounds")
-          .getPublicUrl(
-            file.name
-          );
-
-        const url =
-          publicUrlData.publicUrl;
-
-        return `
-          <div class="item">
-
-            <div class="sound-row">
-
-              <div class="sound-name">
-                <strong>
-                  ${escapeHTML(
-                    file.name
-                  )}
-                </strong>
-              </div>
-
-              <audio
-                controls
-                src="${escapeAttribute(
-                  url
-                )}"
-              ></audio>
-
-              <button
-                type="button"
-                class="danger"
-                data-delete-sound="${escapeAttribute(
-                  file.name
-                )}"
-              >
-                🗑️ Supprimer
-              </button>
-
-            </div>
-
-          </div>
-        `;
-      })
-      .join("");
-}
-
-
-async function loadSoundOptions() {
-  if (!chapterSound) return;
-
-  const currentValue =
-    chapterSound.value;
-
-  const {
-    data,
-    error
-  } = await supabase.storage
-    .from("sounds")
-    .list("", {
-      limit: 1000,
-      sortBy: {
-        column: "name",
-        order: "asc"
-      }
-    });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  const files =
-    (data || []).filter(
-      (file) => file.name
-    );
-
-  chapterSound.innerHTML = `
-    <option value="">
-      Aucun son
-    </option>
-  `;
-
-  files.forEach((file) => {
-
+  try {
     const {
-      data: publicUrlData
-    } = supabase.storage
-      .from("sounds")
-      .getPublicUrl(
-        file.name
-      );
+      data,
+      error
+    } =
+      await supabase.storage
+        .from("sounds")
+        .list("", {
+          limit: 100,
+          sortBy: {
+            column: "name",
+            order: "asc"
+          }
+        });
 
-    const option =
-      document.createElement(
-        "option"
-      );
+    if (error) {
+      throw error;
+    }
 
-    option.value =
-      publicUrlData.publicUrl;
+    const sounds =
+      data || [];
 
-    option.textContent =
-      file.name;
-
-    chapterSound.appendChild(
-      option
-    );
-  });
-
-  /*
-   * Lors d'une modification,
-   * on restaure le son actuel.
-   */
-  if (currentValue) {
-    chapterSound.value =
-      currentValue;
-  }
-}
-
-
-/* =========================
-   AJOUTER UN SON
-========================= */
-
-soundForm.addEventListener(
-  "submit",
-  async (event) => {
-    event.preventDefault();
-
-    const file =
-      $("soundFile").files[0];
-
-    if (!file) {
-      soundStatusMsg.className =
-        "status error";
-
-      soundStatusMsg.textContent =
-        "❌ Sélectionne un fichier audio.";
+    if (!sounds.length) {
+      soundsList.innerHTML =
+        "<p>Aucun son.</p>";
 
       return;
     }
 
-    soundSubmitBtn.disabled =
-      true;
+    soundsList.innerHTML =
+      sounds
+        .map((sound) => {
+          return `
+            <div
+              class="admin-item"
+            >
 
-    soundStatusMsg.className =
-      "status info";
+              <div class="item-main">
 
-    soundStatusMsg.textContent =
-      "⏳ Envoi du son...";
+                <div class="item-info">
 
-    try {
+                  <h3>
+                    ${escapeHTML(
+                      sound.name
+                    )}
+                  </h3>
 
-      const extension =
-        file.name
-          .split(".")
-          .pop();
+                </div>
 
-      const baseName =
-        file.name
-          .replace(
-            /\.[^/.]+$/,
-            ""
-          );
+              </div>
 
-      const fileName =
-        `${createSlug(
-          baseName
-        )}-${Date.now()}.${extension}`;
+              <div class="item-actions">
+
+                <button
+                  type="button"
+                  class="btn-delete-sound"
+                  data-name="${escapeAttribute(
+                    sound.name
+                  )}"
+                >
+                  Supprimer
+                </button>
+
+              </div>
+
+            </div>
+          `;
+        })
+        .join("");
+
+  } catch (error) {
+    console.error(
+      "Erreur chargement sons :",
+      error
+    );
+
+    soundsList.innerHTML =
+      `<p>Erreur : ${escapeHTML(
+        error.message
+      )}</p>`;
+  }
+}
+
+
+/* =========================================================
+   SOUNDS — OPTIONS CHAPTER
+========================================================= */
+
+async function loadSoundOptions() {
+  if (!chapterSound) {
+    return;
+  }
+
+  try {
+    const {
+      data,
+      error
+    } =
+      await supabase.storage
+        .from("sounds")
+        .list("", {
+          limit: 100
+        });
+
+    if (error) {
+      throw error;
+    }
+
+    const sounds =
+      data || [];
+
+    chapterSound.innerHTML =
+      `
+        <option value="">
+          Aucun son
+        </option>
+      `;
+
+    sounds.forEach((sound) => {
+      if (!sound.name) {
+        return;
+      }
 
       const {
-        error
-      } = await supabase.storage
-        .from("sounds")
-        .upload(
-          fileName,
-          file,
-          {
-            upsert: false
-          }
+        data:
+          publicUrlData
+      } =
+        supabase.storage
+          .from("sounds")
+          .getPublicUrl(
+            sound.name
+          );
+
+      const option =
+        document.createElement(
+          "option"
         );
+
+      option.value =
+        publicUrlData.publicUrl;
+
+      option.textContent =
+        sound.name;
+
+      chapterSound.appendChild(
+        option
+      );
+    });
+
+  } catch (error) {
+    console.error(
+      "Erreur options sons :",
+      error
+    );
+  }
+}
+
+
+/* =========================================================
+   SOUNDS — ADD
+========================================================= */
+
+if (soundForm) {
+  soundForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
+
+      if (soundStatusMsg) {
+        soundStatusMsg.textContent =
+          "Upload en cours...";
+      }
+
+      try {
+        const file =
+          soundFile?.files?.[0];
+
+        if (
+          !file ||
+          !(file instanceof File) ||
+          file.size === 0
+        ) {
+          throw new Error(
+            "Sélectionne un fichier audio."
+          );
+        }
+
+        let finalName =
+          soundName?.value.trim();
+
+        if (!finalName) {
+          finalName =
+            file.name;
+        }
+
+        const extension =
+          file.name
+            .split(".")
+            .pop();
+
+        if (
+          !finalName
+            .toLowerCase()
+            .endsWith(
+              `.${extension.toLowerCase()}`
+            )
+        ) {
+          finalName +=
+            `.${extension}`;
+        }
+
+        const {
+          error
+        } =
+          await supabase.storage
+            .from("sounds")
+            .upload(
+              finalName,
+              file,
+              {
+                upsert: false
+              }
+            );
+
+        if (error) {
+          throw error;
+        }
+
+        if (soundStatusMsg) {
+          soundStatusMsg.textContent =
+            "✅ Son ajouté avec succès.";
+        }
+
+        soundForm.reset();
+
+        await loadSounds();
+        await loadSoundOptions();
+
+      } catch (error) {
+        console.error(
+          "Erreur ajout son :",
+          error
+        );
+
+        if (soundStatusMsg) {
+          soundStatusMsg.textContent =
+            "❌ " +
+            (
+              error.message ||
+              "Erreur lors de l'ajout."
+            );
+        }
+      }
+    }
+  );
+}
+
+
+/* =========================================================
+   SOUNDS — DELETE
+========================================================= */
+
+document.addEventListener(
+  "click",
+  async (event) => {
+    const button =
+      event.target.closest(
+        ".btn-delete-sound"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    const name =
+      button.dataset.name;
+
+    if (!name) {
+      return;
+    }
+
+    const confirmed =
+      confirm(
+        `Supprimer le son "${name}" ?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const {
+        error
+      } =
+        await supabase.storage
+          .from("sounds")
+          .remove([
+            name
+          ]);
 
       if (error) {
         throw error;
       }
 
-      soundStatusMsg.className =
-        "status success";
-
-      soundStatusMsg.textContent =
-        "✅ Son ajouté avec succès !";
-
-      soundForm.reset();
+      alert(
+        "✅ Son supprimé."
+      );
 
       await loadSounds();
       await loadSoundOptions();
-      await loadDashboard();
 
     } catch (error) {
-
-      console.error(error);
-
-      soundStatusMsg.className =
-        "status error";
-
-      soundStatusMsg.textContent =
-        "❌ Erreur : " +
-        error.message;
-
-    } finally {
-      soundSubmitBtn.disabled =
-        false;
-    }
-  }
-);
-
-
-/* =========================
-   SUPPRIMER UN SON
-========================= */
-
-document.addEventListener(
-  "click",
-  async (event) => {
-
-    const button =
-      event.target.closest(
-        "[data-delete-sound]"
+      console.error(
+        "Erreur suppression son :",
+        error
       );
-
-    if (!button) return;
-
-    const fileName =
-      button.dataset.deleteSound;
-
-    if (
-      !confirm(
-        "Supprimer définitivement ce son ?"
-      )
-    ) {
-      return;
-    }
-
-    const {
-      error
-    } = await supabase.storage
-      .from("sounds")
-      .remove([
-        fileName
-      ]);
-
-    if (error) {
-      console.error(error);
 
       alert(
         "Erreur : " +
-        error.message
+        (
+          error.message ||
+          "Impossible de supprimer le son."
+        )
       );
-
-      return;
-    }
-
-    await loadSounds();
-    await loadSoundOptions();
-    await loadDashboard();
-  }
-);
-
-
-/* =========================
-   AUTH STATE
-========================= */
-
-supabase.auth.onAuthStateChange(
-  (event, session) => {
-
-    console.log(
-      "Auth :",
-      event
-    );
-
-    if (session) {
-      showAdmin(
-        session.user
-      );
-    } else {
-      showLogin();
     }
   }
 );
 
 
-/* =========================
-   DEMARRAGE
-========================= */
+/* =========================================================
+   START
+========================================================= */
 
 checkSession();
