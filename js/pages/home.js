@@ -17,6 +17,17 @@ const featuredContainer =
 const recentContainer =
   document.getElementById('recent-grid');
 
+const featuredPrev =
+  document.getElementById('featuredPrev');
+
+const featuredNext =
+  document.getElementById('featuredNext');
+
+const featuredDots =
+  document.getElementById('featuredDots');
+const recentContainer =
+  document.getElementById('recent-grid');
+
 
 // =====================================================
 // TIMEOUT
