@@ -316,6 +316,33 @@ console.log(
     </div>
   `;
 }
+
+    // =================================================
+// INITIALISATION DU GRAND CARROUSEL
+// =================================================
+
+function initGrandCarousel() {
+
+  if (!grandCarouselSlides.length) return;
+
+  let currentGrandIndex = 0;
+
+  function showGrandSlide() {
+
+    const slide =
+      grandCarouselSlides[currentGrandIndex];
+
+    if (!slide) return;
+
+    console.log(
+      'HOME : SLIDE GRAND CARROUSEL :',
+      slide
+    );
+
+  }
+
+  showGrandSlide()
+}
     // =================================================
     // CHARGEMENT DES SÉRIES
     // =================================================
@@ -706,6 +733,7 @@ console.log(
 // =====================================================
 
 loadHomePage();
+initGrandCarousel();
 
 
 // =====================================================
