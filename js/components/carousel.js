@@ -74,4 +74,4 @@ function startAutoScroll() {
     requestAnimationFrame(animate);
 }
 
-startAutoScroll();
+startAutoScroll();}
