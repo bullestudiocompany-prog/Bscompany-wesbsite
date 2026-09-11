@@ -626,6 +626,7 @@ function initGrandCarousel() {
 }
     }
 
+    initGrandCarousel();
 
     // =================================================
     // SORTIES RÉCENTES
