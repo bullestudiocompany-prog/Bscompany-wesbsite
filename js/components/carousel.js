@@ -36,6 +36,7 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
   }
 
       // =================================================
+// ANI// =================================================
 // ANIMATION AUTOMATIQUE
 // =================================================
 
@@ -47,23 +48,73 @@ function startAutoScroll() {
   clearInterval(autoScrollTimer);
   cancelAnimationFrame(autoScrollAnimation);
 
+  const cards = [...viewport.querySelectorAll('.featured-card')];
+
+  if (cards.length === 0) return;
+
+  const initialMaxScroll =
+    viewport.scrollWidth - viewport.clientWidth;
+
+  // Si toutes les cartes tiennent dans le viewport,
+  // on crée plusieurs copies pour permettre un défilement continu.
+  let loopDistance = null;
+
+  if (initialMaxScroll <= 0) {
+
+    const gap =
+      parseFloat(getComputedStyle(viewport).gap) || 0;
+
+    const cardsWidth = cards.reduce(
+      (total, card) =>
+        total + card.getBoundingClientRect().width,
+      0
+    );
+
+    // Distance entre le début d'une série
+    // et le début de la série suivante.
+    loopDistance =
+      cardsWidth + gap * cards.length;
+
+    // On ajoute suffisamment de copies pour
+    // avoir toujours du contenu devant le viewport.
+    while (
+      viewport.scrollWidth - viewport.clientWidth <
+      loopDistance
+    ) {
+
+      cards.forEach(card => {
+        viewport.appendChild(card.cloneNode(true));
+      });
+    }
+  }
+
   function animate() {
 
-    const maxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
+    if (loopDistance !== null) {
 
-    if (maxScroll <= 0) {
+      // Défilement réellement continu
+      viewport.scrollLeft += 0.5;
 
-      autoScrollAnimation =
-        requestAnimationFrame(animate);
+      // Retour invisible au début de la série suivante
+      if (viewport.scrollLeft >= loopDistance) {
+        viewport.scrollLeft -= loopDistance;
+      }
 
-      return;
-    }
+    } else {
 
-    viewport.scrollLeft += 0.5;
+      const maxScroll =
+        viewport.scrollWidth - viewport.clientWidth;
 
-    if (viewport.scrollLeft >= maxScroll - 1) {
-      viewport.scrollLeft = 0;
+      if (maxScroll > 0) {
+
+        // Défilement continu
+        viewport.scrollLeft += 0.5;
+
+        // Retour au début lorsqu'on arrive à la fin
+        if (viewport.scrollLeft >= maxScroll) {
+          viewport.scrollLeft = 0;
+        }
+      }
     }
 
     autoScrollAnimation =
