@@ -34,5 +34,53 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
       }, 80);
     });
   }
+
+    // =================================================
+  // ANIMATION AUTOMATIQUE
+  // =================================================
+
+  let autoScrollTimer;
+
+  function startAutoScroll() {
+    clearInterval(autoScrollTimer);
+
+    autoScrollTimer = setInterval(() => {
+      const maxScroll =
+        viewport.scrollWidth - viewport.clientWidth;
+
+      if (maxScroll <= 0) return;
+
+      const card =
+        viewport.querySelector('.featured-card');
+
+      if (!card) return;
+
+      const cardWidth =
+        card.getBoundingClientRect().width;
+
+      const gap = 18;
+
+      const pageWidth =
+        (cardWidth + gap) * visibleCount;
+
+      if (
+        viewport.scrollLeft + pageWidth >=
+        maxScroll - 5
+      ) {
+        viewport.scrollTo({
+          left: 0,
+          behavior: 'smooth'
+        });
+      } else {
+        viewport.scrollBy({
+          left: pageWidth,
+          behavior: 'smooth'
+        });
+      }
+
+    }, 5000);
+  }
+
+  startAutoScroll();
 }
 
