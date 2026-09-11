@@ -44,27 +44,51 @@
   <section class="hero-section">
     <div class="hero-container">
 
+      <div class="hero-text">
+        <p class="hero-eyebrow">À la une</p>
+        <h1>Découvrez des histoires <span>qui vous transportent</span></h1>
+        <p class="hero-sub">Webcomics, webnovels, romans... Des récits uniques, créés pour vous faire voyager.</p>
+        <button class="btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <a href="./romans.html">Commencer la lecture</a> 
+
+        </button>
+      </div>
+
       <div id="grandCarousel">
-<div class="hero-text">
-  ...
-</div>
 
-<div class="hero-text">
-  ...
-</div>
-
-<div id="grandCarousel">
-
+  <!-- ZONE DES ŒUVRES -->
   <div
     class="grand-carousel-slide grand-carousel-oeuvres"
     id="grandCarouselWorks"
   >
 
     <div class="carousel">
-      ...
+
+      <button
+        class="carousel-arrow prev"
+        id="featuredPrev"
+        aria-label="Précédent"
+      >‹</button>
+
+      <div
+        class="carousel-viewport"
+        id="featuredCarousel"
+      >
+        <!-- cartes à la une injectées par JS -->
+      </div>
+
+      <button
+        class="carousel-arrow next"
+        id="featuredNext"
+        aria-label="Suivant"
+      >›</button>
+
     </div>
 
   </div>
+
+  <!-- LES INFORMATIONS / ÉVÉNEMENTS SERONT AJOUTÉS PAR JS -->
 
 </div>
     <div class="carousel-dots" id="featuredDots"></div>
@@ -160,4 +184,4 @@
   </script>
   <script type="module" src="js/pages/home.js?v=3"></script>
 </body>
-</html>
+            </html>
