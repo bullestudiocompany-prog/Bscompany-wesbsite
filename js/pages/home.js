@@ -233,8 +233,40 @@ async function loadHomePage() {
   try {
 
     // =================================================
-// PRÉPARATION DU GRAND CARROUSEL
-// =================================================
+    // CHARGEMENT DES SLIDES DU GRAND CARROUSEL
+    // =================================================
+
+    const {
+      data: carouselSlides,
+      error: carouselSlidesError
+    } = await withTimeout(
+      supabase
+        .from('carousel_slides')
+        .select('*')
+        .eq('active', true)
+        .order('display_order', {
+          ascending: true
+        }),
+      8000
+    );
+
+    if (carouselSlidesError) {
+      console.error(
+        'HOME : ERREUR CHARGEMENT SLIDES :',
+        carouselSlidesError
+      );
+    }
+
+    console.log(
+      'HOME : SLIDES DU GRAND CARROUSEL :',
+      carouselSlides || []
+    );
+
+
+    // =================================================
+    // PRÉPARATION DU GRAND CARROUSEL
+    // =================================================
+    // =================================================
 
 const grandCarousel =
   document.getElementById('grandCarousel');
