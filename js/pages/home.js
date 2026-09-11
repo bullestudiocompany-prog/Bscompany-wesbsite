@@ -452,24 +452,72 @@ function initGrandCarousel() {
       slide.style.display =
         index === currentGrandIndex
           ? ''
-          : 'none';
+function initGrandCarousel() {
+
+  if (
+    !grandCarousel ||
+    !grandCarouselSlides.length
+  ) {
+    return;
+  }
+
+  let currentGrandIndex = 0;
+  let grandTimer = null;
+
+
+  function showGrandSlide() {
+
+    const logicalSlide =
+      grandCarouselSlides[currentGrandIndex];
+
+    if (!logicalSlide) {
+      return;
+    }
+
+
+    const slides =
+      grandCarousel.querySelectorAll(
+        '.grand-carousel-slide'
+      );
+
+
+    slides.forEach(slide => {
+
+      slide.style.display = 'none';
 
     });
 
 
-    const currentSlide =
-      grandCarouselSlides[
-        currentGrandIndex
-      ];
+    let visibleSlide;
 
-    if (!currentSlide) {
-      return;
+
+    if (logicalSlide.type === 'oeuvres') {
+
+      visibleSlide =
+        grandCarousel.querySelector(
+          '.grand-carousel-oeuvres'
+        );
+
+    } else {
+
+      visibleSlide =
+        grandCarousel.querySelector(
+          `[data-grand-type="${logicalSlide.type}"][data-grand-id="${logicalSlide.id}"]`
+        );
+
+    }
+
+
+    if (visibleSlide) {
+
+      visibleSlide.style.display = '';
+
     }
 
 
     const duration =
       Number(
-        currentSlide.duration || 10
+        logicalSlide.duration || 10
       );
 
 
@@ -494,6 +542,7 @@ function initGrandCarousel() {
 
   showGrandSlide();
 
+}
                          }
     // =================================================
     // CHARGEMENT DES SÉRIES
