@@ -319,7 +319,14 @@ async function loadHomePage() {
 
       try {
 
-  initCarousel();
+  initCarousel({
+  viewport: featuredContainer,
+  prevBtn: featuredPrev,
+  nextBtn: featuredNext,
+  dotsContainer: featuredDots,
+  itemCount: featured.length,
+  visibleCount: 4
+});
 
 } catch (carouselError) {
 
