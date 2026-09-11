@@ -1375,6 +1375,7 @@ addChapterForm.addEventListener(
          * les informations éditoriales.
          */
         const {
+          data: updatedChapter,
           error: updateError
         } = await supabase
           .from("chapters")
@@ -1398,10 +1399,20 @@ addChapterForm.addEventListener(
           .eq(
             "id",
             editingChapterId
-          );
+          )
+          .select("id");
 
         if (updateError) {
           throw updateError;
+        }
+
+        if (
+          !updatedChapter ||
+          updatedChapter.length === 0
+        ) {
+          throw new Error(
+            "Le chapitre n'a pas été modifié. Supabase n'a modifié aucune ligne."
+          );
         }
 
         chapterStatusMsg.className =
@@ -1596,18 +1607,31 @@ document.addEventListener(
     }
 
     const {
+      data: deletedChapter,
       error
     } = await supabase
       .from("chapters")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
 
     if (error) {
       console.error(error);
 
       alert(
-        "Erreur : " +
+        "Erreur lors de la suppression : " +
         error.message
+      );
+
+      return;
+    }
+
+    if (
+      !deletedChapter ||
+      deletedChapter.length === 0
+    ) {
+      alert(
+        "❌ Le chapitre n'a pas été supprimé. Supabase n'a supprimé aucune ligne."
       );
 
       return;
