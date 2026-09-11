@@ -40,88 +40,41 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
 // =================================================
 
 let autoScrollTimer;
+let autoScrollAnimation;
 
 function startAutoScroll() {
 
   clearInterval(autoScrollTimer);
+  cancelAnimationFrame(autoScrollAnimation);
 
-  autoScrollTimer = setInterval(() => {
-
-    const cards =
-      [...viewport.querySelectorAll('.featured-card')];
-
-    if (cards.length <= 1) return;
-
-    const card = cards[0];
-
-    const cardWidth =
-      card.getBoundingClientRect().width;
-
-    const gap = 18;
+  function animate() {
 
     const maxScroll =
       viewport.scrollWidth - viewport.clientWidth;
 
-    // =================================================
-    // CAS NORMAL : IL Y A ASSEZ D'ŒUVRES POUR DÉFILER
-    // =================================================
+    if (maxScroll <= 0) {
 
-    if (maxScroll > 0) {
-
-      const currentScroll =
-        viewport.scrollLeft;
-
-      const nextPosition =
-        currentScroll + cardWidth + gap;
-
-      if (nextPosition >= maxScroll - 2) {
-
-        viewport.scrollTo({
-          left: 0,
-          behavior: 'smooth'
-        });
-
-      } else {
-
-        viewport.scrollTo({
-          left: nextPosition,
-          behavior: 'smooth'
-        });
-
-      }
+      autoScrollAnimation =
+        requestAnimationFrame(animate);
 
       return;
     }
 
-    // =================================================
-    // CAS : SEULEMENT QUELQUES ŒUVRES ET AUCUN DÉFILEMENT
-    // =================================================
+    viewport.scrollLeft += 0.5;
 
-    const clone =
-      card.cloneNode(true);
-
-    viewport.appendChild(clone);
-
-    const newMaxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
-
-    viewport.scrollTo({
-      left: newMaxScroll,
-      behavior: 'smooth'
-    });
-
-    setTimeout(() => {
-
-      card.remove();
-
-      clone.replaceWith(card);
-
+    if (viewport.scrollLeft >= maxScroll - 1) {
       viewport.scrollLeft = 0;
+    }
 
-    }, 700);
+    autoScrollAnimation =
+      requestAnimationFrame(animate);
+  }
 
-  }, 5000);
+  autoScrollAnimation =
+    requestAnimationFrame(animate);
 }
 
-startAutoScroll();}
+startAutoScroll();
+}
+  }
 
