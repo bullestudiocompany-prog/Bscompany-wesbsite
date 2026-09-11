@@ -65,6 +65,13 @@
 }
 .carousel-dots span.active{background:#fff;width:18px;border-radius:4px;}
 
+.featured-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
 /* ========================= SORTIES RÉCENTES ========================= */
 .recent-grid{
   display:grid;
