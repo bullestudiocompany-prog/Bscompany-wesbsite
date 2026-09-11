@@ -277,6 +277,45 @@ console.log(
   'HOME : GRAND CARROUSEL :',
   grandCarouselSlides
 );
+
+    function createGrandCarouselSlide(slide) {
+
+  if (slide.type === 'oeuvres') {
+    return `
+      <div class="grand-carousel-slide grand-carousel-oeuvres">
+        <div id="grandCarouselWorks"></div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="grand-carousel-slide grand-carousel-${slide.type}">
+      ${slide.image_url ? `
+        <img
+          src="${slide.image_url}"
+          alt="${slide.title || ''}"
+        >
+      ` : ''}
+
+      <div class="grand-carousel-content">
+        <h2>${slide.title || ''}</h2>
+
+        ${slide.description ? `
+          <p>${slide.description}</p>
+        ` : ''}
+
+        ${slide.button_text && slide.button_url ? `
+          <a
+            href="${slide.button_url}"
+            class="grand-carousel-button"
+          >
+            ${slide.button_text}
+          </a>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
     // =================================================
     // CHARGEMENT DES SÉRIES
     // =================================================
