@@ -1091,3 +1091,86 @@
             new Date(
               b.created_at || 0
             ).getTime();
+
+
+          return dateB - dateA;
+
+        });
+
+      }
+
+
+      /* =========================
+         COMPTEUR
+         ========================= */
+
+      const count =
+        romans.length;
+
+
+      resultsCount.textContent =
+        `${count} roman${count > 1 ? 's' : ''}`;
+
+
+      /* =========================
+         AUCUN RÉSULTAT
+         ========================= */
+
+      if (count === 0) {
+
+        romansGrid.innerHTML = `
+          <p class="empty-state">
+            Aucun roman ne correspond
+            à votre recherche.
+          </p>
+        `;
+
+        return;
+
+      }
+
+
+      /* =========================
+         CARTES
+         ========================= */
+
+      romansGrid.innerHTML =
+        romans
+          .map(roman => createCard(roman))
+          .join('');
+
+    }
+
+
+    /* =========================
+       ÉVÉNEMENTS
+       ========================= */
+
+    searchInput.addEventListener(
+      'input',
+      renderRomans
+    );
+
+
+    genreFilter.addEventListener(
+      'change',
+      renderRomans
+    );
+
+
+    sortSelect.addEventListener(
+      'change',
+      renderRomans
+    );
+
+
+    /* =========================
+       LANCEMENT
+       ========================= */
+
+    loadRomans();
+
+  </script>
+
+</body>
+</html>
