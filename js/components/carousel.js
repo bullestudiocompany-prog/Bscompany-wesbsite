@@ -35,8 +35,7 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
     });
   }
 
-    // =================================================
-  //  // =================================================
+      // =================================================
   // ANIMATION AUTOMATIQUE
   // =================================================
 
@@ -48,28 +47,24 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
 
     autoScrollTimer = setInterval(() => {
 
-      const card =
-        viewport.querySelector('.featured-card');
+      const card = viewport.querySelector('.featured-card');
 
       if (!card) return;
 
-      const cardWidth =
-        card.getBoundingClientRect().width;
-
+      const cardWidth = card.getBoundingClientRect().width;
       const gap = 18;
 
       const maxScroll =
-        viewport.scrollWidth -
-        viewport.clientWidth;
+        viewport.scrollWidth - viewport.clientWidth;
 
       if (maxScroll <= 0) return;
 
-      const nextPosition =
-        viewport.scrollLeft +
-        cardWidth +
-        gap;
+      const currentScroll = viewport.scrollLeft;
 
-      if (nextPosition >= maxScroll) {
+      const nextPosition =
+        currentScroll + cardWidth + gap;
+
+      if (nextPosition >= maxScroll - 2) {
 
         viewport.scrollTo({
           left: 0,
