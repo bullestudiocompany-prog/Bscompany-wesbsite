@@ -35,10 +35,6 @@
       display: none !important;
     }
 
-    /* =========================
-       LOGIN
-    ========================= */
-
     #loginSection {
       width: min(430px, calc(100% - 30px));
       margin: 70px auto;
@@ -153,10 +149,6 @@
       font-size: 14px;
     }
 
-    /* =========================
-       ADMIN LAYOUT
-    ========================= */
-
     .admin-layout {
       display: flex;
       min-height: 100vh;
@@ -248,10 +240,6 @@
       color: #8b98aa;
     }
 
-    /* =========================
-       DASHBOARD
-    ========================= */
-
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -282,10 +270,6 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 15px;
     }
-
-    /* =========================
-       LISTES
-    ========================= */
 
     .list {
       display: grid;
@@ -344,10 +328,6 @@
       font-size: 13px;
     }
 
-    /* =========================
-       FORMS
-    ========================= */
-
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -377,10 +357,6 @@
       font-size: 17px;
     }
 
-    /* =========================
-       SOUNDS
-    ========================= */
-
     .sound-row {
       display: flex;
       align-items: center;
@@ -398,12 +374,19 @@
       min-width: 150px;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
+    .chapter-image-info {
+      color: #8b98aa;
+      font-size: 13px;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+
+    .edit-mode {
+      background: #172554;
+      border-color: #2563eb;
+    }
 
     @media (max-width: 750px) {
-
       .sidebar {
         width: 100%;
         height: auto;
@@ -482,20 +465,21 @@
 
 <body>
 
-  <!-- =========================
-       LOGIN
-  ========================= -->
-
   <section id="loginSection">
     <div class="login-logo">BSCompany</div>
-    <div class="login-subtitle">Administration</div>
+
+    <div class="login-subtitle">
+      Administration
+    </div>
 
     <div class="box">
       <h2>Connexion</h2>
 
       <form id="loginForm">
+        <label for="loginEmail">
+          Email
+        </label>
 
-        <label for="loginEmail">Email</label>
         <input
           type="email"
           id="loginEmail"
@@ -503,7 +487,10 @@
           required
         >
 
-        <label for="loginPassword">Mot de passe</label>
+        <label for="loginPassword">
+          Mot de passe
+        </label>
+
         <input
           type="password"
           id="loginPassword"
@@ -516,32 +503,31 @@
         </button>
 
         <p id="loginError"></p>
-
       </form>
     </div>
   </section>
 
 
-  <!-- =========================
-       ADMIN
-  ========================= -->
-
   <section id="adminSection" class="hidden">
 
     <div class="admin-layout">
-
-      <!-- SIDEBAR -->
 
       <aside class="sidebar">
 
         <div class="brand">
           BSCompany
-          <small>Administration</small>
+
+          <small>
+            Administration
+          </small>
         </div>
 
         <nav class="nav">
 
-          <button data-page="dashboard" class="active">
+          <button
+            data-page="dashboard"
+            class="active"
+          >
             📊 Dashboard
           </button>
 
@@ -561,7 +547,10 @@
 
         <div class="sidebar-bottom">
 
-          <button id="logoutBtn" class="danger">
+          <button
+            id="logoutBtn"
+            class="danger"
+          >
             🚪 Déconnexion
           </button>
 
@@ -570,44 +559,83 @@
       </aside>
 
 
-      <!-- MAIN -->
-
       <main class="main">
 
-
-        <!-- =========================
-             DASHBOARD
-        ========================= -->
-
-        <section id="page-dashboard" class="page active">
+        <section
+          id="page-dashboard"
+          class="page active"
+        >
 
           <div class="page-header">
-            <h1>Dashboard</h1>
-            <p>Vue générale de BSCompany.</p>
+
+            <h1>
+              Dashboard
+            </h1>
+
+            <p>
+              Vue générale de BSCompany.
+            </p>
+
           </div>
+
 
           <div class="stats">
 
             <div class="stat">
-              <div class="stat-label">Œuvres</div>
-              <div class="stat-number" id="seriesCount">0</div>
+
+              <div class="stat-label">
+                Œuvres
+              </div>
+
+              <div
+                class="stat-number"
+                id="seriesCount"
+              >
+                0
+              </div>
+
             </div>
 
-            <div class="stat">
-              <div class="stat-label">Chapitres</div>
-              <div class="stat-number" id="chaptersCount">0</div>
-            </div>
 
             <div class="stat">
-              <div class="stat-label">Sons</div>
-              <div class="stat-number" id="soundsCount">0</div>
+
+              <div class="stat-label">
+                Chapitres
+              </div>
+
+              <div
+                class="stat-number"
+                id="chaptersCount"
+              >
+                0
+              </div>
+
+            </div>
+
+
+            <div class="stat">
+
+              <div class="stat-label">
+                Sons
+              </div>
+
+              <div
+                class="stat-number"
+                id="soundsCount"
+              >
+                0
+              </div>
+
             </div>
 
           </div>
 
+
           <div class="box">
 
-            <h2>Actions rapides</h2>
+            <h2>
+              Actions rapides
+            </h2>
 
             <div class="quick-actions">
 
@@ -630,34 +658,50 @@
         </section>
 
 
-        <!-- =========================
-             SERIES
-        ========================= -->
-
-        <section id="page-series" class="page">
+        <section
+          id="page-series"
+          class="page"
+        >
 
           <div class="page-header">
-            <h1>Œuvres</h1>
-            <p>Gère les séries et leurs chapitres.</p>
+
+            <h1>
+              Œuvres
+            </h1>
+
+            <p>
+              Gère les séries et leurs chapitres.
+            </p>
+
           </div>
 
-          <div id="seriesList" class="list">
+          <div
+            id="seriesList"
+            class="list"
+          >
             Chargement...
           </div>
 
         </section>
 
 
-        <!-- =========================
-             NOUVELLE SERIE
-        ========================= -->
-
-        <section id="page-new-series" class="page">
+        <section
+          id="page-new-series"
+          class="page"
+        >
 
           <div class="page-header">
-            <h1>Créer une œuvre</h1>
-            <p>Ajoute une nouvelle série au catalogue.</p>
+
+            <h1>
+              Créer une œuvre
+            </h1>
+
+            <p>
+              Ajoute une nouvelle série au catalogue.
+            </p>
+
           </div>
+
 
           <div class="box">
 
@@ -666,43 +710,81 @@
               <div class="form-grid">
 
                 <div>
-                  <label for="seriesTitle">Titre *</label>
+
+                  <label for="seriesTitle">
+                    Titre *
+                  </label>
+
                   <input
                     id="seriesTitle"
                     type="text"
                     placeholder="Titre de l'œuvre"
                     required
                   >
+
                 </div>
 
+
                 <div>
-                  <label for="seriesType">Type *</label>
+
+                  <label for="seriesType">
+                    Type *
+                  </label>
 
                   <select id="seriesType">
-                    <option value="webcomic">Webcomic</option>
-                    <option value="novel">Novel</option>
+
+                    <option value="webcomic">
+                      Webcomic
+                    </option>
+
+                    <option value="novel">
+                      Novel
+                    </option>
+
                   </select>
+
                 </div>
 
+
                 <div>
-                  <label for="seriesGenre">Genre</label>
+
+                  <label for="seriesGenre">
+                    Genre
+                  </label>
 
                   <input
                     id="seriesGenre"
                     type="text"
                     placeholder="Action, Fantastique..."
                   >
+
                 </div>
+
 
                 <div>
-                  <label for="seriesStatus">Statut</label>
+
+                  <label for="seriesStatus">
+                    Statut
+                  </label>
 
                   <select id="seriesStatus">
-                    <option value="ongoing">En cours</option>
-                    <option value="completed">Terminé</option>
-                    <option value="hiatus">En pause</option>
+
+                    <option value="ongoing">
+                      En cours
+                    </option>
+
+                    <option value="completed">
+                      Terminé
+                    </option>
+
+                    <option value="hiatus">
+                      En pause
+                    </option>
+
                   </select>
+
                 </div>
+
 
                 <div class="full">
 
@@ -717,6 +799,7 @@
                   ></textarea>
 
                 </div>
+
 
                 <div class="full">
 
@@ -735,11 +818,18 @@
 
               </div>
 
-              <button id="seriesSubmitBtn" type="submit">
+
+              <button
+                id="seriesSubmitBtn"
+                type="submit"
+              >
                 Publier l'œuvre
               </button>
 
-              <p id="seriesStatusMsg" class="status"></p>
+              <p
+                id="seriesStatusMsg"
+                class="status"
+              ></p>
 
             </form>
 
@@ -748,15 +838,16 @@
         </section>
 
 
-        <!-- =========================
-             CHAPITRES
-        ========================= -->
-
-        <section id="page-chapters" class="page">
+        <section
+          id="page-chapters"
+          class="page"
+        >
 
           <div class="page-header">
 
-            <h1>Chapitres</h1>
+            <h1>
+              Chapitres
+            </h1>
 
             <p id="chapterSeriesDescription">
               Gestion des chapitres.
@@ -764,15 +855,19 @@
 
           </div>
 
+
           <div class="selected-work">
 
-            <span>Œuvre sélectionnée</span>
+            <span>
+              Œuvre sélectionnée
+            </span>
 
             <strong id="selectedSeriesTitle">
               —
             </strong>
 
           </div>
+
 
           <div
             id="chaptersList"
@@ -781,7 +876,9 @@
             Chargement...
           </div>
 
+
           <br>
+
 
           <button id="newChapterBtn">
             ➕ Nouveau chapitre
@@ -790,25 +887,29 @@
         </section>
 
 
-        <!-- =========================
-             NOUVEAU CHAPITRE
-        ========================= -->
-
-        <section id="page-new-chapter" class="page">
+        <section
+          id="page-new-chapter"
+          class="page"
+        >
 
           <div class="page-header">
 
-            <h1>Nouveau chapitre</h1>
+            <h1 id="chapterFormTitle">
+              Nouveau chapitre
+            </h1>
 
-            <p>
+            <p id="chapterFormDescription">
               Ajoute un chapitre à l'œuvre sélectionnée.
             </p>
 
           </div>
 
+
           <div class="selected-work">
 
-            <span>Œuvre</span>
+            <span>
+              Œuvre
+            </span>
 
             <strong id="newChapterSeriesTitle">
               —
@@ -816,13 +917,15 @@
 
           </div>
 
-          <div class="box">
+
+          <div
+            id="chapterFormBox"
+            class="box"
+          >
 
             <form id="addChapterForm">
 
               <div class="form-grid">
-
-                <!-- NUMÉRO INTERNE -->
 
                 <div>
 
@@ -839,7 +942,6 @@
 
                 </div>
 
-                <!-- NUMÉRO / LIBELLÉ AFFICHÉ -->
 
                 <div>
 
@@ -856,7 +958,6 @@
 
                 </div>
 
-                <!-- TITRE -->
 
                 <div>
 
@@ -873,6 +974,7 @@
 
                 </div>
 
+
                 <div class="full">
 
                   <label for="chapterContent">
@@ -887,20 +989,26 @@
 
                 </div>
 
+
                 <div class="full">
 
                   <label for="chapterImage">
-                    Image du chapitre *
+                    Image du chapitre
                   </label>
 
                   <input
                     id="chapterImage"
                     type="file"
                     accept="image/*"
-                    required
                   >
 
+                  <p
+                    id="chapterImageInfo"
+                    class="chapter-image-info"
+                  ></p>
+
                 </div>
+
 
                 <div class="full">
 
@@ -920,11 +1028,28 @@
 
               </div>
 
-              <button id="chapterSubmitBtn" type="submit">
+
+              <button
+                id="chapterSubmitBtn"
+                type="submit"
+              >
                 Publier le chapitre
               </button>
 
-              <p id="chapterStatusMsg" class="status"></p>
+
+              <button
+                id="cancelChapterEditBtn"
+                type="button"
+                class="secondary hidden"
+              >
+                Annuler la modification
+              </button>
+
+
+              <p
+                id="chapterStatusMsg"
+                class="status"
+              ></p>
 
             </form>
 
@@ -933,15 +1058,16 @@
         </section>
 
 
-        <!-- =========================
-             SONS
-        ========================= -->
-
-        <section id="page-sounds" class="page">
+        <section
+          id="page-sounds"
+          class="page"
+        >
 
           <div class="page-header">
 
-            <h1>Sons</h1>
+            <h1>
+              Sons
+            </h1>
 
             <p>
               Gère les fichiers audio du bucket Storage.
@@ -952,7 +1078,9 @@
 
           <div class="box">
 
-            <h2>Ajouter un son</h2>
+            <h2>
+              Ajouter un son
+            </h2>
 
             <form id="soundForm">
 
@@ -967,19 +1095,30 @@
                 required
               >
 
-              <button id="soundSubmitBtn" type="submit">
+              <button
+                id="soundSubmitBtn"
+                type="submit"
+              >
                 Ajouter le son
               </button>
 
-              <p id="soundStatusMsg" class="status"></p>
+              <p
+                id="soundStatusMsg"
+                class="status"
+              ></p>
 
             </form>
 
           </div>
 
+
           <br>
 
-          <div id="soundsList" class="list">
+
+          <div
+            id="soundsList"
+            class="list"
+          >
             Chargement...
           </div>
 
@@ -998,4 +1137,4 @@
   ></script>
 
 </body>
-</html>
+      </html>
