@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+I8import { supabase } from '../config/supabase.js';
 import {
   createCard,
   createFeaturedCard,
@@ -744,9 +744,6 @@ function initGrandCarousel() {
 // =====================================================
 
 loadHomePage();
-initGrandCarousel();
-
-
 // =====================================================
 // MENU MOBILE
 // =====================================================
