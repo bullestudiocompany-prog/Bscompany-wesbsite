@@ -36,17 +36,21 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
   }
 
     // =================================================
+  //  // =================================================
   // ANIMATION AUTOMATIQUE
   // =================================================
 
   let autoScrollTimer;
 
   function startAutoScroll() {
+
     clearInterval(autoScrollTimer);
 
     autoScrollTimer = setInterval(() => {
+
       const maxScroll =
-        viewport.scrollWidth - viewport.clientWidth;
+        viewport.scrollWidth -
+        viewport.clientWidth;
 
       if (maxScroll <= 0) return;
 
@@ -61,21 +65,26 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
       const gap = 18;
 
       const pageWidth =
-        (cardWidth + gap) * visibleCount;
+        (cardWidth + gap) *
+        visibleCount;
 
       if (
-        viewport.scrollLeft + pageWidth >=
+        viewport.scrollLeft >=
         maxScroll - 5
       ) {
+
         viewport.scrollTo({
           left: 0,
           behavior: 'smooth'
         });
+
       } else {
+
         viewport.scrollBy({
           left: pageWidth,
           behavior: 'smooth'
         });
+
       }
 
     }, 5000);
