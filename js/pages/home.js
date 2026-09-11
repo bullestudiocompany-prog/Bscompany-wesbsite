@@ -271,6 +271,9 @@ async function loadHomePage() {
 const grandCarousel =
   document.getElementById('grandCarousel');
 
+const heroText =
+  document.querySelector('.hero-text');
+    
 const grandCarouselSlides = [
   {
     type: 'oeuvres',
