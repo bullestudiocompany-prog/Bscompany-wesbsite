@@ -38,11 +38,7 @@ function formatViews(n) {
   const num = Number(n) || 0;
 
   if (num >= 1000) {
-    return (
-      num / 1000
-    ).toFixed(
-      num % 1000 === 0 ? 0 : 1
-    ) + 'K';
+    return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K';
   }
 
   return String(num);
@@ -52,11 +48,7 @@ function formatLikes(n) {
   const num = Number(n) || 0;
 
   if (num >= 1000) {
-    return (
-      num / 1000
-    ).toFixed(
-      num % 1000 === 0 ? 0 : 1
-    ) + 'K';
+    return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K';
   }
 
   return String(num);
@@ -65,12 +57,8 @@ function formatLikes(n) {
 export function timeAgo(dateString) {
   if (!dateString) return '';
 
-  const diffMs =
-    Date.now() -
-    new Date(dateString).getTime();
-
-  const hours =
-    Math.floor(diffMs / 36e5);
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const hours = Math.floor(diffMs / 36e5);
 
   if (hours < 1) return "À l'instant";
 
@@ -78,29 +66,22 @@ export function timeAgo(dateString) {
     return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
   }
 
-  const days =
-    Math.floor(hours / 24);
+  const days = Math.floor(hours / 24);
 
   if (days < 7) {
     return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
   }
 
-  return new Date(dateString)
-    .toLocaleDateString('fr-FR');
+  return new Date(dateString).toLocaleDateString('fr-FR');
 }
 
 // Carte pour la grille "Sorties récentes"
 export function createCard(rawItem, extra = {}) {
-  const item =
-    normalizeSeries(rawItem);
-
-  const slug =
-    typeSlug(item.type);
-
-  const chapterLabel =
-    extra.latestChapter
-      ? `Chapitre ${extra.latestChapter}`
-      : null;
+  const item = normalizeSeries(rawItem);
+  const slug = typeSlug(item.type);
+  const chapterLabel = extra.latestChapter
+    ? `Chapitre ${extra.latestChapter}`
+    : null;
 
   return `
     <a class="story-card" data-id="${item.id}" href="serie.html?id=${item.id}">
@@ -124,7 +105,6 @@ export function createCard(rawItem, extra = {}) {
 
       <div class="story-footer">
         <div class="story-stats">
-
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -141,7 +121,6 @@ export function createCard(rawItem, extra = {}) {
             </svg>
             ${formatLikes(item.likes)}
           </span>
-
         </div>
 
         <button
@@ -163,11 +142,8 @@ export function createCard(rawItem, extra = {}) {
 
 // Carte pour le carrousel "À la une"
 export function createFeaturedCard(rawItem) {
-  const item =
-    normalizeSeries(rawItem);
-
-  const slug =
-    typeSlug(item.type);
+  const item = normalizeSeries(rawItem);
+  const slug = typeSlug(item.type);
 
   return `
     <a class="featured-card" data-id="${item.id}" href="serie.html?id=${item.id}">
@@ -188,33 +164,26 @@ export function createFeaturedCard(rawItem) {
         <div class="featured-meta">
           <span>${item.genre || typeLabel(item.type)}</span>
 
-          <span class="rating">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            ${formatLikes(item.likes)}
-          </span>
-        </div>
+          <span class="featured-stats">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                width="12" height="12">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              ${formatViews(item.views)}
+            </span>
 
-        <div class="featured-stats">
-          <span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-              width="12" height="12">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-            ${formatViews(item.views)}
-          </span>
-
-          <span>
-            <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            ${formatLikes(item.likes)}
+            <span>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              ${formatLikes(item.likes)}
+            </span>
           </span>
         </div>
       </div>
     </a>
   `;
-}
+                                     }
