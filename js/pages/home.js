@@ -1,79 +1,74 @@
 import { supabase } from '../config/supabase.js';
-import { createCard, createFeaturedCard } from '../components/card.js';
+import {
+  createCard,
+  createFeaturedCard,
+  timeAgo
+} from '../components/card.js';
 import { initCarousel } from '../components/carousel.js';
 
-const featuredContainer = document.getElementById('featuredCarousel');
-const recentContainer = document.getElementById('recent-grid');
+
+// =====================================================
+// DOM
+// =====================================================
+
+const featuredContainer =
+  document.getElementById('featuredCarousel');
+
+const recentContainer =
+  document.getElementById('recent-grid');
+
+
+// =====================================================
+// TIMEOUT
+// =====================================================
 
 function withTimeout(promise, ms = 8000) {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
       setTimeout(
-        () => reject(new Error('Délai dépassé en contactant Supabase')),
+        () => reject(new Error('Timeout')),
         ms
       )
     )
   ]);
 }
 
-/* =========================================================
-   CALCUL DES VUES DES ŒUVRES
-   ========================================================= */
+
+// =====================================================
+// AJOUT DES VUES AUX SÉRIES
+// =====================================================
 
 async function attachSeriesViews(series) {
-  console.log('==========================================');
-  console.log('HOME : DÉBUT DU CALCUL DES VUES');
-  console.log('==========================================');
+  if (!series?.length) return series;
 
-  if (!series || series.length === 0) {
-    console.log('HOME : aucune série trouvée.');
-    return series;
-  }
+  const seriesIds = series.map(item => item.id);
 
-  console.log('HOME : séries récupérées :', series);
-  console.log('HOME : nombre de séries :', series.length);
-
-  const seriesIds = series.map(seriesItem => seriesItem.id);
-
-  console.log('HOME : IDs des séries :', seriesIds);
-
-  /* ---------------------------------------------------------
-     1. RÉCUPÉRER LES CHAPITRES
-     --------------------------------------------------------- */
-
-  const { data: chapters, error: chaptersError } = await supabase
-    .from('chapters')
-    .select('id, series_id')
-    .in('series_id', seriesIds);
-
-  console.log('------------------------------------------');
-  console.log('HOME : RÉSULTAT CHAPITRES');
-  console.log('Chapitres :', chapters);
-  console.log('Erreur chapitres :', chaptersError);
-  console.log('Nombre de chapitres :', chapters?.length || 0);
-  console.log('------------------------------------------');
+  const { data: chapters, error: chaptersError } =
+    await withTimeout(
+      supabase
+        .from('chapters')
+        .select('id, series_id')
+        .in('series_id', seriesIds),
+      8000
+    );
 
   if (chaptersError) {
     console.error(
-      'HOME : ERREUR lors de la récupération des chapitres :',
+      'HOME : ERREUR CHAPITRES POUR LES VUES :',
       chaptersError
     );
 
-    return series.map(seriesItem => ({
-      ...seriesItem,
+    return series.map(item => ({
+      ...item,
       views: 0,
       vues: 0
     }));
   }
 
-  if (!chapters || chapters.length === 0) {
-    console.warn(
-      'HOME : aucun chapitre trouvé pour les séries.'
-    );
-
-    return series.map(seriesItem => ({
-      ...seriesItem,
+  if (!chapters?.length) {
+    return series.map(item => ({
+      ...item,
       views: 0,
       vues: 0
     }));
@@ -81,503 +76,487 @@ async function attachSeriesViews(series) {
 
   const chapterIds = chapters.map(chapter => chapter.id);
 
-  console.log(
-    'HOME : IDs des chapitres utilisés pour chercher les vues :',
-    chapterIds
-  );
-
-  /* ---------------------------------------------------------
-     2. RÉCUPÉRER LES VUES
-     --------------------------------------------------------- */
-
-  const { data: views, error: viewsError } = await supabase
-    .from('chapter_views')
-    .select('id, chapter_id, visitor_id, viewed_at')
-    .in('chapter_id', chapterIds);
-
-  console.log('------------------------------------------');
-  console.log('HOME : RÉSULTAT CHAPTER_VIEWS');
-  console.log('Vues récupérées :', views);
-  console.log('Erreur vues :', viewsError);
-  console.log('Nombre total de vues récupérées :', views?.length || 0);
-  console.log('------------------------------------------');
+  const { data: viewRows, error: viewsError } =
+    await withTimeout(
+      supabase
+        .from('chapter_views')
+        .select('chapter_id')
+        .in('chapter_id', chapterIds),
+      8000
+    );
 
   if (viewsError) {
     console.error(
-      'HOME : ERREUR lors de la récupération des vues :',
+      'HOME : ERREUR VUES :',
       viewsError
     );
 
-    return series.map(seriesItem => ({
-      ...seriesItem,
+    return series.map(item => ({
+      ...item,
       views: 0,
       vues: 0
     }));
   }
 
-  /* ---------------------------------------------------------
-     3. COMPTER LES VUES PAR CHAPITRE
-     --------------------------------------------------------- */
-
   const viewsByChapter = {};
 
-  for (const view of views || []) {
-    if (!view.chapter_id) {
-      continue;
-    }
-
-    viewsByChapter[view.chapter_id] =
-      (viewsByChapter[view.chapter_id] || 0) + 1;
-  }
-
-  console.log('HOME : VUES PAR CHAPITRE :');
-  console.table(viewsByChapter);
-
-  /* ---------------------------------------------------------
-     4. ADDITIONNER LES VUES PAR ŒUVRE
-     --------------------------------------------------------- */
+  (viewRows || []).forEach(row => {
+    viewsByChapter[row.chapter_id] =
+      (viewsByChapter[row.chapter_id] || 0) + 1;
+  });
 
   const viewsBySeries = {};
 
-  for (const chapter of chapters) {
-    const chapterViews =
+  chapters.forEach(chapter => {
+    const count =
       viewsByChapter[chapter.id] || 0;
 
-    console.log(
-      'HOME : chapitre',
-      chapter.id,
-      '→ série',
-      chapter.series_id,
-      '→',
-      chapterViews,
-      'vue(s)'
-    );
-
     viewsBySeries[chapter.series_id] =
-      (viewsBySeries[chapter.series_id] || 0) +
-      chapterViews;
-  }
-
-  console.log('------------------------------------------');
-  console.log('HOME : TOTAL DES VUES PAR ŒUVRE');
-  console.log(viewsBySeries);
-  console.table(viewsBySeries);
-  console.log('------------------------------------------');
-
-  /* ---------------------------------------------------------
-     5. AJOUTER LE TOTAL AUX SÉRIES
-     --------------------------------------------------------- */
-
-  const result = series.map(seriesItem => {
-    const totalViews =
-      viewsBySeries[seriesItem.id] || 0;
-
-    console.log(
-      'HOME : ŒUVRE :',
-      seriesItem.title,
-      '| ID :',
-      seriesItem.id,
-      '| TOTAL VUES :',
-      totalViews
-    );
-
-    return {
-      ...seriesItem,
-
-      views: totalViews,
-      vues: totalViews
-    };
+      (viewsBySeries[chapter.series_id] || 0) + count;
   });
 
-  console.log('==========================================');
-  console.log('HOME : RÉSULTAT FINAL DES SÉRIES');
-  console.log('==========================================');
+  return series.map(item => {
+    const total =
+      viewsBySeries[item.id] || 0;
 
-  console.log(result);
-
-  console.table(
-    result.map(item => ({
-      id: item.id,
-      title: item.title,
-      views: item.views,
-      vues: item.vues
-    }))
-  );
-
-  return result;
+    return {
+      ...item,
+      views: total,
+      vues: total
+    };
+  });
 }
 
-/* =========================================================
-   CALCUL DES LIKES DES ŒUVRES
-   ========================================================= */
+
+// =====================================================
+// AJOUT DES LIKES AUX SÉRIES
+// =====================================================
 
 async function attachSeriesLikes(series) {
-  console.log('==========================================');
-  console.log('HOME : DÉBUT DU CALCUL DES LIKES');
-  console.log('==========================================');
+  if (!series?.length) return series;
 
-  if (!series || series.length === 0) {
-    console.log('HOME : aucune série trouvée.');
-    return series;
-  }
+  const seriesIds = series.map(item => item.id);
 
-  const seriesIds = series.map(seriesItem => seriesItem.id);
-
-  console.log(
-    'HOME : IDs des séries pour les likes :',
-    seriesIds
-  );
-
-  /* ---------------------------------------------------------
-     1. RÉCUPÉRER LES CHAPITRES
-     --------------------------------------------------------- */
-
-  const { data: chapters, error: chaptersError } = await supabase
-    .from('chapters')
-    .select('id, series_id')
-    .in('series_id', seriesIds);
-
-  console.log('------------------------------------------');
-  console.log('HOME : CHAPITRES POUR LES LIKES');
-  console.log('Chapitres :', chapters);
-  console.log('Erreur chapitres :', chaptersError);
-  console.log('------------------------------------------');
+  const { data: chapters, error: chaptersError } =
+    await withTimeout(
+      supabase
+        .from('chapters')
+        .select('id, series_id')
+        .in('series_id', seriesIds),
+      8000
+    );
 
   if (chaptersError) {
     console.error(
-      'HOME : ERREUR lors de la récupération des chapitres pour les likes :',
+      'HOME : ERREUR CHAPITRES POUR LES LIKES :',
       chaptersError
     );
 
-    return series.map(seriesItem => ({
-      ...seriesItem,
+    return series.map(item => ({
+      ...item,
       likes: 0
     }));
   }
 
-  if (!chapters || chapters.length === 0) {
-    console.warn(
-      'HOME : aucun chapitre trouvé pour calculer les likes.'
-    );
-
-    return series.map(seriesItem => ({
-      ...seriesItem,
+  if (!chapters?.length) {
+    return series.map(item => ({
+      ...item,
       likes: 0
     }));
   }
 
   const chapterIds = chapters.map(chapter => chapter.id);
 
-  /* ---------------------------------------------------------
-     2. RÉCUPÉRER LES LIKES
-     --------------------------------------------------------- */
-
-  const { data: likes, error: likesError } = await supabase
-    .from('likes')
-    .select('chapter_id')
-    .in('chapter_id', chapterIds);
-
-  console.log('------------------------------------------');
-  console.log('HOME : RÉSULTAT LIKES');
-  console.log('Likes récupérés :', likes);
-  console.log('Erreur likes :', likesError);
-  console.log(
-    'Nombre total de likes récupérés :',
-    likes?.length || 0
-  );
-  console.log('------------------------------------------');
+  const { data: likeRows, error: likesError } =
+    await withTimeout(
+      supabase
+        .from('likes')
+        .select('chapter_id')
+        .in('chapter_id', chapterIds),
+      8000
+    );
 
   if (likesError) {
     console.error(
-      'HOME : ERREUR lors de la récupération des likes :',
+      'HOME : ERREUR LIKES :',
       likesError
     );
 
-    return series.map(seriesItem => ({
-      ...seriesItem,
+    return series.map(item => ({
+      ...item,
       likes: 0
     }));
   }
 
-  /* ---------------------------------------------------------
-     3. COMPTER LES LIKES PAR CHAPITRE
-     --------------------------------------------------------- */
-
   const likesByChapter = {};
 
-  for (const like of likes || []) {
-    if (!like.chapter_id) {
-      continue;
-    }
-
-    likesByChapter[like.chapter_id] =
-      (likesByChapter[like.chapter_id] || 0) + 1;
-  }
-
-  console.log('HOME : LIKES PAR CHAPITRE :');
-  console.table(likesByChapter);
-
-  /* ---------------------------------------------------------
-     4. ADDITIONNER LES LIKES PAR ŒUVRE
-     --------------------------------------------------------- */
+  (likeRows || []).forEach(row => {
+    likesByChapter[row.chapter_id] =
+      (likesByChapter[row.chapter_id] || 0) + 1;
+  });
 
   const likesBySeries = {};
 
-  for (const chapter of chapters) {
-    const chapterLikes =
+  chapters.forEach(chapter => {
+    const count =
       likesByChapter[chapter.id] || 0;
 
     likesBySeries[chapter.series_id] =
-      (likesBySeries[chapter.series_id] || 0) +
-      chapterLikes;
-  }
-
-  console.log('------------------------------------------');
-  console.log('HOME : TOTAL DES LIKES PAR ŒUVRE');
-  console.log(likesBySeries);
-  console.table(likesBySeries);
-  console.log('------------------------------------------');
-
-  /* ---------------------------------------------------------
-     5. AJOUTER LE TOTAL AUX SÉRIES
-     --------------------------------------------------------- */
-
-  const result = series.map(seriesItem => {
-    const totalLikes =
-      likesBySeries[seriesItem.id] || 0;
-
-    console.log(
-      'HOME : ŒUVRE :',
-      seriesItem.title,
-      '| ID :',
-      seriesItem.id,
-      '| TOTAL LIKES :',
-      totalLikes
-    );
-
-    return {
-      ...seriesItem,
-      likes: totalLikes
-    };
+      (likesBySeries[chapter.series_id] || 0) + count;
   });
 
-  console.log('==========================================');
-  console.log('HOME : RÉSULTAT FINAL DES LIKES');
-  console.log('==========================================');
-
-  console.table(
-    result.map(item => ({
-      id: item.id,
-      title: item.title,
-      likes: item.likes
-    }))
-  );
-
-  return result;
+  return series.map(item => ({
+    ...item,
+    likes:
+      likesBySeries[item.id] || 0
+  }));
 }
 
-/* =========================================================
-   CHARGEMENT DE LA PAGE D'ACCUEIL
-   ========================================================= */
+
+// =====================================================
+// CHARGEMENT DE LA PAGE D'ACCUEIL
+// =====================================================
 
 async function loadHomePage() {
-  console.log('==========================================');
-  console.log('HOME : CHARGEMENT DE LA PAGE');
-  console.log('==========================================');
+  try {
 
-  const { data: rawSeries, error } = await withTimeout(
-    supabase
-      .from('series')
-      .select('*')
-  );
+    // =================================================
+    // CHARGEMENT DES SÉRIES
+    // =================================================
 
-  console.log('HOME : séries brutes :', rawSeries);
-  console.log('HOME : erreur séries :', error);
+    const { data: rawSeries, error: seriesError } =
+      await withTimeout(
+        supabase
+          .from('series')
+          .select('*'),
+        8000
+      );
 
-  if (error) {
+    if (seriesError) {
+      console.error(
+        'HOME : ERREUR CHARGEMENT SÉRIES :',
+        seriesError
+      );
+
+      if (recentContainer) {
+        recentContainer.innerHTML =
+          '<p class="empty-message">Impossible de charger les œuvres.</p>';
+      }
+
+      return;
+    }
+
+    if (!rawSeries?.length) {
+      console.log(
+        'HOME : AUCUNE SÉRIE DISPONIBLE'
+      );
+
+      if (recentContainer) {
+        recentContainer.innerHTML =
+          '<p class="empty-message">Aucune œuvre disponible pour le moment.</p>';
+      }
+
+      return;
+    }
+
+
+    // =================================================
+    // AJOUT DES VUES
+    // =================================================
+
+    let series =
+      await attachSeriesViews(rawSeries);
+
+
+    // =================================================
+    // AJOUT DES LIKES
+    // =================================================
+
+    series =
+      await attachSeriesLikes(series);
+
+
+    // =================================================
+    // À LA UNE
+    // Basé sur les vues
+    // =================================================
+
+    const featured = [...series]
+      .sort(
+        (a, b) =>
+          Number(b.views || b.vues || 0) -
+          Number(a.views || a.vues || 0)
+      )
+      .slice(0, 6);
+
+    console.log(
+      'HOME : À LA UNE :',
+      featured
+    );
+
+    if (featuredContainer) {
+      featuredContainer.innerHTML =
+        featured
+          .map(item =>
+            createFeaturedCard(item)
+          )
+          .join('');
+
+      initCarousel();
+    }
+
+
+    // =================================================
+    // SORTIES RÉCENTES
+    //
+    // IMPORTANT :
+    // On ne se base PAS sur series.created_at.
+    //
+    // Une sortie récente correspond à un CHAPITRE
+    // publié depuis moins de 4 jours = 96 heures.
+    // =================================================
+
+    const FOUR_DAYS =
+      4 * 24 * 60 * 60 * 1000;
+
+    const now = Date.now();
+
+
+    // -------------------------------------------------
+    // Récupération des chapitres publiés
+    // -------------------------------------------------
+
+    const {
+      data: chapters,
+      error: chaptersError
+    } = await withTimeout(
+      supabase
+        .from('chapters')
+        .select(`
+          id,
+          series_id,
+          chapter_number,
+          title,
+          published_at
+        `)
+        .not('published_at', 'is', null)
+        .order('published_at', {
+          ascending: false
+        }),
+      8000
+    );
+
+
+    // -------------------------------------------------
+    // Gestion erreur chapitres
+    // -------------------------------------------------
+
+    if (chaptersError) {
+      console.error(
+        'HOME : ERREUR CHARGEMENT CHAPITRES RÉCENTS :',
+        chaptersError
+      );
+
+      if (recentContainer) {
+        recentContainer.innerHTML =
+          '<p class="empty-message">Impossible de charger les sorties récentes.</p>';
+      }
+
+      return;
+    }
+
+
+    // =================================================
+    // INDEX DES SÉRIES
+    // =================================================
+
+    const seriesMap =
+      new Map(
+        series.map(item => [
+          String(item.id),
+          item
+        ])
+      );
+
+
+    // =================================================
+    // FILTRE DES 4 DERNIERS JOURS
+    // =================================================
+
+    const recentChapters =
+      (chapters || [])
+        .filter(chapter => {
+
+          const publishedAt =
+            new Date(
+              chapter.published_at
+            ).getTime();
+
+          // Date invalide
+          if (Number.isNaN(publishedAt)) {
+            return false;
+          }
+
+          // Évite les dates futures
+          if (publishedAt > now) {
+            return false;
+          }
+
+          // Moins de 96 heures
+          return (
+            now - publishedAt <
+            FOUR_DAYS
+          );
+        })
+        .slice(0, 8);
+
+
+    console.log(
+      'HOME : CHAPITRES PUBLIÉS DEPUIS MOINS DE 4 JOURS :',
+      recentChapters
+    );
+
+
+    // =================================================
+    // AFFICHAGE DES SORTIES RÉCENTES
+    // =================================================
+
+    if (recentContainer) {
+
+      recentContainer.innerHTML =
+        recentChapters
+          .map(chapter => {
+
+            const seriesItem =
+              seriesMap.get(
+                String(chapter.series_id)
+              );
+
+
+            // La série correspondante
+            // n'existe plus
+            if (!seriesItem) {
+              return '';
+            }
+
+
+            console.log(
+              'HOME : SORTIE RÉCENTE :',
+              seriesItem.title,
+              '| chapitre =',
+              chapter.chapter_number,
+              '| publié =',
+              chapter.published_at
+            );
+
+
+            // -----------------------------------------
+            // La carte reçoit :
+            //
+            // Nom de l'œuvre :
+            // seriesItem.title
+            //
+            // Chapitre :
+            // chapter.chapter_number
+            //
+            // Temps :
+            // chapter.published_at
+            // -----------------------------------------
+
+            return createCard(
+              seriesItem,
+              {
+                latestChapter:
+                  chapter.chapter_number,
+
+                timeAgoLabel:
+                  timeAgo(
+                    chapter.published_at
+                  )
+              }
+            );
+          })
+          .join('');
+
+
+      // =================================================
+      // AUCUNE SORTIE RÉCENTE
+      // =================================================
+
+      if (!recentChapters.length) {
+        recentContainer.innerHTML =
+          '<p class="empty-message">Aucune sortie récente pour le moment.</p>';
+      }
+    }
+
+  } catch (error) {
+
     console.error(
-      'Erreur Supabase (series):',
+      'HOME : ERREUR GÉNÉRALE :',
       error
     );
 
     if (recentContainer) {
       recentContainer.innerHTML =
-        '<p class="error-state">Erreur lors du chargement des histoires.</p>';
+        '<p class="empty-message">Une erreur est survenue lors du chargement.</p>';
     }
-
-    return;
   }
-
-  if (!rawSeries || rawSeries.length === 0) {
-    if (recentContainer) {
-      recentContainer.innerHTML =
-        '<p class="empty-state">Aucune histoire disponible pour le moment.</p>';
-    }
-
-    return;
-  }
-
-  /* ========================================================
-     CALCUL DES VUES RÉELLES
-     ======================================================== */
-
-  let series = await attachSeriesViews(rawSeries);
-
-  /* ========================================================
-     CALCUL DES LIKES RÉELS
-     ======================================================== */
-
-  series = await attachSeriesLikes(series);
-
-  console.log('==========================================');
-  console.log('HOME : SÉRIES APRÈS CALCUL DES VUES ET LIKES');
-  console.log('==========================================');
-
-  for (const item of series) {
-    console.log(
-      `${item.title} → ${item.views} vue(s) · ${item.likes} like(s)`
-    );
-  }
-
-  /* ========================================================
-     CARROUSEL "À LA UNE"
-     ======================================================== */
-
-  const featured = [...series]
-    .sort(
-      (a, b) =>
-        (Number(b.views) || 0) -
-        (Number(a.views) || 0)
-    )
-    .slice(0, 6);
-
-  console.log('HOME : À LA UNE :', featured);
-
-  if (featuredContainer) {
-    featuredContainer.innerHTML =
-      featured
-        .map(createFeaturedCard)
-        .join('');
-
-    initCarousel({
-      viewport: featuredContainer,
-      prevBtn: document.getElementById('featuredPrev'),
-      nextBtn: document.getElementById('featuredNext'),
-      dotsContainer: document.getElementById('featuredDots'),
-      itemCount: featured.length,
-      visibleCount: 4
-    });
-  }
-
-  /* ========================================================
-     SORTIES RÉCENTES
-     ======================================================== */
-
-  const recent = [...series]
-    .sort(
-      (a, b) =>
-        new Date(b.created_at || 0) -
-        new Date(a.created_at || 0)
-    )
-    .slice(0, 8);
-
-  console.log('HOME : SORTIES RÉCENTES :', recent);
-
-  if (recentContainer) {
-    recentContainer.innerHTML =
-      recent
-        .map(item => {
-          console.log(
-            'HOME : ENVOI À createCard() :',
-            item.title,
-            '| views =',
-            item.views,
-            '| vues =',
-            item.vues,
-            '| likes =',
-            item.likes
-          );
-
-          return createCard(item);
-        })
-        .join('');
-  }
-
-  console.log('==========================================');
-  console.log('HOME : CHARGEMENT TERMINÉ');
-  console.log('==========================================');
 }
 
-/* =========================================================
-   LANCEMENT
-   ========================================================= */
 
-loadHomePage().catch(err => {
-  console.error(
-    'HOME : ERREUR INATTENDUE :',
-    err
+// =====================================================
+// LANCEMENT
+// =====================================================
+
+loadHomePage();
+
+
+// =====================================================
+// MENU MOBILE
+// =====================================================
+
+const menuToggle =
+  document.querySelector('.menu-toggle');
+
+const mobileMenu =
+  document.querySelector('.mobile-menu');
+
+if (menuToggle && mobileMenu) {
+
+  menuToggle.addEventListener(
+    'click',
+    () => {
+
+      mobileMenu.classList.toggle(
+        'active'
+      );
+
+      menuToggle.classList.toggle(
+        'active'
+      );
+    }
   );
 
-  if (recentContainer) {
-    recentContainer.innerHTML =
-      `<p class="error-state">
-        Impossible de contacter la base de données.
-        Vérifie ta connexion et réessaie.
-        (${err.message || err})
-      </p>`;
-  }
-});
 
-/* =========================================================
-   MENU MOBILE
-   ========================================================= */
-
-const mobileMenuBtn =
-  document.getElementById('mobileMenuBtn');
-
-const navLinks =
-  document.querySelector('.nav-links');
-
-if (mobileMenuBtn && navLinks) {
-  mobileMenuBtn.addEventListener('click', () => {
-    const isOpen =
-      navLinks.classList.toggle('mobile-open');
-
-    mobileMenuBtn.setAttribute(
-      'aria-expanded',
-      String(isOpen)
-    );
-
-    mobileMenuBtn.setAttribute(
-      'aria-label',
-      isOpen
-        ? 'Fermer le menu'
-        : 'Ouvrir le menu'
-    );
-
-    mobileMenuBtn.textContent =
-      isOpen ? '✕' : '☰';
-  });
-
-  navLinks
+  // Fermeture du menu lorsqu'on clique
+  // sur un lien
+  mobileMenu
     .querySelectorAll('a')
     .forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove(
-          'mobile-open'
-        );
 
-        mobileMenuBtn.setAttribute(
-          'aria-expanded',
-          'false'
-        );
+      link.addEventListener(
+        'click',
+        () => {
 
-        mobileMenuBtn.setAttribute(
-          'aria-label',
-          'Ouvrir le menu'
-        );
+          mobileMenu.classList.remove(
+            'active'
+          );
 
-        mobileMenuBtn.textContent = '☰';
-      });
+          menuToggle.classList.remove(
+            'active'
+          );
+        }
+      );
+
     });
-      }
+}
