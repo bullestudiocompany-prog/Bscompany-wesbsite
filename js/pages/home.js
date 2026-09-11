@@ -397,22 +397,22 @@ for (let i = 0; i < maxPairs; i++) {
     .forEach(slide => slide.remove());
 
 
-  grandCarouselSlides
-    .filter(slide =>
-      slide.type !== 'oeuvres'
-    )
-    .forEach(slide => {
+grandCarouselSlides
+  .filter(slide =>
+    slide.type !== 'oeuvres'
+  )
+  .forEach(slide => {
 
-      if (worksSlide) {
+    if (worksSlide) {
 
-        worksSlide.insertAdjacentHTML(
-          'afterend',
-          createGrandCarouselSlide(slide)
-        );
+      worksSlide.parentNode.insertAdjacentHTML(
+        'beforeend',
+        createGrandCarouselSlide(slide)
+      );
 
-      }
+    }
 
-    });
+  });
 
 }
 
