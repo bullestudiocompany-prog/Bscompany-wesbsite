@@ -442,31 +442,6 @@ function initGrandCarousel() {
 
   function showGrandSlide() {
 
-    const slides =
-      grandCarousel.querySelectorAll(
-        '.grand-carousel-slide'
-      );
-
-    slides.forEach((slide, index) => {
-
-      slide.style.display =
-        index === currentGrandIndex
-          ? ''
-function initGrandCarousel() {
-
-  if (
-    !grandCarousel ||
-    !grandCarouselSlides.length
-  ) {
-    return;
-  }
-
-  let currentGrandIndex = 0;
-  let grandTimer = null;
-
-
-  function showGrandSlide() {
-
     const logicalSlide =
       grandCarouselSlides[currentGrandIndex];
 
@@ -543,10 +518,12 @@ function initGrandCarousel() {
   showGrandSlide();
 
 }
+
+
+// =================================================
+// CHARGEMENT DES SÉRIES
+// =================================================
                          }
-    // =================================================
-    // CHARGEMENT DES SÉRIES
-    // =================================================
 
     const {
       data: rawSeries,
