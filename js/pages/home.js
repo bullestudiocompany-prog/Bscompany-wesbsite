@@ -271,6 +271,9 @@ async function loadHomePage() {
 const grandCarousel =
   document.getElementById('grandCarousel');
 
+const heroText =
+  document.querySelector('.hero-text');
+    
 const grandCarouselSlides = [
   {
     type: 'oeuvres',
@@ -468,18 +471,32 @@ function initGrandCarousel() {
 
     if (logicalSlide.type === 'oeuvres') {
 
-      visibleSlide =
-        grandCarousel.querySelector(
-          '.grand-carousel-oeuvres'
-        );
+  visibleSlide =
+    grandCarousel.querySelector(
+      '.grand-carousel-oeuvres'
+    );
 
-    } else {
+  if (heroText) {
+    heroText.style.display = '';
+  }
 
-      visibleSlide =
-        grandCarousel.querySelector(
-          `[data-grand-type="${logicalSlide.type}"][data-grand-id="${logicalSlide.id}"]`
-        );
+} else {
 
+  visibleSlide =
+    grandCarousel.querySelector(
+      `[data-grand-type="${logicalSlide.type}"][data-grand-id="${logicalSlide.id}"]`
+    );
+
+  if (heroText) {
+    heroText.style.display = 'none';
+  }
+
+}
+    if (featuredDots) {
+  featuredDots.style.display =
+    logicalSlide.type === 'oeuvres'
+      ? ''
+      : 'none';
     }
 
 
