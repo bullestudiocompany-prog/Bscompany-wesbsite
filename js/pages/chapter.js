@@ -167,49 +167,7 @@ function renderChapter(chapter) {
       .map(paragraph => paragraph.trim())
       .filter(Boolean);
 
-    paragraphs.forEach(paragraph => {
-  const p = document.createElement("p");
-
-  const urlRegex = /(https?:\/\/[^\s<]+)/g;
-  let lastIndex = 0;
-
-  paragraph.replace(urlRegex, (url, offset) => {
-    // Texte avant le lien
-    p.appendChild(
-      document.createTextNode(
-        paragraph.slice(lastIndex, offset)
-      )
-    );
-
-    // Création du lien
-    const link = document.createElement("a");
-    link.href = url;
-    link.textContent = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-
-    p.appendChild(link);
-
-    lastIndex = offset + url.length;
-
-    return url;
-  });
-
-  // Texte après le dernier lien
-  p.appendChild(
-    document.createTextNode(
-      paragraph.slice(lastIndex)
-    )
-  );
-
-  chapterText.appendChild(p);
-});
-  } else {
-    const p = document.createElement("p");
-    p.textContent = "Ce chapitre ne contient pas encore de texte.";
-    chapterText.appendChild(p);
-  }
-
+    paragraphs.forEach(paragraph => { const p = document.createElement("p"); const urlRegex = /https?:\/\/[^\s<]+/g; let lastIndex = 0; for (const match of paragraph.matchAll(urlRegex)) { const url = match[0]; const offset = match.index; // Texte avant le lien p.appendChild( document.createTextNode( paragraph.slice(lastIndex, offset) ) ); // Création du lien const link = document.createElement("a"); link.href = url; link.textContent = url; link.target = "_blank"; link.rel = "noopener noreferrer"; p.appendChild(link); lastIndex = offset + url.length; } // Texte après le dernier lien p.appendChild( document.createTextNode( paragraph.slice(lastIndex) ) ); chapterText.appendChild(p); }); 
   chapterImages.innerHTML = "";
 
   let images = chapter.image_urls || [];
