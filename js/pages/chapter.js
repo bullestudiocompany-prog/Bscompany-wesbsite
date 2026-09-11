@@ -75,12 +75,15 @@ async function loadChapter() {
   currentChapter = data;
 
   renderChapter(data);
+
   console.log("🟢 renderChapter terminé");
 
   await loadChapterNavigation(data);
+
   console.log("🟢 navigation terminée");
 
   setupAudio(data);
+
   console.log("🟢 audio terminé");
 
   loading.hidden = true;
@@ -150,7 +153,6 @@ function renderChapter(chapter) {
       chapterImage.hidden = false;
 
       chapterBackground.src = fallbackImages[0];
-      chapterBackground.alt = "";
     } else {
       chapterImage.hidden = true;
       chapterBackground.removeAttribute("src");
@@ -196,9 +198,11 @@ function renderChapter(chapter) {
     .filter(url => url && url !== chapter.chapter_image_url)
     .forEach(url => {
       const img = document.createElement("img");
+
       img.src = url;
       img.alt = chapter.title || "Illustration du chapitre";
       img.loading = "lazy";
+
       chapterImages.appendChild(img);
     });
 }
@@ -285,6 +289,7 @@ function setupAudio(chapter) {
   });
 
   audio.addEventListener("canplay", attemptAutoplay, { once: true });
+
   audio.addEventListener("timeupdate", updateAudioProgress);
   audio.addEventListener("loadedmetadata", updateAudioProgress);
 
@@ -411,6 +416,7 @@ function formatTime(seconds) {
   }
 
   const minutes = Math.floor(seconds / 60);
+
   const remaining = Math.floor(seconds % 60)
     .toString()
     .padStart(2, "0");
@@ -457,7 +463,10 @@ async function registerView(chapter) {
 
     const { count, error: countError } = await supabase
       .from("chapter_views")
-      .select("id", { count: "exact", head: true })
+      .select("id", {
+        count: "exact",
+        head: true
+      })
       .eq("chapter_id", chapter.id);
 
     if (countError) {
@@ -484,7 +493,10 @@ async function setupLikeButton(chapter) {
 
   const { count, error: countError } = await supabase
     .from("likes")
-    .select("*", { count: "exact", head: true })
+    .select("*", {
+      count: "exact",
+      head: true
+    })
     .eq("chapter_id", chapter.id);
 
   if (countError) {
@@ -496,12 +508,13 @@ async function setupLikeButton(chapter) {
 
   let visitorLiked = false;
 
-  const { data: existingLike, error: existingLikeError } = await supabase
-    .from("likes")
-    .select("chapter_id")
-    .eq("chapter_id", chapter.id)
-    .eq("visitor_id", visitorId)
-    .maybeSingle();
+  const { data: existingLike, error: existingLikeError } =
+    await supabase
+      .from("likes")
+      .select("chapter_id")
+      .eq("chapter_id", chapter.id)
+      .eq("visitor_id", visitorId)
+      .maybeSingle();
 
   if (existingLikeError) {
     console.error(
@@ -548,20 +561,38 @@ async function setupLikeButton(chapter) {
         visitorLiked = true;
       }
 
-      const { count: newCount, error: refreshError } = await supabase
+      const { count, error: refreshError } = await supabase
         .from("likes")
-        .select("*", { count: "exact", head: true })
+        .select("*", {
+          count: "exact",
+          head: true
+        })
         .eq("chapter_id", chapter.id);
 
       if (refreshError) {
         throw refreshError;
       }
 
-      likeCount.textContent = newCount ?? 0;
+      likeCount.textContent = count ?? 0;
+
       updateLikeButton(visitorLiked);
     } catch (error) {
       console.error("Erreur Like :", error);
-      alert("Impossible de modifier le Like pour le moment.");
+
+      alert(
+        "ERREUR LIKE\n\n" +
+        "Message : " +
+        (error?.message || "Aucun message") +
+        "\n\n" +
+        "Code : " +
+        (error?.code || "Aucun code") +
+        "\n\n" +
+        "Details : " +
+        (error?.details || "Aucun détail") +
+        "\n\n" +
+        "Hint : " +
+        (error?.hint || "Aucun hint")
+      );
     } finally {
       likeButton.disabled = false;
     }
@@ -575,14 +606,26 @@ function updateLikeButton(isLiked) {
 
   if (isLiked) {
     likeIcon.textContent = "♥";
+
     likeButton.classList.add("liked");
+
     likeButton.setAttribute("aria-pressed", "true");
-    likeButton.setAttribute("aria-label", "Retirer le Like");
+
+    likeButton.setAttribute(
+      "aria-label",
+      "Retirer le Like"
+    );
   } else {
     likeIcon.textContent = "♡";
+
     likeButton.classList.remove("liked");
+
     likeButton.setAttribute("aria-pressed", "false");
-    likeButton.setAttribute("aria-label", "Aimer ce chapitre");
+
+    likeButton.setAttribute(
+      "aria-label",
+      "Aimer ce chapitre"
+    );
   }
 }
 
@@ -592,7 +635,8 @@ function setupComments() {
   }
 
   commentButton.addEventListener("click", () => {
-    const commentsSection = document.getElementById("commentsSection");
+    const commentsSection =
+      document.getElementById("commentsSection");
 
     if (commentsSection) {
       commentsSection.scrollIntoView({
@@ -619,7 +663,8 @@ const navLinks = document.getElementById("navLinks");
 
 if (mobileMenuBtn && navLinks) {
   mobileMenuBtn.addEventListener("click", () => {
-    const opened = navLinks.classList.toggle("mobile-open");
+    const opened =
+      navLinks.classList.toggle("mobile-open");
 
     mobileMenuBtn.setAttribute(
       "aria-expanded",
