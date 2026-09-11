@@ -1,10 +1,6 @@
 import { supabase } from "./supabaseClient.js";
 
-const $ = (id) => document.getElementById(id);
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
+const $ = (selector) => document.querySelector(selector);
 
 const loginSection = $("loginSection");
 const adminSection = $("adminSection");
@@ -19,11 +15,20 @@ const seriesStatusMsg = $("seriesStatusMsg");
 
 const chaptersList = $("chaptersList");
 const selectedSeriesTitle = $("selectedSeriesTitle");
+const chapterSeriesDescription = $("chapterSeriesDescription");
 const newChapterBtn = $("newChapterBtn");
+
 const addChapterForm = $("addChapterForm");
 const chapterSubmitBtn = $("chapterSubmitBtn");
 const chapterStatusMsg = $("chapterStatusMsg");
 const chapterSound = $("chapterSound");
+const chapterImage = $("chapterImage");
+const chapterImageInfo = $("chapterImageInfo");
+
+const chapterFormTitle = $("chapterFormTitle");
+const chapterFormDescription = $("chapterFormDescription");
+const cancelChapterEditBtn = $("cancelChapterEditBtn");
+const chapterFormBox = $("chapterFormBox");
 
 const soundForm = $("soundForm");
 const soundSubmitBtn = $("soundSubmitBtn");
@@ -34,25 +39,20 @@ const seriesCount = $("seriesCount");
 const chaptersCount = $("chaptersCount");
 const soundsCount = $("soundsCount");
 
-/* =====================================================
-   ETAT
-===================================================== */
-
 let currentUser = null;
 let selectedSeries = null;
+let editingChapterId = null;
+let editingChapterImageUrl = null;
 
-/* =====================================================
-   NAVIGATION
-===================================================== */
 
 function showPage(pageName) {
   document
     .querySelectorAll(".page")
-    .forEach(page => {
+    .forEach((page) => {
       page.classList.remove("active");
     });
 
-  const page = document.getElementById(`page-${pageName}`);
+  const page = $(`#page-${pageName}`);
 
   if (page) {
     page.classList.add("active");
@@ -60,7 +60,7 @@ function showPage(pageName) {
 
   document
     .querySelectorAll(".nav button")
-    .forEach(button => {
+    .forEach((button) => {
       button.classList.toggle(
         "active",
         button.dataset.page === pageName
@@ -73,187 +73,214 @@ function showPage(pageName) {
   });
 }
 
-document.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-page]");
-
-  if (!button) return;
-
-  showPage(button.dataset.page);
-
-  if (button.dataset.page === "series") {
-    loadSeries();
-  }
-
-  if (button.dataset.page === "sounds") {
-    loadSounds();
-  }
-});
-
-/* =====================================================
-   AUTHENTIFICATION
-===================================================== */
-
-function showAdmin(user) {
-  currentUser = user;
-
-  loginSection.classList.add("hidden");
-  adminSection.classList.remove("hidden");
-
-  console.log("Connecté :", user.email);
-
-  loadDashboard();
-  loadSeries();
-  loadSounds();
-}
 
 function showLogin() {
-  currentUser = null;
-
   loginSection.classList.remove("hidden");
   adminSection.classList.add("hidden");
 }
 
+
+function showAdmin() {
+  loginSection.classList.add("hidden");
+  adminSection.classList.remove("hidden");
+
+  loadDashboard();
+  loadSeries();
+}
+
+
+function setStatus(element, message, type = "") {
+  element.textContent = message;
+  element.className = `status ${type}`;
+}
+
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function escapeAttribute(value) {
+  return escapeHTML(value);
+}
+
+
+function createSlug(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+
+function formatChapterLabel(label, fallbackNumber = "") {
+  const value = String(label ?? "").trim();
+
+  if (!value) {
+    return fallbackNumber
+      ? `Chapitre ${fallbackNumber}`
+      : "Chapitre";
+  }
+
+  if (
+    value.toLowerCase() === "prologue"
+  ) {
+    return "Prologue";
+  }
+
+  if (
+    value.toLowerCase().startsWith("chapitre")
+  ) {
+    return value;
+  }
+
+  return `Chapitre ${value}`;
+}
+
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const button =
+      event.target.closest("[data-page]");
+
+    if (!button) {
+      return;
+    }
+
+    showPage(button.dataset.page);
+  }
+);
+
+
+loginForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+
+    loginError.textContent = "";
+
+    const email =
+      $("#loginEmail").value.trim();
+
+    const password =
+      $("#loginPassword").value;
+
+    const {
+      data,
+      error
+    } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      loginError.textContent =
+        error.message;
+
+      return;
+    }
+
+    currentUser = data.user;
+
+    showAdmin();
+  }
+);
+
+
+logoutBtn.addEventListener(
+  "click",
+  async () => {
+    await supabase.auth.signOut();
+
+    currentUser = null;
+    selectedSeries = null;
+    editingChapterId = null;
+
+    showLogin();
+  }
+);
+
+
 async function checkSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const {
+    data,
+    error
+  } = await supabase.auth.getSession();
 
   if (error) {
-    console.error("Erreur session :", error);
     showLogin();
     return;
   }
 
   if (data.session) {
-    showAdmin(data.session.user);
+    currentUser = data.session.user;
+    showAdmin();
   } else {
     showLogin();
   }
 }
 
-/* =====================================================
-   LOGIN
-===================================================== */
 
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  loginError.className = "info";
-  loginError.textContent = "⏳ Connexion...";
-
-  const email = $("loginEmail")
-    .value
-    .trim();
-
-  const password = $("loginPassword").value;
-
-  if (!email || !password) {
-    loginError.className = "error";
-    loginError.textContent = "❌ Remplis tous les champs.";
-    return;
+supabase.auth.onAuthStateChange(
+  (event, session) => {
+    if (session) {
+      currentUser = session.user;
+      showAdmin();
+    } else {
+      currentUser = null;
+      showLogin();
+    }
   }
+);
 
-  const { data, error } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-  if (error) {
-    console.error(error);
-
-    loginError.className = "error";
-    loginError.textContent = "❌ " + error.message;
-
-    return;
-  }
-
-  loginError.className = "success";
-  loginError.textContent = "✅ Connexion réussie !";
-
-  showAdmin(data.user);
-});
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-logoutBtn.addEventListener("click", async () => {
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.error("Déconnexion :", error);
-    return;
-  }
-
-  selectedSeries = null;
-
-  showLogin();
-});
-
-/* =====================================================
-   DASHBOARD
-===================================================== */
 
 async function loadDashboard() {
-  try {
-    const seriesResult = await supabase
-      .from("series")
-      .select("id", {
-        count: "exact",
-        head: true
-      });
+  const {
+    count: seriesTotal
+  } = await supabase
+    .from("series")
+    .select("*", {
+      count: "exact",
+      head: true
+    });
 
-    const chaptersResult = await supabase
-      .from("chapters")
-      .select("id", {
-        count: "exact",
-        head: true
-      });
+  const {
+    count: chaptersTotal
+  } = await supabase
+    .from("chapters")
+    .select("*", {
+      count: "exact",
+      head: true
+    });
 
-    const {
-      data: soundFiles,
-      error: soundError
-    } = await supabase.storage
-      .from("sounds")
-      .list("", {
-        limit: 1000
-      });
+  const {
+    data: soundFiles
+  } = await supabase.storage
+    .from("sounds")
+    .list();
 
-    if (seriesResult.error) {
-      throw seriesResult.error;
-    }
+  seriesCount.textContent =
+    seriesTotal || 0;
 
-    if (chaptersResult.error) {
-      throw chaptersResult.error;
-    }
+  chaptersCount.textContent =
+    chaptersTotal || 0;
 
-    if (soundError) {
-      throw soundError;
-    }
-
-    seriesCount.textContent =
-      seriesResult.count ?? 0;
-
-    chaptersCount.textContent =
-      chaptersResult.count ?? 0;
-
-    soundsCount.textContent =
-      (soundFiles || []).length;
-
-  } catch (error) {
-    console.error("Dashboard :", error);
-  }
+  soundsCount.textContent =
+    soundFiles?.length || 0;
 }
 
-/* =====================================================
-   SERIES — LISTE
-===================================================== */
 
 async function loadSeries() {
-  seriesList.innerHTML = `
-    <div class="box">
-      ⏳ Chargement...
-    </div>
-  `;
+  seriesList.innerHTML =
+    "Chargement...";
 
   const {
     data,
@@ -271,47 +298,52 @@ async function loadSeries() {
       author_id,
       created_at
     `)
-    .order("created_at", {
-      ascending: false
-    });
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
   if (error) {
-    console.error(error);
-
     seriesList.innerHTML = `
-      <div class="box error">
-        ❌ ${escapeHTML(error.message)}
+      <div class="item">
+        <p class="error">
+          Erreur : ${escapeHTML(error.message)}
+        </p>
       </div>
     `;
 
     return;
   }
 
-  if (!data || data.length === 0) {
+  if (!data?.length) {
     seriesList.innerHTML = `
-      <div class="box">
-        Aucune œuvre pour le moment.
+      <div class="item">
+        Aucune œuvre.
       </div>
     `;
 
     return;
   }
 
-  seriesList.innerHTML = data.map(series => {
-    const cover = series.cover_url || "";
-
-    return `
+  seriesList.innerHTML =
+    data.map((series) => `
       <div class="item">
 
         <div class="item-main">
 
           ${
-            cover
+            series.cover_url
               ? `
                 <img
                   class="cover"
-                  src="${escapeAttribute(cover)}"
-                  alt=""
+                  src="${escapeAttribute(
+                    series.cover_url
+                  )}"
+                  alt="${escapeAttribute(
+                    series.title
+                  )}"
                 >
               `
               : `
@@ -322,38 +354,38 @@ async function loadSeries() {
           <div class="item-info">
 
             <div class="item-title">
-              ${escapeHTML(
-                series.title || "Sans titre"
-              )}
+              ${escapeHTML(series.title)}
             </div>
 
             <div class="item-meta">
-              ${escapeHTML(series.type || "")}
-              •
-              ${escapeHTML(series.status || "")}
-            </div>
+              Type :
+              ${escapeHTML(series.type || "—")}
+              <br>
 
-            <div class="item-meta">
-              ${escapeHTML(
-                series.description || ""
-              ).slice(0, 150)}
+              Statut :
+              ${escapeHTML(series.status || "—")}
             </div>
 
           </div>
 
         </div>
 
+
         <div class="item-actions">
 
           <button
-            data-open-series="${escapeAttribute(series.id)}"
+            data-open-series="${escapeAttribute(
+              series.id
+            )}"
           >
             📖 Chapitres
           </button>
 
           <button
             class="danger"
-            data-delete-series="${escapeAttribute(series.id)}"
+            data-delete-series="${escapeAttribute(
+              series.id
+            )}"
           >
             🗑 Supprimer
           </button>
@@ -361,32 +393,42 @@ async function loadSeries() {
         </div>
 
       </div>
-    `;
-  }).join("");
+    `).join("");
 }
 
-/* =====================================================
-   OUVRIR UNE SERIE
-===================================================== */
 
 document.addEventListener(
   "click",
   async (event) => {
 
-    const button =
-      event.target.closest("[data-open-series]");
+    const openButton =
+      event.target.closest(
+        "[data-open-series]"
+      );
 
-    if (!button) return;
+    if (openButton) {
+      await openSeries(
+        openButton.dataset.openSeries
+      );
 
-    const seriesId =
-      button.dataset.openSeries;
+      return;
+    }
 
-    await openSeries(seriesId);
+    const deleteButton =
+      event.target.closest(
+        "[data-delete-series]"
+      );
+
+    if (deleteButton) {
+      await deleteSeries(
+        deleteButton.dataset.deleteSeries
+      );
+    }
   }
 );
 
-async function openSeries(seriesId) {
 
+async function openSeries(seriesId) {
   const {
     data,
     error
@@ -398,7 +440,7 @@ async function openSeries(seriesId) {
 
   if (error) {
     alert(
-      "Impossible de charger l'œuvre : " +
+      "Erreur : " +
       error.message
     );
 
@@ -408,155 +450,117 @@ async function openSeries(seriesId) {
   selectedSeries = data;
 
   selectedSeriesTitle.textContent =
-    data.title;
+    data.title || "—";
 
-  $("newChapterSeriesTitle").textContent =
-    data.title;
-
-  showPage("chapters");
+  chapterSeriesDescription.textContent =
+    data.description || "Gestion des chapitres.";
 
   await loadChapters();
+
+  showPage("chapters");
 }
 
-/* =====================================================
-   SUPPRIMER UNE SERIE
-===================================================== */
 
-document.addEventListener(
-  "click",
-  async (event) => {
-
-    const button =
-      event.target.closest("[data-delete-series]");
-
-    if (!button) return;
-
-    const id =
-      button.dataset.deleteSeries;
-
-    const confirmed = confirm(
-      "Supprimer cette œuvre ?\n\n" +
-      "Ses chapitres associés seront également supprimés."
+async function deleteSeries(seriesId) {
+  const confirmed =
+    confirm(
+      "Supprimer définitivement cette œuvre et ses chapitres ?"
     );
 
-    if (!confirmed) return;
-
-    const { error } = await supabase
-      .from("series")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      alert("Erreur : " + error.message);
-      return;
-    }
-
-    if (
-      selectedSeries &&
-      selectedSeries.id === id
-    ) {
-      selectedSeries = null;
-    }
-
-    await loadSeries();
-    await loadDashboard();
+  if (!confirmed) {
+    return;
   }
-);
 
-/* =====================================================
-   CREER UNE SERIE
-===================================================== */
+  const {
+    error
+  } = await supabase
+    .from("series")
+    .delete()
+    .eq("id", seriesId);
+
+  if (error) {
+    alert(
+      "Erreur : " +
+      error.message
+    );
+
+    return;
+  }
+
+  if (
+    selectedSeries &&
+    selectedSeries.id === seriesId
+  ) {
+    selectedSeries = null;
+  }
+
+  await loadSeries();
+  await loadDashboard();
+}
+
 
 addSeriesForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
 
+    if (!currentUser) {
+      setStatus(
+        seriesStatusMsg,
+        "Session invalide.",
+        "error"
+      );
+
+      return;
+    }
+
     seriesSubmitBtn.disabled = true;
-    seriesSubmitBtn.textContent = "Publication...";
 
-    seriesStatusMsg.className =
-      "status info";
-
-    seriesStatusMsg.textContent =
-      "⏳ Préparation...";
-
-    let uploadedCoverPath = null;
+    setStatus(
+      seriesStatusMsg,
+      "Création de l'œuvre...",
+      "info"
+    );
 
     try {
-
-      if (!currentUser) {
-        throw new Error(
-          "Tu dois être connecté."
-        );
-      }
-
       const title =
-        $("seriesTitle")
+        $("#seriesTitle")
           .value
           .trim();
 
       const type =
-        $("seriesType").value;
+        $("#seriesType").value;
 
       const genre =
-        $("seriesGenre")
+        $("#seriesGenre")
           .value
           .trim();
 
       const status =
-        $("seriesStatus").value;
+        $("#seriesStatus").value;
 
       const description =
-        $("seriesDescription")
+        $("#seriesDescription")
           .value
           .trim();
 
       const coverFile =
-        $("seriesCover")
-          .files[0];
+        $("#seriesCover").files[0];
 
-      if (!title) {
+      if (!title || !description) {
         throw new Error(
-          "Le titre est obligatoire."
-        );
-      }
-
-      if (!description) {
-        throw new Error(
-          "La description est obligatoire."
+          "Le titre et la description sont obligatoires."
         );
       }
 
       if (!coverFile) {
         throw new Error(
-          "Sélectionne une couverture."
+          "La couverture est obligatoire."
         );
       }
 
-      if (
-        !coverFile.type.startsWith("image/")
-      ) {
-        throw new Error(
-          "La couverture doit être une image."
-        );
-      }
-
-      if (
-        coverFile.size > 10 * 1024 * 1024
-      ) {
-        throw new Error(
-          "La couverture ne doit pas dépasser 10 Mo."
-        );
-      }
-
-      /* =========================
-         COUVERTURE
-      ========================= */
-
-      seriesStatusMsg.textContent =
-        "⏳ Upload de la couverture...";
+      const slug =
+        createSlug(title);
 
       const extension =
         coverFile.name
@@ -567,19 +571,18 @@ addSeriesForm.addEventListener(
       const fileName =
         `${crypto.randomUUID()}.${extension}`;
 
-      uploadedCoverPath = fileName;
+      const filePath =
+        `${slug}/${fileName}`;
 
       const {
         error: uploadError
       } = await supabase.storage
         .from("Cover series")
         .upload(
-          fileName,
+          filePath,
           coverFile,
           {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: coverFile.type
+            upsert: false
           }
         );
 
@@ -587,39 +590,17 @@ addSeriesForm.addEventListener(
         throw uploadError;
       }
 
-      /* =========================
-         URL
-      ========================= */
-
       const {
-        data: urlData
+        data: publicData
       } = supabase.storage
         .from("Cover series")
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
 
       const coverUrl =
-        urlData.publicUrl;
-
-      /* =========================
-         SLUG
-      ========================= */
-
-      const slug =
-        createSlug(title) +
-        "-" +
-        crypto
-          .randomUUID()
-          .slice(0, 8);
-
-      /* =========================
-         BASE DE DONNEES
-      ========================= */
-
-      seriesStatusMsg.textContent =
-        "⏳ Création de l'œuvre...";
+        publicData.publicUrl;
 
       const {
-        error: dbError
+        error: insertError
       } = await supabase
         .from("series")
         .insert({
@@ -633,73 +614,42 @@ addSeriesForm.addEventListener(
           genre: genre || null
         });
 
-      if (dbError) {
-        throw dbError;
+      if (insertError) {
+        throw insertError;
       }
 
-      /* =========================
-         SUCCES
-      ========================= */
-
-      uploadedCoverPath = null;
-
-      seriesStatusMsg.className =
-        "status success";
-
-      seriesStatusMsg.textContent =
-        "✅ Œuvre publiée avec succès !";
-
       addSeriesForm.reset();
+
+      setStatus(
+        seriesStatusMsg,
+        "Œuvre publiée avec succès.",
+        "success"
+      );
 
       await loadSeries();
       await loadDashboard();
 
-      setTimeout(() => {
-        showPage("series");
-      }, 700);
-
     } catch (error) {
-
-      console.error(error);
-
-      if (uploadedCoverPath) {
-
-        await supabase.storage
-          .from("Cover series")
-          .remove([
-            uploadedCoverPath
-          ]);
-      }
-
-      seriesStatusMsg.className =
-        "status error";
-
-      seriesStatusMsg.textContent =
-        "❌ " + error.message;
-
+      setStatus(
+        seriesStatusMsg,
+        "Erreur : " +
+          error.message,
+        "error"
+      );
     } finally {
-
       seriesSubmitBtn.disabled = false;
-
-      seriesSubmitBtn.textContent =
-        "Publier l'œuvre";
     }
   }
 );
 
-/* =====================================================
-   CHAPITRES — LISTE
-===================================================== */
 
 async function loadChapters() {
+  if (!selectedSeries) {
+    return;
+  }
 
-  if (!selectedSeries) return;
-
-  chaptersList.innerHTML = `
-    <div class="box">
-      ⏳ Chargement...
-    </div>
-  `;
+  chaptersList.innerHTML =
+    "Chargement...";
 
   const {
     data,
@@ -731,22 +681,21 @@ async function loadChapters() {
     );
 
   if (error) {
-
-    console.error(error);
-
     chaptersList.innerHTML = `
-      <div class="box error">
-        ❌ ${escapeHTML(error.message)}
+      <div class="item">
+        <p class="error">
+          Erreur :
+          ${escapeHTML(error.message)}
+        </p>
       </div>
     `;
 
     return;
   }
 
-  if (!data || data.length === 0) {
-
+  if (!data?.length) {
     chaptersList.innerHTML = `
-      <div class="box">
+      <div class="item">
         Aucun chapitre pour cette œuvre.
       </div>
     `;
@@ -755,7 +704,7 @@ async function loadChapters() {
   }
 
   chaptersList.innerHTML =
-    data.map(chapter => {
+    data.map((chapter) => {
 
       const displayLabel =
         formatChapterLabel(
@@ -763,60 +712,70 @@ async function loadChapters() {
           chapter.chapter_number
         );
 
+      const published =
+        chapter.published_at
+          ? new Date(
+              chapter.published_at
+            ).toLocaleString("fr-FR")
+          : "Non publié";
+
       return `
         <div class="item">
 
-          <div class="item-title">
-            ${escapeHTML(displayLabel)}
-            —
-            ${escapeHTML(
-              chapter.title || "Sans titre"
-            )}
+          <div class="item-info">
+
+            <div class="item-title">
+              ${escapeHTML(displayLabel)}
+              ${
+                chapter.title
+                  ? ` — ${escapeHTML(
+                      chapter.title
+                    )}`
+                  : ""
+              }
+            </div>
+
+            <div class="item-meta">
+
+              ${escapeHTML(published)}
+
+              <br>
+
+              👁️ Vues :
+              ${Number(
+                chapter.views || 0
+              )}
+
+              <br>
+
+              ${
+                chapter.sound_url
+                  ? "🎵 Son associé"
+                  : "🔇 Aucun son"
+              }
+
+              <br>
+
+              ${
+                chapter.chapter_image_url
+                  ? "🖼️ Image du chapitre disponible"
+                  : "⚠️ Aucune image"
+              }
+
+            </div>
+
           </div>
 
-          <div class="item-meta">
-
-            ${
-              chapter.published_at
-                ? "Publié"
-                : "Non publié"
-            }
-
-            ${
-              chapter.views != null
-                ? ` • ${escapeHTML(
-                    String(chapter.views)
-                  )} vues`
-                : ""
-            }
-
-          </div>
-
-          ${
-            chapter.sound_url
-              ? `
-                <div class="item-meta">
-                  🎵 Son associé
-                </div>
-              `
-              : ""
-          }
-
-          ${
-            chapter.chapter_image_url
-              ? `
-                <div class="item-meta">
-                  🖼️ Image du chapitre disponible
-                </div>
-              `
-              : `
-                <div class="item-meta">
-                  ⚠️ Aucune image
-                </div>
-              `
-          }
 
           <div class="item-actions">
+
+            <button
+              data-edit-chapter="${escapeAttribute(
+                chapter.id
+              )}"
+            >
+              ✏️ Modifier
+            </button>
 
             <button
               class="danger"
@@ -831,20 +790,14 @@ async function loadChapters() {
 
         </div>
       `;
-
     }).join("");
 }
 
-/* =====================================================
-   NOUVEAU CHAPITRE
-===================================================== */
 
 newChapterBtn.addEventListener(
   "click",
   async () => {
-
     if (!selectedSeries) {
-
       alert(
         "Sélectionne d'abord une œuvre."
       );
@@ -852,7 +805,9 @@ newChapterBtn.addEventListener(
       return;
     }
 
-    $("newChapterSeriesTitle")
+    resetChapterForm();
+
+    $("#newChapterSeriesTitle")
       .textContent =
       selectedSeries.title;
 
@@ -862,86 +817,298 @@ newChapterBtn.addEventListener(
   }
 );
 
-/* =====================================================
-   CREER CHAPITRE
-===================================================== */
+
+document.addEventListener(
+  "click",
+  async (event) => {
+
+    const editButton =
+      event.target.closest(
+        "[data-edit-chapter]"
+      );
+
+    if (editButton) {
+      await editChapter(
+        editButton.dataset.editChapter
+      );
+
+      return;
+    }
+
+    const deleteButton =
+      event.target.closest(
+        "[data-delete-chapter]"
+      );
+
+    if (deleteButton) {
+      await deleteChapter(
+        deleteButton.dataset.deleteChapter
+      );
+    }
+  }
+);
+
+
+async function editChapter(chapterId) {
+  if (!selectedSeries) {
+    return;
+  }
+
+  const {
+    data: chapter,
+    error
+  } = await supabase
+    .from("chapters")
+    .select(`
+      id,
+      series_id,
+      chapter_number,
+      chapter_label,
+      title,
+      content,
+      chapter_image_url,
+      published_at,
+      views,
+      sound_url
+    `)
+    .eq("id", chapterId)
+    .single();
+
+  if (error) {
+    alert(
+      "Erreur : " +
+      error.message
+    );
+
+    return;
+  }
+
+  editingChapterId =
+    chapter.id;
+
+  editingChapterImageUrl =
+    chapter.chapter_image_url || null;
+
+  $("#chapterNumber").value =
+    chapter.chapter_number ?? "";
+
+  $("#chapterLabel").value =
+    chapter.chapter_label ?? "";
+
+  $("#chapterTitle").value =
+    chapter.title ?? "";
+
+  $("#chapterContent").value =
+    chapter.content ?? "";
+
+  chapterImage.value = "";
+
+  chapterImageInfo.textContent =
+    editingChapterImageUrl
+      ? "🖼️ Une image existe déjà. Laisse le champ vide pour la conserver."
+      : "Aucune image existante.";
+
+  chapterSubmitBtn.textContent =
+    "💾 Enregistrer les modifications";
+
+  cancelChapterEditBtn.classList.remove(
+    "hidden"
+  );
+
+  chapterFormTitle.textContent =
+    "Modifier le chapitre";
+
+  chapterFormDescription.textContent =
+    "Modifie les informations du chapitre.";
+
+  chapterFormBox.classList.add(
+    "edit-mode"
+  );
+
+  $("#newChapterSeriesTitle")
+    .textContent =
+    selectedSeries.title;
+
+  await loadSoundOptions(
+    chapter.sound_url || ""
+  );
+
+  showPage("new-chapter");
+}
+
+
+function resetChapterForm() {
+  editingChapterId = null;
+  editingChapterImageUrl = null;
+
+  addChapterForm.reset();
+
+  chapterImageInfo.textContent = "";
+
+  chapterSubmitBtn.textContent =
+    "Publier le chapitre";
+
+  cancelChapterEditBtn.classList.add(
+    "hidden"
+  );
+
+  chapterFormTitle.textContent =
+    "Nouveau chapitre";
+
+  chapterFormDescription.textContent =
+    "Ajoute un chapitre à l'œuvre sélectionnée.";
+
+  chapterFormBox.classList.remove(
+    "edit-mode"
+  );
+
+  chapterStatusMsg.textContent = "";
+  chapterStatusMsg.className =
+    "status";
+}
+
+
+cancelChapterEditBtn.addEventListener(
+  "click",
+  () => {
+    resetChapterForm();
+
+    if (selectedSeries) {
+      showPage("chapters");
+    }
+  }
+);
+
+
+async function loadSoundOptions(
+  selectedSoundUrl = ""
+) {
+  chapterSound.innerHTML = `
+    <option value="">
+      Aucun son
+    </option>
+  `;
+
+  const {
+    data,
+    error
+  } = await supabase.storage
+    .from("sounds")
+    .list();
+
+  if (error) {
+    console.error(
+      "Erreur sons :",
+      error
+    );
+
+    return;
+  }
+
+  if (!data?.length) {
+    return;
+  }
+
+  data
+    .filter(
+      (file) =>
+        file.name &&
+        !file.name.endsWith("/")
+    )
+    .forEach((file) => {
+
+      const {
+        data: publicData
+      } = supabase.storage
+        .from("sounds")
+        .getPublicUrl(file.name);
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        publicData.publicUrl;
+
+      option.textContent =
+        file.name;
+
+      if (
+        selectedSoundUrl &&
+        selectedSoundUrl ===
+          publicData.publicUrl
+      ) {
+        option.selected = true;
+      }
+
+      chapterSound.appendChild(
+        option
+      );
+    });
+}
+
 
 addChapterForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
 
     if (!selectedSeries) {
-
-      chapterStatusMsg.className =
-        "status error";
-
-      chapterStatusMsg.textContent =
-        "❌ Aucune œuvre sélectionnée.";
+      setStatus(
+        chapterStatusMsg,
+        "Aucune œuvre sélectionnée.",
+        "error"
+      );
 
       return;
     }
 
     chapterSubmitBtn.disabled = true;
 
-    chapterSubmitBtn.textContent =
-      "Publication...";
-
-    chapterStatusMsg.className =
-      "status info";
-
-    chapterStatusMsg.textContent =
-      "⏳ Préparation du chapitre...";
-
-    let uploadedChapterImage = null;
+    setStatus(
+      chapterStatusMsg,
+      editingChapterId
+        ? "Enregistrement des modifications..."
+        : "Publication du chapitre...",
+      "info"
+    );
 
     try {
-
-      /* =========================
-         DONNEES DU FORMULAIRE
-      ========================= */
-
       const chapterNumber =
         Number(
-          $("chapterNumber").value
+          $("#chapterNumber").value
         );
 
-      const chapterLabelInput =
-        $("chapterLabel");
-
       const chapterLabel =
-        chapterLabelInput
-          ? chapterLabelInput.value.trim()
-          : "";
+        $("#chapterLabel")
+          .value
+          .trim();
 
       const title =
-        $("chapterTitle")
+        $("#chapterTitle")
           .value
           .trim();
 
       const content =
-        $("chapterContent")
+        $("#chapterContent")
           .value
           .trim();
 
       const soundUrl =
         chapterSound.value || null;
 
-      const chapterImageFile =
-        $("chapterImage")
-          ?.files[0];
-
-      /* =========================
-         VALIDATION
-      ========================= */
+      const imageFile =
+        chapterImage.files[0];
 
       if (
-        !chapterNumber ||
+        !Number.isFinite(
+          chapterNumber
+        ) ||
         chapterNumber < 1
       ) {
         throw new Error(
-          "Le numéro interne du chapitre est invalide."
+          "Le numéro interne doit être supérieur ou égal à 1."
         );
       }
 
@@ -963,107 +1130,77 @@ addChapterForm.addEventListener(
         );
       }
 
-      if (!chapterImageFile) {
-        throw new Error(
-          "Sélectionne l'image du chapitre."
-        );
+      if (imageFile) {
+        if (
+          !imageFile.type.startsWith(
+            "image/"
+          )
+        ) {
+          throw new Error(
+            "Le fichier sélectionné doit être une image."
+          );
+        }
+
+        if (
+          imageFile.size >
+          10 * 1024 * 1024
+        ) {
+          throw new Error(
+            "L'image ne doit pas dépasser 10 Mo."
+          );
+        }
       }
 
-      if (
-        !chapterImageFile.type.startsWith(
-          "image/"
-        )
-      ) {
-        throw new Error(
-          "L'image du chapitre doit être une image."
-        );
+      let chapterImageUrl =
+        editingChapterImageUrl;
+
+      if (imageFile) {
+        const extension =
+          imageFile.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+        const fileName =
+          `${crypto.randomUUID()}.${extension}`;
+
+        const filePath =
+          `${selectedSeries.id}/${fileName}`;
+
+        const {
+          error: uploadError
+        } = await supabase.storage
+          .from("chapter-images")
+          .upload(
+            filePath,
+            imageFile,
+            {
+              upsert: false
+            }
+          );
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const {
+          data: publicData
+        } = supabase.storage
+          .from("chapter-images")
+          .getPublicUrl(
+            filePath
+          );
+
+        chapterImageUrl =
+          publicData.publicUrl;
       }
 
-      if (
-        chapterImageFile.size >
-        10 * 1024 * 1024
-      ) {
-        throw new Error(
-          "L'image du chapitre ne doit pas dépasser 10 Mo."
-        );
-      }
+      if (editingChapterId) {
 
-      /* =========================
-         UPLOAD IMAGE CHAPITRE
-      ========================= */
-
-      chapterStatusMsg.textContent =
-        "⏳ Upload de l'image du chapitre...";
-
-      const extension =
-        chapterImageFile.name
-          .split(".")
-          .pop()
-          .toLowerCase();
-
-      const imageFileName =
-        `${crypto.randomUUID()}.${extension}`;
-
-      uploadedChapterImage =
-        imageFileName;
-
-      const {
-        error: imageUploadError
-      } = await supabase.storage
-        .from("chapter-images")
-        .upload(
-          imageFileName,
-          chapterImageFile,
-          {
-            cacheControl: "3600",
-            upsert: false,
-            contentType:
-              chapterImageFile.type
-          }
-        );
-
-      if (imageUploadError) {
-        throw imageUploadError;
-      }
-
-      /* =========================
-         URL IMAGE
-      ========================= */
-
-      const {
-        data: imageUrlData
-      } = supabase.storage
-        .from("chapter-images")
-        .getPublicUrl(
-          imageFileName
-        );
-
-      const chapterImageUrl =
-        imageUrlData.publicUrl;
-
-      /* =========================
-         INSERTION CHAPITRE
-      ========================= */
-
-      chapterStatusMsg.textContent =
-        "⏳ Création du chapitre...";
-
-      const {
-        error: dbError
-      } = await supabase
-        .from("chapters")
-        .insert({
-
-          series_id:
-            selectedSeries.id,
-
-          // Numéro interne utilisé
-          // pour l'ordre des chapitres
+        const updateData = {
           chapter_number:
             chapterNumber,
 
-          // Libellé visible par le lecteur
-          // Ex : 0, 1, 10.5, Prologue...
           chapter_label:
             chapterLabel,
 
@@ -1071,187 +1208,265 @@ addChapterForm.addEventListener(
 
           content,
 
-          chapter_image_url:
-            chapterImageUrl,
-
           sound_url:
             soundUrl,
 
-          published_at:
-            new Date().toISOString(),
-
-          views: 0
-        });
-
-      if (dbError) {
-        throw dbError;
-      }
-
-      /* =========================
-         SUCCES
-      ========================= */
-
-      uploadedChapterImage = null;
-
-      chapterStatusMsg.className =
-        "status success";
-
-      chapterStatusMsg.textContent =
-        "✅ Chapitre publié avec succès !";
-
-      addChapterForm.reset();
-
-      await loadDashboard();
-
-      setTimeout(
-        async () => {
-
-          showPage("chapters");
-
-          await loadChapters();
-
-        },
-        700
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      /* =========================
-         NETTOYAGE IMAGE
-      ========================= */
-
-      if (uploadedChapterImage) {
+          chapter_image_url:
+            chapterImageUrl
+        };
 
         const {
-          error: cleanupError
-        } = await supabase.storage
-          .from("chapter-images")
-          .remove([
-            uploadedChapterImage
-          ]);
+          error: updateError
+        } = await supabase
+          .from("chapters")
+          .update(updateData)
+          .eq(
+            "id",
+            editingChapterId
+          );
 
-        if (cleanupError) {
+        if (updateError) {
+          throw updateError;
+        }
 
-          console.error(
-            "Nettoyage image :",
-            cleanupError
+        setStatus(
+          chapterStatusMsg,
+          "Chapitre modifié avec succès.",
+          "success"
+        );
+
+      } else {
+
+        if (!imageFile) {
+          throw new Error(
+            "L'image du chapitre est obligatoire pour un nouveau chapitre."
           );
         }
+
+        const {
+          error: insertError
+        } = await supabase
+          .from("chapters")
+          .insert({
+            series_id:
+              selectedSeries.id,
+
+            chapter_number:
+              chapterNumber,
+
+            chapter_label:
+              chapterLabel,
+
+            title,
+
+            content,
+
+            chapter_image_url:
+              chapterImageUrl,
+
+            sound_url:
+              soundUrl,
+
+            published_at:
+              new Date().toISOString(),
+
+            views: 0
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        setStatus(
+          chapterStatusMsg,
+          "Chapitre publié avec succès.",
+          "success"
+        );
       }
 
-      chapterStatusMsg.className =
-        "status error";
+      await loadChapters();
+      await loadDashboard();
 
-      chapterStatusMsg.textContent =
-        "❌ " + error.message;
+      if (editingChapterId) {
+        resetChapterForm();
+        showPage("chapters");
+      } else {
+        addChapterForm.reset();
+        chapterImageInfo.textContent = "";
+      }
 
-    } finally {
-
-      chapterSubmitBtn.disabled = false;
-
-      chapterSubmitBtn.textContent =
-        "Publier le chapitre";
-    }
-  }
-);
-
-/* =====================================================
-   SUPPRIMER CHAPITRE
-===================================================== */
-
-document.addEventListener(
-  "click",
-  async (event) => {
-
-    const button =
-      event.target.closest(
-        "[data-delete-chapter]"
-      );
-
-    if (!button) return;
-
-    const id =
-      button.dataset.deleteChapter;
-
-    if (
-      !confirm(
-        "Supprimer définitivement ce chapitre ?"
-      )
-    ) {
-      return;
-    }
-
-    const { error } =
-      await supabase
-        .from("chapters")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-
-      alert(
+    } catch (error) {
+      setStatus(
+        chapterStatusMsg,
         "Erreur : " +
-        error.message
+          error.message,
+        "error"
+      );
+    } finally {
+      chapterSubmitBtn.disabled = false;
+    }
+  }
+);
+
+
+async function deleteChapter(
+  chapterId
+) {
+  const confirmed =
+    confirm(
+      "Supprimer définitivement ce chapitre ?\n\nCette action est irréversible."
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const {
+    error
+  } = await supabase
+    .from("chapters")
+    .delete()
+    .eq(
+      "id",
+      chapterId
+    );
+
+  if (error) {
+    alert(
+      "Erreur : " +
+      error.message
+    );
+
+    return;
+  }
+
+  if (
+    editingChapterId ===
+    chapterId
+  ) {
+    resetChapterForm();
+  }
+
+  await loadChapters();
+  await loadDashboard();
+}
+
+
+soundForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+
+    const file =
+      $("#soundFile").files[0];
+
+    if (!file) {
+      setStatus(
+        soundStatusMsg,
+        "Sélectionne un fichier audio.",
+        "error"
       );
 
       return;
     }
 
-    await loadChapters();
-    await loadDashboard();
+    soundSubmitBtn.disabled = true;
+
+    setStatus(
+      soundStatusMsg,
+      "Ajout du son...",
+      "info"
+    );
+
+    try {
+      const safeName =
+        file.name
+          .toLowerCase()
+          .replace(
+            /[^a-z0-9._-]/g,
+            "_"
+          );
+
+      const fileName =
+        `${Date.now()}_${crypto.randomUUID()}_${safeName}`;
+
+      const {
+        error
+      } = await supabase.storage
+        .from("sounds")
+        .upload(
+          fileName,
+          file,
+          {
+            upsert: false
+          }
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      soundForm.reset();
+
+      setStatus(
+        soundStatusMsg,
+        "Son ajouté avec succès.",
+        "success"
+      );
+
+      await loadSounds();
+      await loadDashboard();
+      await loadSoundOptions();
+
+    } catch (error) {
+      setStatus(
+        soundStatusMsg,
+        "Erreur : " +
+          error.message,
+        "error"
+      );
+    } finally {
+      soundSubmitBtn.disabled = false;
+    }
   }
 );
 
-/* =====================================================
-   SONS — CHARGEMENT
-===================================================== */
 
 async function loadSounds() {
-
-  soundsList.innerHTML = `
-    <div class="box">
-      ⏳ Chargement...
-    </div>
-  `;
+  soundsList.innerHTML =
+    "Chargement...";
 
   const {
     data,
     error
   } = await supabase.storage
     .from("sounds")
-    .list(
-      "",
-      {
-        limit: 1000,
-        sortBy: {
-          column: "created_at",
-          order: "desc"
-        }
-      }
-    );
+    .list();
 
   if (error) {
-
-    console.error(error);
-
     soundsList.innerHTML = `
-      <div class="box error">
-        ❌ ${escapeHTML(error.message)}
+      <div class="item">
+        <p class="error">
+          Erreur :
+          ${escapeHTML(error.message)}
+        </p>
       </div>
     `;
 
     return;
   }
 
-  const files = data || [];
+  const files =
+    (data || []).filter(
+      (file) =>
+        file.name &&
+        !file.name.endsWith("/")
+    );
 
-  if (files.length === 0) {
-
+  if (!files.length) {
     soundsList.innerHTML = `
-      <div class="box">
-        Aucun son pour le moment.
+      <div class="item">
+        Aucun son.
       </div>
     `;
 
@@ -1259,18 +1474,15 @@ async function loadSounds() {
   }
 
   soundsList.innerHTML =
-    files.map(file => {
+    files.map((file) => {
 
       const {
-        data: urlData
+        data: publicData
       } = supabase.storage
         .from("sounds")
         .getPublicUrl(
           file.name
         );
-
-      const url =
-        urlData.publicUrl;
 
       return `
         <div class="item">
@@ -1278,20 +1490,17 @@ async function loadSounds() {
           <div class="sound-row">
 
             <div class="sound-name">
-              🎵 ${escapeHTML(
+              ${escapeHTML(
                 file.name
               )}
             </div>
 
             <audio
               controls
-              preload="none"
-              src="${escapeAttribute(url)}"
+              src="${escapeAttribute(
+                publicData.publicUrl
+              )}"
             ></audio>
-
-          </div>
-
-          <div class="item-actions">
 
             <button
               class="danger"
@@ -1306,119 +1515,9 @@ async function loadSounds() {
 
         </div>
       `;
-
     }).join("");
 }
 
-/* =====================================================
-   UPLOAD SON
-===================================================== */
-
-soundForm.addEventListener(
-  "submit",
-  async (event) => {
-
-    event.preventDefault();
-
-    const file =
-      $("soundFile")
-        .files[0];
-
-    if (!file) {
-
-      soundStatusMsg.className =
-        "status error";
-
-      soundStatusMsg.textContent =
-        "❌ Sélectionne un fichier audio.";
-
-      return;
-    }
-
-    soundSubmitBtn.disabled = true;
-
-    soundSubmitBtn.textContent =
-      "Upload...";
-
-    soundStatusMsg.className =
-      "status info";
-
-    soundStatusMsg.textContent =
-      "⏳ Upload du son...";
-
-    try {
-
-      const extension =
-        file.name
-          .split(".")
-          .pop()
-          .toLowerCase();
-
-      const safeName =
-        file.name.replace(
-          /[^a-zA-Z0-9._-]/g,
-          "_"
-        );
-
-      const fileName =
-        `${Date.now()}_${crypto
-          .randomUUID()
-          .slice(0, 8)}_${safeName}`;
-
-      const { error } =
-        await supabase.storage
-          .from("sounds")
-          .upload(
-            fileName,
-            file,
-            {
-              cacheControl: "3600",
-              upsert: false,
-              contentType:
-                file.type ||
-                `audio/${extension}`
-            }
-          );
-
-      if (error) {
-        throw error;
-      }
-
-      soundStatusMsg.className =
-        "status success";
-
-      soundStatusMsg.textContent =
-        "✅ Son ajouté !";
-
-      soundForm.reset();
-
-      await loadSounds();
-      await loadSoundOptions();
-      await loadDashboard();
-
-    } catch (error) {
-
-      console.error(error);
-
-      soundStatusMsg.className =
-        "status error";
-
-      soundStatusMsg.textContent =
-        "❌ " + error.message;
-
-    } finally {
-
-      soundSubmitBtn.disabled = false;
-
-      soundSubmitBtn.textContent =
-        "Ajouter le son";
-    }
-  }
-);
-
-/* =====================================================
-   SUPPRIMER SON
-===================================================== */
 
 document.addEventListener(
   "click",
@@ -1429,218 +1528,49 @@ document.addEventListener(
         "[data-delete-sound]"
       );
 
-    if (!button) return;
+    if (!button) {
+      return;
+    }
 
     const fileName =
       button.dataset.deleteSound;
 
-    if (
-      !confirm(
-        "Supprimer ce son du bucket ?"
-      )
-    ) {
+    const confirmed =
+      confirm(
+        `Supprimer le son "${fileName}" ?`
+      );
+
+    if (!confirmed) {
       return;
     }
 
-    const { error } =
-      await supabase.storage
-        .from("sounds")
-        .remove([
-          fileName
-        ]);
+    const {
+      error
+    } = await supabase.storage
+      .from("sounds")
+      .remove([
+        fileName
+      ]);
 
     if (error) {
-
       alert(
         "Erreur : " +
-        error.message
+          error.message
       );
 
       return;
     }
 
     await loadSounds();
-    await loadSoundOptions();
     await loadDashboard();
+    await loadSoundOptions();
   }
 );
 
-/* =====================================================
-   OPTIONS DES SONS POUR CHAPITRE
-===================================================== */
 
-async function loadSoundOptions() {
-
-  const {
-    data,
-    error
-  } = await supabase.storage
-    .from("sounds")
-    .list(
-      "",
-      {
-        limit: 1000
-      }
-    );
-
-  if (error) {
-
-    console.error(
-      "Sons :",
-      error
-    );
-
-    return;
-  }
-
-  const files =
-    (data || [])
-      .filter(
-        file => file.name
-      );
-
-  chapterSound.innerHTML =
-    `<option value="">Aucun son</option>`;
-
-  files.forEach(file => {
-
-    const {
-      data: urlData
-    } = supabase.storage
-      .from("sounds")
-      .getPublicUrl(
-        file.name
-      );
-
-    const option =
-      document.createElement(
-        "option"
-      );
-
-    option.value =
-      urlData.publicUrl;
-
-    option.textContent =
-      file.name;
-
-    chapterSound.appendChild(
-      option
-    );
-  });
+async function start() {
+  await checkSession();
 }
 
-/* =====================================================
-   FORMAT LIBELLE CHAPITRE
-===================================================== */
 
-function formatChapterLabel(
-  label,
-  fallbackNumber = null
-) {
-
-  const value =
-    label !== null &&
-    label !== undefined &&
-    String(label).trim() !== ""
-      ? String(label).trim()
-      : (
-          fallbackNumber !== null &&
-          fallbackNumber !== undefined
-            ? String(fallbackNumber)
-            : ""
-        );
-
-  if (!value) {
-    return "Chapitre";
-  }
-
-  if (/^prologue$/i.test(value)) {
-    return "Prologue";
-  }
-
-  if (/^chapitre\b/i.test(value)) {
-    return value;
-  }
-
-  return `Chapitre ${value}`;
-}
-
-/* =====================================================
-   UTILITAIRES
-===================================================== */
-
-function createSlug(text) {
-
-  return text
-    .toString()
-    .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .toLowerCase()
-    .trim()
-    .replace(
-      /[^a-z0-9]+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      ""
-    );
-}
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-}
-
-function escapeAttribute(value) {
-  return escapeHTML(value);
-}
-
-/* =====================================================
-   AUTH STATE
-===================================================== */
-
-supabase.auth.onAuthStateChange(
-  (event, session) => {
-
-    console.log(
-      "Auth :",
-      event
-    );
-
-    if (session) {
-      showAdmin(session.user);
-    } else {
-      showLogin();
-    }
-  }
-);
-
-/* =====================================================
-   DEMARRAGE
-===================================================== */
-
-checkSession();
+start();
