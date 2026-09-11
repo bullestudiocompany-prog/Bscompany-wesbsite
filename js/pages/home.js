@@ -184,12 +184,6 @@ async function attachSeriesViews(series) {
     return {
       ...seriesItem,
 
-      /*
-       * On met les DEUX propriétés volontairement.
-       *
-       * Cela évite qu'une ancienne propriété "vues"
-       * contenant 0 écrase notre nouveau "views".
-       */
       views: totalViews,
       vues: totalViews
     };
@@ -198,13 +192,184 @@ async function attachSeriesViews(series) {
   console.log('==========================================');
   console.log('HOME : RÉSULTAT FINAL DES SÉRIES');
   console.log('==========================================');
+
   console.log(result);
+
   console.table(
     result.map(item => ({
       id: item.id,
       title: item.title,
       views: item.views,
       vues: item.vues
+    }))
+  );
+
+  return result;
+}
+
+/* =========================================================
+   CALCUL DES LIKES DES ŒUVRES
+   ========================================================= */
+
+async function attachSeriesLikes(series) {
+  console.log('==========================================');
+  console.log('HOME : DÉBUT DU CALCUL DES LIKES');
+  console.log('==========================================');
+
+  if (!series || series.length === 0) {
+    console.log('HOME : aucune série trouvée.');
+    return series;
+  }
+
+  const seriesIds = series.map(seriesItem => seriesItem.id);
+
+  console.log(
+    'HOME : IDs des séries pour les likes :',
+    seriesIds
+  );
+
+  /* ---------------------------------------------------------
+     1. RÉCUPÉRER LES CHAPITRES
+     --------------------------------------------------------- */
+
+  const { data: chapters, error: chaptersError } = await supabase
+    .from('chapters')
+    .select('id, series_id')
+    .in('series_id', seriesIds);
+
+  console.log('------------------------------------------');
+  console.log('HOME : CHAPITRES POUR LES LIKES');
+  console.log('Chapitres :', chapters);
+  console.log('Erreur chapitres :', chaptersError);
+  console.log('------------------------------------------');
+
+  if (chaptersError) {
+    console.error(
+      'HOME : ERREUR lors de la récupération des chapitres pour les likes :',
+      chaptersError
+    );
+
+    return series.map(seriesItem => ({
+      ...seriesItem,
+      likes: 0
+    }));
+  }
+
+  if (!chapters || chapters.length === 0) {
+    console.warn(
+      'HOME : aucun chapitre trouvé pour calculer les likes.'
+    );
+
+    return series.map(seriesItem => ({
+      ...seriesItem,
+      likes: 0
+    }));
+  }
+
+  const chapterIds = chapters.map(chapter => chapter.id);
+
+  /* ---------------------------------------------------------
+     2. RÉCUPÉRER LES LIKES
+     --------------------------------------------------------- */
+
+  const { data: likes, error: likesError } = await supabase
+    .from('likes')
+    .select('chapter_id')
+    .in('chapter_id', chapterIds);
+
+  console.log('------------------------------------------');
+  console.log('HOME : RÉSULTAT LIKES');
+  console.log('Likes récupérés :', likes);
+  console.log('Erreur likes :', likesError);
+  console.log(
+    'Nombre total de likes récupérés :',
+    likes?.length || 0
+  );
+  console.log('------------------------------------------');
+
+  if (likesError) {
+    console.error(
+      'HOME : ERREUR lors de la récupération des likes :',
+      likesError
+    );
+
+    return series.map(seriesItem => ({
+      ...seriesItem,
+      likes: 0
+    }));
+  }
+
+  /* ---------------------------------------------------------
+     3. COMPTER LES LIKES PAR CHAPITRE
+     --------------------------------------------------------- */
+
+  const likesByChapter = {};
+
+  for (const like of likes || []) {
+    if (!like.chapter_id) {
+      continue;
+    }
+
+    likesByChapter[like.chapter_id] =
+      (likesByChapter[like.chapter_id] || 0) + 1;
+  }
+
+  console.log('HOME : LIKES PAR CHAPITRE :');
+  console.table(likesByChapter);
+
+  /* ---------------------------------------------------------
+     4. ADDITIONNER LES LIKES PAR ŒUVRE
+     --------------------------------------------------------- */
+
+  const likesBySeries = {};
+
+  for (const chapter of chapters) {
+    const chapterLikes =
+      likesByChapter[chapter.id] || 0;
+
+    likesBySeries[chapter.series_id] =
+      (likesBySeries[chapter.series_id] || 0) +
+      chapterLikes;
+  }
+
+  console.log('------------------------------------------');
+  console.log('HOME : TOTAL DES LIKES PAR ŒUVRE');
+  console.log(likesBySeries);
+  console.table(likesBySeries);
+  console.log('------------------------------------------');
+
+  /* ---------------------------------------------------------
+     5. AJOUTER LE TOTAL AUX SÉRIES
+     --------------------------------------------------------- */
+
+  const result = series.map(seriesItem => {
+    const totalLikes =
+      likesBySeries[seriesItem.id] || 0;
+
+    console.log(
+      'HOME : ŒUVRE :',
+      seriesItem.title,
+      '| ID :',
+      seriesItem.id,
+      '| TOTAL LIKES :',
+      totalLikes
+    );
+
+    return {
+      ...seriesItem,
+      likes: totalLikes
+    };
+  });
+
+  console.log('==========================================');
+  console.log('HOME : RÉSULTAT FINAL DES LIKES');
+  console.log('==========================================');
+
+  console.table(
+    result.map(item => ({
+      id: item.id,
+      title: item.title,
+      likes: item.likes
     }))
   );
 
@@ -256,15 +421,21 @@ async function loadHomePage() {
      CALCUL DES VUES RÉELLES
      ======================================================== */
 
-  const series = await attachSeriesViews(rawSeries);
+  let series = await attachSeriesViews(rawSeries);
+
+  /* ========================================================
+     CALCUL DES LIKES RÉELS
+     ======================================================== */
+
+  series = await attachSeriesLikes(series);
 
   console.log('==========================================');
-  console.log('HOME : SÉRIES APRÈS CALCUL DES VUES');
+  console.log('HOME : SÉRIES APRÈS CALCUL DES VUES ET LIKES');
   console.log('==========================================');
 
   for (const item of series) {
     console.log(
-      `${item.title} → ${item.views} vue(s)`
+      `${item.title} → ${item.views} vue(s) · ${item.likes} like(s)`
     );
   }
 
@@ -322,7 +493,9 @@ async function loadHomePage() {
             '| views =',
             item.views,
             '| vues =',
-            item.vues
+            item.vues,
+            '| likes =',
+            item.likes
           );
 
           return createCard(item);
@@ -407,4 +580,4 @@ if (mobileMenuBtn && navLinks) {
         mobileMenuBtn.textContent = '☰';
       });
     });
-    }
+      }
