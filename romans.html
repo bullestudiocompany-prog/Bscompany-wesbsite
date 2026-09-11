@@ -637,6 +637,164 @@
 
 
     /* =========================
+       RÉCUPÉRER LES LIKES
+       ========================= */
+
+    async function attachSeriesLikes(series) {
+
+      if (!series || series.length === 0) {
+        return [];
+      }
+
+
+      const seriesIds =
+        series.map(roman => roman.id);
+
+
+      /* =========================
+         RÉCUPÉRER LES CHAPITRES
+         ========================= */
+
+      const {
+        data: chapters,
+        error: chaptersError
+      } = await supabase
+
+        .from('chapters')
+
+        .select('id, series_id')
+
+        .in('series_id', seriesIds);
+
+
+      if (chaptersError) {
+
+        console.error(
+          'Erreur lors de la récupération des chapitres pour les likes :',
+          chaptersError
+        );
+
+        throw chaptersError;
+
+      }
+
+
+      /* Aucun chapitre = 0 like */
+
+      if (!chapters || chapters.length === 0) {
+
+        return series.map(roman => ({
+
+          ...roman,
+
+          likes: 0
+
+        }));
+
+      }
+
+
+      const chapterIds =
+        chapters.map(
+          chapter => chapter.id
+        );
+
+
+      /* =========================
+         RÉCUPÉRER LES LIKES
+         ========================= */
+
+      const {
+        data: likes,
+        error: likesError
+      } = await supabase
+
+        .from('likes')
+
+        .select('chapter_id')
+
+        .in('chapter_id', chapterIds);
+
+
+      if (likesError) {
+
+        console.error(
+          'Erreur lors de la récupération des likes :',
+          likesError
+        );
+
+        throw likesError;
+
+      }
+
+
+      /* =========================
+         COMPTER LES LIKES
+         PAR CHAPITRE
+         ========================= */
+
+      const likesByChapter = {};
+
+
+      (likes || []).forEach(like => {
+
+        if (!like.chapter_id) {
+          return;
+        }
+
+
+        likesByChapter[like.chapter_id] =
+          (likesByChapter[like.chapter_id] || 0) + 1;
+
+      });
+
+
+      /* =========================
+         ADDITIONNER LES LIKES
+         PAR ROMAN
+         ========================= */
+
+      const likesBySeries = {};
+
+
+      chapters.forEach(chapter => {
+
+        const chapterLikes =
+          likesByChapter[chapter.id] || 0;
+
+
+        likesBySeries[chapter.series_id] =
+          (likesBySeries[chapter.series_id] || 0) +
+          chapterLikes;
+
+      });
+
+
+      /* =========================
+         AJOUTER LES LIKES
+         AUX ROMANS
+         ========================= */
+
+      return series.map(roman => {
+
+        const totalLikes =
+          likesBySeries[roman.id] || 0;
+
+
+        return {
+
+          ...roman,
+
+          likes: totalLikes
+
+        };
+
+      });
+
+    }
+
+
+    /* =========================
        CHARGEMENT DES ROMANS
        ========================= */
 
@@ -686,6 +844,17 @@
         allRomans =
           await attachSeriesViews(
             series || []
+          );
+
+
+        /*
+          On récupère maintenant les likes
+          réels depuis likes.
+        */
+
+        allRomans =
+          await attachSeriesLikes(
+            allRomans
           );
 
 
@@ -922,86 +1091,3 @@
             new Date(
               b.created_at || 0
             ).getTime();
-
-
-          return dateB - dateA;
-
-        });
-
-      }
-
-
-      /* =========================
-         COMPTEUR
-         ========================= */
-
-      const count =
-        romans.length;
-
-
-      resultsCount.textContent =
-        `${count} roman${count > 1 ? 's' : ''}`;
-
-
-      /* =========================
-         AUCUN RÉSULTAT
-         ========================= */
-
-      if (count === 0) {
-
-        romansGrid.innerHTML = `
-          <p class="empty-state">
-            Aucun roman ne correspond
-            à votre recherche.
-          </p>
-        `;
-
-        return;
-
-      }
-
-
-      /* =========================
-         CARTES
-         ========================= */
-
-      romansGrid.innerHTML =
-        romans
-          .map(roman => createCard(roman))
-          .join('');
-
-    }
-
-
-    /* =========================
-       ÉVÉNEMENTS
-       ========================= */
-
-    searchInput.addEventListener(
-      'input',
-      renderRomans
-    );
-
-
-    genreFilter.addEventListener(
-      'change',
-      renderRomans
-    );
-
-
-    sortSelect.addEventListener(
-      'change',
-      renderRomans
-    );
-
-
-    /* =========================
-       LANCEMENT
-       ========================= */
-
-    loadRomans();
-
-  </script>
-
-</body>
-  </html>
