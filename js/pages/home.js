@@ -523,7 +523,6 @@ function initGrandCarousel() {
 // =================================================
 // CHARGEMENT DES SÉRIES
 // =================================================
-                         }
 
     const {
       data: rawSeries,
