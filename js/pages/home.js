@@ -262,9 +262,15 @@ console.log(
   carouselSlides || []
 );
 
-    // =================================================
+    /// =================================================
 // PRÉPARATION DU GRAND CARROUSEL
 // =================================================
+
+const grandCarousel =
+  document.getElementById('grandCarousel');
+
+const grandCarouselWorks =
+  document.getElementById('grandCarouselWorks');
 
 const grandCarouselSlides = [
   {
@@ -278,70 +284,75 @@ console.log(
   grandCarouselSlides
 );
 
-    function createGrandCarouselSlide(slide) {
 
-  if (slide.type === 'oeuvres') {
-    return `
-      <div class="grand-carousel-slide grand-carousel-oeuvres">
-        <div id="grandCarouselWorks"></div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="grand-carousel-slide grand-carousel-${slide.type}">
-      ${slide.image_url ? `
-        <img
-          src="${slide.image_url}"
-          alt="${slide.title || ''}"
-        >
-      ` : ''}
-
-      <div class="grand-carousel-content">
-        <h2>${slide.title || ''}</h2>
-
-        ${slide.description ? `
-          <p>${slide.description}</p>
-        ` : ''}
-
-        ${slide.button_text && slide.button_url ? `
-          <a
-            href="${slide.button_url}"
-            class="grand-carousel-button"
-          >
-            ${slide.button_text}
-          </a>
-        ` : ''}
-      </div>
-    </div>
-  `;
-}
-
-    // =================================================
+// =================================================
 // INITIALISATION DU GRAND CARROUSEL
 // =================================================
 
 function initGrandCarousel() {
 
-  if (!grandCarouselSlides.length) return;
+  if (
+    !grandCarousel ||
+    !grandCarouselSlides.length
+  ) {
+    return;
+  }
 
   let currentGrandIndex = 0;
+  let grandTimer = null;
+
 
   function showGrandSlide() {
 
-    const slide =
-      grandCarouselSlides[currentGrandIndex];
+    const slides =
+      grandCarousel.querySelectorAll(
+        '.grand-carousel-slide'
+      );
 
-    if (!slide) return;
+    slides.forEach((slide, index) => {
 
-    console.log(
-      'HOME : SLIDE GRAND CARROUSEL :',
-      slide
-    );
+      slide.style.display =
+        index === currentGrandIndex
+          ? ''
+          : 'none';
+
+    });
+
+
+    const currentSlide =
+      grandCarouselSlides[
+        currentGrandIndex
+      ];
+
+    if (!currentSlide) return;
+
+
+    const duration =
+      Number(
+        currentSlide.duration || 10
+      );
+
+
+    clearTimeout(grandTimer);
+
+    grandTimer =
+      setTimeout(() => {
+
+        currentGrandIndex =
+          (
+            currentGrandIndex + 1
+          ) %
+          grandCarouselSlides.length;
+
+        showGrandSlide();
+
+      }, duration * 1000);
 
   }
 
-  showGrandSlide()
+
+  showGrandSlide();
+
 }
     // =================================================
     // CHARGEMENT DES SÉRIES
