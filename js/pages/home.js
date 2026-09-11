@@ -347,35 +347,34 @@ if (grandCarousel) {
         slide.type === 'evenement'
       );
 
-  const orderedSlides = [
-    {
-      type: 'oeuvres',
-      duration: 10
-    }
-  ];
+  const orderedSlides = [];
 
-  const maxPairs =
-    Math.max(
-      informationSlides.length,
-      evenementSlides.length
+const maxPairs =
+  Math.max(
+    informationSlides.length,
+    evenementSlides.length
+  );
+
+for (let i = 0; i < maxPairs; i++) {
+
+  orderedSlides.push({
+    type: 'oeuvres',
+    duration: 10
+  });
+
+  if (informationSlides[i]) {
+    orderedSlides.push(
+      informationSlides[i]
     );
-
-  for (let i = 0; i < maxPairs; i++) {
-
-    if (informationSlides[i]) {
-      orderedSlides.push(
-        informationSlides[i]
-      );
-    }
-
-    if (evenementSlides[i]) {
-      orderedSlides.push(
-        evenementSlides[i]
-      );
-    }
-
   }
 
+  if (evenementSlides[i]) {
+    orderedSlides.push(
+      evenementSlides[i]
+    );
+  }
+
+  }
   grandCarouselSlides.length = 0;
 
   grandCarouselSlides.push(
