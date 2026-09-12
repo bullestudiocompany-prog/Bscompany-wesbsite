@@ -916,10 +916,14 @@ loadHomePage();
 // =====================================================
 
 const menuToggle =
-  document.getElementById('mobileMenuBtn');
+  document.querySelector(
+    '.menu-toggle'
+  );
 
 const mobileMenu =
-  document.querySelector('.nav-links');
+  document.querySelector(
+    '.mobile-menu'
+  );
 
 
 if (
@@ -931,31 +935,21 @@ if (
     'click',
     () => {
 
-      const isOpen =
-        mobileMenu.classList.toggle('mobile-open');
+      mobileMenu.classList.toggle(
+        'active'
+      );
 
       menuToggle.classList.toggle(
-        'active',
-        isOpen
-      );
-
-      menuToggle.setAttribute(
-        'aria-expanded',
-        String(isOpen)
-      );
-
-      menuToggle.setAttribute(
-        'aria-label',
-        isOpen
-          ? 'Fermer le menu'
-          : 'Ouvrir le menu'
+        'active'
       );
 
     }
   );
 
 
-  // Fermeture après clic sur un lien
+  // ---------------------------------------------------
+  // Fermeture du menu lorsqu'on clique sur un lien
+  // ---------------------------------------------------
 
   mobileMenu
     .querySelectorAll('a')
@@ -966,21 +960,11 @@ if (
         () => {
 
           mobileMenu.classList.remove(
-            'mobile-open'
+            'active'
           );
 
           menuToggle.classList.remove(
             'active'
-          );
-
-          menuToggle.setAttribute(
-            'aria-expanded',
-            'false'
-          );
-
-          menuToggle.setAttribute(
-            'aria-label',
-            'Ouvrir le menu'
           );
 
         }
