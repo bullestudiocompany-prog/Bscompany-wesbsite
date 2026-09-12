@@ -518,7 +518,7 @@
   position: relative;
   z-index: 1;
 
-  width: min(6p%, 500px);
+  width: min(60%, 300px);
   max-height: 400px;
 
   object-fit: contain;
