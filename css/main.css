@@ -15,6 +15,27 @@
   --shadow-card:0 12px 28px rgba(16,22,43,0.08);
 }
 
+/* =========================
+   THÈME BLACK
+   ========================= */
+
+[data-theme="black"]{
+  --navy-900:#05070D;
+  --navy-800:#0B0F18;
+  --blue-600:#4F8CFF;
+  --blue-500:#5B9BFF;
+
+  --ink:#F4F6FA;
+  --slate-600:#B7BFCE;
+  --slate-400:#7F899C;
+
+  --bg:#070A10;
+  --surface:#0D111A;
+  --border:#1C2433;
+
+  --shadow-card:0 12px 28px rgba(0,0,0,0.35);
+}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 
 body{
