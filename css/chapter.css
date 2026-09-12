@@ -1772,3 +1772,134 @@
   }
 
    }
+
+/* =========================================================
+   THÈME BLACK — LECTEUR DE CHAPITRE
+========================================================= */
+
+[data-theme="black"] .chapter-page-body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+[data-theme="black"] .reader-background {
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(124, 58, 237, 0.18),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(47, 111, 237, 0.16),
+      transparent 40%
+    ),
+    var(--bg);
+}
+
+[data-theme="black"] .reader-background-overlay {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 16, 0.58),
+      rgba(7, 10, 16, 0.86)
+    );
+}
+
+[data-theme="black"] .reader-header {
+  background: rgba(13, 17, 26, 0.78);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .reader-back {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(13, 17, 26, 0.62);
+  color: var(--ink);
+}
+
+[data-theme="black"] .reader-back:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .chapter-main-image {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(13, 17, 26, 0.5);
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="black"] #chapterTitle {
+  color: var(--ink);
+}
+
+[data-theme="black"] .reading-paper {
+  background:
+    linear-gradient(
+      180deg,
+      #151922 0%,
+      #11151D 100%
+    );
+
+  border-color: #252D3B;
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.42),
+    0 5px 15px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="black"] .reading-paper::before {
+  background: rgba(239, 68, 68, 0.10);
+}
+
+[data-theme="black"] .reading-paper::after {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(79, 140, 255, 0.10),
+      rgba(124, 58, 237, 0.10)
+    );
+}
+
+[data-theme="black"] .paper-shadow {
+  background: rgba(0, 0, 0, 0.40);
+}
+
+[data-theme="black"] .paper-top {
+  border-bottom-color: rgba(148, 163, 184, 0.14);
+  color: #7F899C;
+}
+
+[data-theme="black"] .paper-chapter {
+  color: #7F899C;
+}
+
+[data-theme="black"] .chapter-text {
+  color: #D9DEE8;
+}
+
+[data-theme="black"] .chapter-images img {
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.38);
+}
+
+[data-theme="black"] .paper-end {
+  border-top-color: rgba(148, 163, 184, 0.14);
+  color: #7F899C;
+}
+
+[data-theme="black"] .chapter-nav-btn {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(13, 17, 26, 0.72);
+  color: var(--ink);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="black"] .chapter-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .nav-content small {
+  color: var(--reader-muted);
+}
