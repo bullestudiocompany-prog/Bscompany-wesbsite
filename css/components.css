@@ -203,3 +203,105 @@
   background:#F59E0B;
   color:#fff;
 }
+
+/* =========================================================
+   PRÉSENTATION ÉVENTAIL — ŒUVRES À LA UNE
+   Uniquement pour #featuredCarousel
+   ========================================================= */
+
+#featuredCarousel.featured-showcase{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:0;
+  overflow:visible;
+  min-height:285px;
+  padding:20px 0 15px;
+}
+
+/* Les cartes deviennent des couvertures */
+#featuredCarousel .featured-card{
+  position:relative;
+  flex:0 0 170px;
+  transition:
+    transform .3s ease,
+    filter .3s ease;
+}
+
+/* On retire les informations sous les couvertures */
+#featuredCarousel .featured-info{
+  display:none;
+}
+
+/* Couverture gauche */
+#featuredCarousel .featured-card.fan-left{
+  margin-right:-45px;
+  transform:rotate(-9deg) translateY(16px);
+  z-index:1;
+}
+
+/* Couverture centrale */
+#featuredCarousel .featured-card.fan-center{
+  transform:rotate(0deg) translateY(-6px);
+  z-index:3;
+}
+
+/* Couverture droite */
+#featuredCarousel .featured-card.fan-right{
+  margin-left:-45px;
+  transform:rotate(9deg) translateY(16px);
+  z-index:2;
+}
+
+/* Effet léger au passage de la souris */
+#featuredCarousel .featured-card:hover{
+  transform:translateY(-12px) rotate(0deg) scale(1.03);
+  z-index:10;
+}
+
+/* Si jamais il y a plus de 3 œuvres */
+#featuredCarousel .featured-hidden{
+  display:none;
+}
+
+/* Ombre des couvertures */
+#featuredCarousel .featured-cover{
+  box-shadow:0 12px 28px rgba(0,0,0,.32);
+}
+
+/* Les contrôles du petit carrousel deviennent invisibles */
+.featured-control-hidden{
+  display:none !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width:600px){
+
+  #featuredCarousel.featured-showcase{
+    min-height:250px;
+    padding-top:15px;
+  }
+
+  #featuredCarousel .featured-card{
+    flex-basis:145px;
+  }
+
+  #featuredCarousel .featured-card.fan-left{
+    margin-right:-38px;
+    transform:rotate(-8deg) translateY(13px);
+  }
+
+  #featuredCarousel .featured-card.fan-center{
+    transform:rotate(0deg) translateY(-4px);
+  }
+
+  #featuredCarousel .featured-card.fan-right{
+    margin-left:-38px;
+    transform:rotate(8deg) translateY(13px);
+  }
+  }
