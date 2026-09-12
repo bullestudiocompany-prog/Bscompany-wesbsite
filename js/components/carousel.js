@@ -1,56 +1,178 @@
-export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCount, visibleCount = 4 }) {
-if (!viewport || itemCount === 0) return;
+export function initCarousel({
+  viewport,
+  prevBtn,
+  nextBtn,
+  dotsContainer,
+  itemCount,
+  visibleCount = 4
+}) {
+  if (!viewport || itemCount === 0) return;
 
-const pageCount = Math.max(1, Math.ceil(itemCount / visibleCount));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(itemCount / visibleCount)
+  );
 
-if (dotsContainer) {
-dotsContainer.innerHTML = Array.from({ length: pageCount })
-.map((_, i) => <span data-page="${i}" class="${i === 0 ? 'active' : ''}"></span>)
-.join('');
-}
+  // =================================================
+  // POINTS DU CARROUSEL
+  // =================================================
 
-function scrollByPage(direction) {
-const card = viewport.querySelector('.featured-card');
-if (!card) return;
-const cardWidth = card.getBoundingClientRect().width;
-const gap = 18;
-viewport.scrollBy({ left: direction * (cardWidth + gap) * visibleCount, behavior: 'smooth' });
-}
+  if (dotsContainer) {
+    dotsContainer.innerHTML = Array.from({ length: pageCount })
+      .map(
+        (_, i) =>
+          `<span data-page="${i}" class="${
+            i === 0 ? 'active' : ''
+          }"></span>`
+      )
+      .join('');
+  }
 
-prevBtn?.addEventListener('click', () => scrollByPage(-1));
-nextBtn?.addEventListener('click', () => scrollByPage(1));
+  // =================================================
+  // DÉFILEMENT MANUEL
+  // =================================================
 
-if (dotsContainer) {
-let scrollTimeout;
-viewport.addEventListener('scroll', () => {
-clearTimeout(scrollTimeout);
-scrollTimeout = setTimeout(() => {
-const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-const progress = maxScroll > 0 ? viewport.scrollLeft / maxScroll : 0;
-const activeIndex = Math.round(progress * (pageCount - 1));
-dotsContainer.querySelectorAll('span').forEach((dot, i) => {
-dot.classList.toggle('active', i === activeIndex);
-});
-}, 80);
-});
-}
+  function scrollByPage(direction) {
+    const card = viewport.querySelector('.featured-card');
 
-// ================================================= 
+    if (!card) return;
 
-// ANIMATION AUTOMATIQUE
-// =================================================
+    const cardWidth = card.getBoundingClientRect().width;
+    const gap = 18;
 
-let autoScrollTimer;
+    viewport.scrollBy({
+      left: direction * (cardWidth + gap) * visibleCount,
+      behavior: 'smooth'
+    });
+  }
 
-function startAutoScroll() {
+  prevBtn?.addEventListener('click', () => {
+    scrollByPage(-1);
+  });
 
-clearInterval(autoScrollTimer);
+  nextBtn?.addEventListener('click', () => {
+    scrollByPage(1);
+  });
 
-autoScrollTimer = setInterval(() => {
+  // =================================================
+  // MISE À JOUR DES POINTS
+  // =================================================
 
-const cards = [...viewport.querySelectorAll('.featured-card')]; if (cards.length <= 1) return; const card = cards[0]; const cardWidth = card.getBoundingClientRect().width; const gap = 18; const maxScroll = viewport.scrollWidth - viewport.clientWidth; // ================================================= // CAS NORMAL : IL Y A ASSEZ D'ŒUVRES POUR DÉFILER // ================================================= if (maxScroll > 0) { const currentScroll = viewport.scrollLeft; const nextPosition = currentScroll + cardWidth + gap; if (nextPosition >= maxScroll - 2) { viewport.scrollTo({ left: 0, behavior: 'smooth' }); } else { viewport.scrollTo({ left: nextPosition, behavior: 'smooth' }); } return; } // ================================================= // CAS : SEULEMENT QUELQUES ŒUVRES ET AUCUN DÉFILEMENT // ================================================= const clone = card.cloneNode(true); viewport.appendChild(clone); const newMaxScroll = viewport.scrollWidth - viewport.clientWidth; viewport.scrollTo({ left: newMaxScroll, behavior: 'smooth' }); setTimeout(() => { card.remove(); clone.replaceWith(card); viewport.scrollLeft = 0; }, 700); 
+  if (dotsContainer) {
+    let scrollTimeout;
 
-}, 5000);
-}
+    viewport.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
 
-startAutoScroll();}
+      scrollTimeout = setTimeout(() => {
+        const maxScroll =
+          viewport.scrollWidth - viewport.clientWidth;
+
+        const progress =
+          maxScroll > 0
+            ? viewport.scrollLeft / maxScroll
+            : 0;
+
+        const activeIndex = Math.round(
+          progress * (pageCount - 1)
+        );
+
+        dotsContainer
+          .querySelectorAll('span')
+          .forEach((dot, i) => {
+            dot.classList.toggle(
+              'active',
+              i === activeIndex
+            );
+          });
+      }, 80);
+    });
+  }
+
+  // =================================================
+  // ANIMATION AUTOMATIQUE
+  // =================================================
+
+  let autoScrollTimer;
+
+  function startAutoScroll() {
+    clearInterval(autoScrollTimer);
+
+    autoScrollTimer = setInterval(() => {
+      const cards = [
+        ...viewport.querySelectorAll('.featured-card')
+      ];
+
+      if (cards.length <= 1) return;
+
+      const card = cards[0];
+
+      if (!card) return;
+
+      const cardWidth =
+        card.getBoundingClientRect().width;
+
+      const gap = 18;
+
+      const maxScroll =
+        viewport.scrollWidth - viewport.clientWidth;
+
+      // =================================================
+      // CAS NORMAL
+      // =================================================
+
+      if (maxScroll > 0) {
+        const currentScroll =
+          viewport.scrollLeft;
+
+        const nextPosition =
+          currentScroll + cardWidth + gap;
+
+        if (nextPosition >= maxScroll - 2) {
+          viewport.scrollTo({
+            left: 0,
+            behavior: 'smooth'
+          });
+        } else {
+          viewport.scrollTo({
+            left: nextPosition,
+            behavior: 'smooth'
+          });
+        }
+
+        return;
+      }
+
+      // =================================================
+      // CAS : PAS ASSEZ D'ŒUVRES POUR DÉFILER
+      // =================================================
+
+      const clone = card.cloneNode(true);
+
+      viewport.appendChild(clone);
+
+      const newMaxScroll =
+        viewport.scrollWidth - viewport.clientWidth;
+
+      viewport.scrollTo({
+        left: newMaxScroll,
+        behavior: 'smooth'
+      });
+
+      setTimeout(() => {
+        if (!card.isConnected) return;
+
+        card.remove();
+
+        if (clone.isConnected) {
+          clone.replaceWith(card);
+        }
+
+        viewport.scrollLeft = 0;
+      }, 700);
+
+    }, 5000);
+  }
+
+  startAutoScroll();
+    }
