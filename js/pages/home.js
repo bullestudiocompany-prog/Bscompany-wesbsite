@@ -600,13 +600,13 @@ function initGrandCarousel() {
     // =================================================
 
     const featured = [...series]
-      .sort(
-        (a, b) =>
-          Number(b.views || b.vues || 0) -
-          Number(a.views || a.vues || 0)
-      )
-      .slice(0, 6);
-
+  .sort(
+    (a, b) =>
+      Number(b.likes || 0) -
+      Number(a.likes || 0)
+  )
+  .slice(0, 3);
+    
     console.log(
       'HOME : À LA UNE :',
       featured
