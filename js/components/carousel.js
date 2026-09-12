@@ -14,6 +14,79 @@ export function initCarousel({
 
   viewport.dataset.carouselInitialized = 'true';
 
+  /* =========================================================
+     PETIT CARROUSEL ŒUVRES
+     ---------------------------------------------------------
+     Ce bloc ne concerne QUE #featuredCarousel.
+
+     Il transforme les œuvres en présentation artistique
+     façon éventail japonais :
+       - 3 œuvres maximum
+       - pas d'auto-scroll
+       - pas de clones
+       - pas de déplacement
+       - pas de points
+       - pas de flèches
+     ========================================================= */
+
+  if (viewport.id === 'featuredCarousel') {
+    viewport.classList.add('featured-showcase');
+
+    const cards = [
+      ...viewport.querySelectorAll('.featured-card')
+    ];
+
+    /* On garde uniquement les trois premières œuvres
+       pour la composition visuelle. */
+
+    cards.forEach((card, index) => {
+      if (index >= 3) {
+        card.classList.add('featured-hidden');
+        return;
+      }
+
+      if (index === 0) {
+        card.classList.add('fan-left');
+      }
+
+      if (index === 1) {
+        card.classList.add('fan-center');
+      }
+
+      if (index === 2) {
+        card.classList.add('fan-right');
+      }
+    });
+
+    /*
+      Les boutons et les points appartiennent encore
+      au HTML actuel, mais cette présentation n'en
+      a plus besoin.
+
+      On les masque uniquement pour ce petit bloc.
+    */
+
+    if (prevBtn) {
+      prevBtn.classList.add('featured-control-hidden');
+    }
+
+    if (nextBtn) {
+      nextBtn.classList.add('featured-control-hidden');
+    }
+
+    if (dotsContainer) {
+      dotsContainer.classList.add('featured-control-hidden');
+    }
+
+    return;
+  }
+
+  /* =========================================================
+     CARROUSEL CLASSIQUE
+     ---------------------------------------------------------
+     Tout ce qui suit reste le fonctionnement précédent.
+     ========================================================= */
+
   /* =========================
      CONFIGURATION
   ========================= */
@@ -57,27 +130,7 @@ export function initCarousel({
      IMPORTANT
   ========================= */
 
-  /*
-    Le CSS utilise actuellement :
-
-    scroll-snap-type: x mandatory;
-
-    On le désactive uniquement pour CE
-    carrousel afin que le défilement
-    automatique reste parfaitement libre.
-  */
-
   viewport.style.scrollSnapType = 'none';
-
-  /*
-    On force également le comportement
-    de scroll instantané.
-    
-    Cela évite qu'un éventuel
-    scroll-behavior: smooth interfère
-    avec notre animation image par image.
-  */
-
   viewport.style.scrollBehavior = 'auto';
 
   /* =========================
@@ -102,15 +155,6 @@ export function initCarousel({
     return Number.isFinite(gap) ? gap : 18;
   }
 
-  /*
-    On mesure la vraie position du premier
-    clone au lieu de recalculer la largeur
-    avec une formule.
-
-    C'est beaucoup plus fiable entre
-    Chrome et Firefox.
-  */
-
   let loopPoint = 0;
 
   /* =========================
@@ -128,12 +172,6 @@ export function initCarousel({
 
     firstCloneSet.push(clone);
   });
-
-  /*
-    On ajoute encore plusieurs séries.
-    Le viewport aura donc toujours assez
-    de contenu devant lui.
-  */
 
   for (let set = 0; set < 3; set++) {
     originalCards.forEach((card) => {
@@ -181,23 +219,9 @@ export function initCarousel({
   function normalizePosition() {
     if (loopPoint <= 0) return;
 
-    /*
-      Si on est arrivé dans la deuxième
-      série, on revient exactement à la
-      position équivalente de la première.
-
-      La correction est instantanée :
-      aucune animation n'est déclenchée.
-    */
-
     while (viewport.scrollLeft >= loopPoint) {
       viewport.scrollLeft -= loopPoint;
     }
-
-    /*
-      Sécurité pour les déplacements
-      vers la gauche.
-    */
 
     while (viewport.scrollLeft < 0) {
       viewport.scrollLeft += loopPoint;
@@ -212,21 +236,10 @@ export function initCarousel({
     const distance =
       step * visibleCount;
 
-    /*
-      On arrête temporairement le déplacement
-      automatique pendant le déplacement
-      manuel du bouton.
-    */
-
     viewport.scrollBy({
       left: direction * distance,
       behavior: 'smooth'
     });
-
-    /*
-      On attend la fin approximative du
-      déplacement manuel avant de normaliser.
-    */
 
     setTimeout(() => {
       normalizePosition();
@@ -308,15 +321,6 @@ export function initCarousel({
 
     lastTime = currentTime;
 
-    /*
-      Si l'onglet a été mis en arrière-plan,
-      le navigateur peut suspendre requestAnimationFrame
-      puis le relancer avec un énorme deltaTime.
-
-      On limite donc le delta pour éviter
-      un gros saut.
-    */
-
     const safeDelta =
       Math.min(deltaTime, 50);
 
@@ -328,11 +332,6 @@ export function initCarousel({
       const movement =
         AUTO_SPEED *
         (safeDelta / 1000);
-
-      /*
-        scrollLeft directement permet
-        un mouvement réellement continu.
-      */
 
       viewport.scrollLeft =
         viewport.scrollLeft + movement;
@@ -346,16 +345,12 @@ export function initCarousel({
       requestAnimationFrame(animate);
   }
 
-  /*
-    On attend que le navigateur ait terminé
-    le layout avant de lancer l'animation.
-  */
-
   requestAnimationFrame(() => {
     updateLoopPoint();
 
     requestAnimationFrame((time) => {
       lastTime = time;
+
       animationFrame =
         requestAnimationFrame(animate);
     });
@@ -383,15 +378,9 @@ export function initCarousel({
   document.addEventListener(
     'visibilitychange',
     () => {
-      /*
-        Quand on revient sur l'onglet,
-        on repart avec un nouveau temps de
-        référence pour éviter un saut.
-      */
-
       if (!document.hidden) {
         lastTime = null;
       }
     }
   );
-}
+    }
