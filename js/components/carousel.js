@@ -54,17 +54,34 @@ export function initCarousel({
   }
 
   /* =========================
-     DÉSACTIVATION DU SNAP
-     
-     On ne modifie PAS le CSS.
-     On désactive seulement le snap
-     pendant que ce carrousel tourne.
+     IMPORTANT
   ========================= */
+
+  /*
+    Le CSS utilise actuellement :
+
+    scroll-snap-type: x mandatory;
+
+    On le désactive uniquement pour CE
+    carrousel afin que le défilement
+    automatique reste parfaitement libre.
+  */
 
   viewport.style.scrollSnapType = 'none';
 
+  /*
+    On force également le comportement
+    de scroll instantané.
+    
+    Cela évite qu'un éventuel
+    scroll-behavior: smooth interfère
+    avec notre animation image par image.
+  */
+
+  viewport.style.scrollBehavior = 'auto';
+
   /* =========================
-     MESURE
+     MESURES
   ========================= */
 
   function getCardWidth() {
@@ -76,41 +93,49 @@ export function initCarousel({
   }
 
   function getGap() {
-    const style =
-      window.getComputedStyle(viewport);
+    const style = window.getComputedStyle(viewport);
 
-    return (
+    const gap =
       parseFloat(style.columnGap) ||
-      parseFloat(style.gap) ||
-      18
-    );
+      parseFloat(style.gap);
+
+    return Number.isFinite(gap) ? gap : 18;
   }
 
-  function getSetWidth() {
-    const cardWidth = getCardWidth();
-    const gap = getGap();
+  /*
+    On mesure la vraie position du premier
+    clone au lieu de recalculer la largeur
+    avec une formule.
 
-    if (cardWidth <= 0) {
-      return 0;
-    }
+    C'est beaucoup plus fiable entre
+    Chrome et Firefox.
+  */
 
-    return (
-      (cardWidth + gap) *
-      originalCards.length
-    );
-  }
+  let loopPoint = 0;
 
   /* =========================
      CLONAGE
   ========================= */
 
+  const firstCloneSet = [];
+
+  originalCards.forEach((card) => {
+    const clone = card.cloneNode(true);
+
+    clone.dataset.carouselClone = 'true';
+
+    viewport.appendChild(clone);
+
+    firstCloneSet.push(clone);
+  });
+
   /*
-    On crée plusieurs séries de copies.
-    Cela garantit qu'il y aura toujours
-    du contenu devant le viewport.
+    On ajoute encore plusieurs séries.
+    Le viewport aura donc toujours assez
+    de contenu devant lui.
   */
 
-  for (let set = 0; set < 4; set++) {
+  for (let set = 0; set < 3; set++) {
     originalCards.forEach((card) => {
       const clone = card.cloneNode(true);
 
@@ -121,25 +146,92 @@ export function initCarousel({
   }
 
   /* =========================
-     BOUTONS
+     CALCUL DU POINT DE BOUCLE
   ========================= */
 
-  function scrollByPage(direction) {
-    const cardWidth = getCardWidth();
-    const gap = getGap();
+  function updateLoopPoint() {
+    const firstOriginal = originalCards[0];
+    const firstClone = firstCloneSet[0];
 
-    if (cardWidth <= 0) {
+    if (!firstOriginal || !firstClone) {
+      loopPoint = 0;
       return;
     }
 
+    loopPoint =
+      firstClone.offsetLeft -
+      firstOriginal.offsetLeft;
+  }
+
+  updateLoopPoint();
+
+  /* =========================
+     BOUTONS
+  ========================= */
+
+  function getCardStep() {
+    const width = getCardWidth();
+    const gap = getGap();
+
+    if (width <= 0) return 0;
+
+    return width + gap;
+  }
+
+  function normalizePosition() {
+    if (loopPoint <= 0) return;
+
+    /*
+      Si on est arrivé dans la deuxième
+      série, on revient exactement à la
+      position équivalente de la première.
+
+      La correction est instantanée :
+      aucune animation n'est déclenchée.
+    */
+
+    while (viewport.scrollLeft >= loopPoint) {
+      viewport.scrollLeft -= loopPoint;
+    }
+
+    /*
+      Sécurité pour les déplacements
+      vers la gauche.
+    */
+
+    while (viewport.scrollLeft < 0) {
+      viewport.scrollLeft += loopPoint;
+    }
+  }
+
+  function scrollByPage(direction) {
+    const step = getCardStep();
+
+    if (step <= 0) return;
+
     const distance =
-      (cardWidth + gap) *
-      visibleCount;
+      step * visibleCount;
+
+    /*
+      On arrête temporairement le déplacement
+      automatique pendant le déplacement
+      manuel du bouton.
+    */
 
     viewport.scrollBy({
       left: direction * distance,
       behavior: 'smooth'
     });
+
+    /*
+      On attend la fin approximative du
+      déplacement manuel avant de normaliser.
+    */
+
+    setTimeout(() => {
+      normalizePosition();
+      updateDots();
+    }, 450);
   }
 
   prevBtn?.addEventListener(
@@ -161,27 +253,23 @@ export function initCarousel({
   ========================= */
 
   function updateDots() {
-    if (!dotsContainer) return;
-
-    const setWidth = getSetWidth();
-
-    if (setWidth <= 0) return;
+    if (!dotsContainer || loopPoint <= 0) {
+      return;
+    }
 
     let position =
-      viewport.scrollLeft % setWidth;
+      viewport.scrollLeft % loopPoint;
 
     if (position < 0) {
-      position += setWidth;
+      position += loopPoint;
     }
 
     const progress =
-      position / setWidth;
+      position / loopPoint;
 
     const activeIndex = Math.min(
       pageCount - 1,
-      Math.floor(
-        progress * pageCount
-      )
+      Math.floor(progress * pageCount)
     );
 
     dotsContainer
@@ -194,14 +282,23 @@ export function initCarousel({
       });
   }
 
+  viewport.addEventListener(
+    'scroll',
+    updateDots,
+    { passive: true }
+  );
+
   /* =========================
-     ANIMATION
+     ANIMATION AUTOMATIQUE
   ========================= */
 
   let animationFrame = null;
   let lastTime = null;
+  let running = true;
 
   function animate(currentTime) {
+    if (!running) return;
+
     if (lastTime === null) {
       lastTime = currentTime;
     }
@@ -211,30 +308,36 @@ export function initCarousel({
 
     lastTime = currentTime;
 
-    const setWidth = getSetWidth();
+    /*
+      Si l'onglet a été mis en arrière-plan,
+      le navigateur peut suspendre requestAnimationFrame
+      puis le relancer avec un énorme deltaTime.
 
-    if (setWidth > 0) {
+      On limite donc le delta pour éviter
+      un gros saut.
+    */
+
+    const safeDelta =
+      Math.min(deltaTime, 50);
+
+    if (loopPoint <= 0) {
+      updateLoopPoint();
+    }
+
+    if (loopPoint > 0) {
       const movement =
         AUTO_SPEED *
-        (deltaTime / 1000);
-
-      viewport.scrollLeft += movement;
+        (safeDelta / 1000);
 
       /*
-        Quand on a parcouru exactement
-        une série de cartes, on revient
-        en arrière de cette même distance.
-
-        Comme les cartes sont identiques,
-        l'utilisateur ne voit aucun saut.
+        scrollLeft directement permet
+        un mouvement réellement continu.
       */
 
-      if (
-        viewport.scrollLeft >=
-        setWidth
-      ) {
-        viewport.scrollLeft -= setWidth;
-      }
+      viewport.scrollLeft =
+        viewport.scrollLeft + movement;
+
+      normalizePosition();
 
       updateDots();
     }
@@ -243,23 +346,52 @@ export function initCarousel({
       requestAnimationFrame(animate);
   }
 
-  animationFrame =
-    requestAnimationFrame(animate);
+  /*
+    On attend que le navigateur ait terminé
+    le layout avant de lancer l'animation.
+  */
+
+  requestAnimationFrame(() => {
+    updateLoopPoint();
+
+    requestAnimationFrame((time) => {
+      lastTime = time;
+      animationFrame =
+        requestAnimationFrame(animate);
+    });
+  });
 
   /* =========================
-     RETOUR AU TEMPS NORMAL
-     QUAND LA PAGE EST QUITTÉE
+     NETTOYAGE
   ========================= */
+
+  function stopCarousel() {
+    running = false;
+
+    if (animationFrame !== null) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+  }
 
   window.addEventListener(
     'beforeunload',
-    () => {
-      if (animationFrame) {
-        cancelAnimationFrame(
-          animationFrame
-        );
-      }
-    },
+    stopCarousel,
     { once: true }
+  );
+
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      /*
+        Quand on revient sur l'onglet,
+        on repart avec un nouveau temps de
+        référence pour éviter un saut.
+      */
+
+      if (!document.hidden) {
+        lastTime = null;
+      }
+    }
   );
 }
