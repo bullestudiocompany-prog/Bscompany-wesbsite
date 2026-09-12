@@ -305,3 +305,106 @@
     transform:rotate(8deg) translateY(13px);
   }
   }
+
+/* =====================================================
+   GRAND CARROUSEL — INFORMATIONS / ÉVÉNEMENTS
+   ===================================================== */
+
+.grand-carousel-slide.grand-carousel-information,
+.grand-carousel-slide.grand-carousel-evenement {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  padding: 45px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Contenu à gauche */
+
+.grand-carousel-information .grand-carousel-content,
+.grand-carousel-evenement .grand-carousel-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  max-width: 55%;
+  text-align: left;
+}
+
+/* Image à droite */
+
+.grand-carousel-information > img,
+.grand-carousel-evenement > img {
+  position: relative;
+  z-index: 1;
+  width: min(38%, 300px);
+  max-height: 270px;
+  object-fit: contain;
+  flex-shrink: 0;
+  animation: grandCarouselImageIn 0.8s ease-out both;
+}
+
+/* Titre */
+
+.grand-carousel-information .grand-carousel-content h2,
+.grand-carousel-evenement .grand-carousel-content h2 {
+  margin: 0 0 14px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+/* Description */
+
+.grand-carousel-information .grand-carousel-content p,
+.grand-carousel-evenement .grand-carousel-content p {
+  margin: 0 auto 22px;
+  max-width: 600px;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* Bouton */
+
+.grand-carousel-information .grand-carousel-button,
+.grand-carousel-evenement .grand-carousel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.grand-carousel-information .grand-carousel-button:hover,
+.grand-carousel-evenement .grand-carousel-button:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* Animation de l'image */
+
+@keyframes grandCarouselImageIn {
+  from {
+    opacity: 0;
+    transform:
+      translateX(35px)
+      rotate(3deg)
+      scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateX(0)
+      rotate(0)
+      scale(1);
+  }
+}
