@@ -916,14 +916,10 @@ loadHomePage();
 // =====================================================
 
 const menuToggle =
-  document.querySelector(
-    '.menu-toggle'
-  );
+  document.getElementById('mobileMenuBtn');
 
 const mobileMenu =
-  document.querySelector(
-    '.mobile-menu'
-  );
+  document.querySelector('.nav-links');
 
 
 if (
@@ -935,12 +931,24 @@ if (
     'click',
     () => {
 
-      mobileMenu.classList.toggle(
-        'active'
-      );
+      const isOpen =
+        mobileMenu.classList.toggle('active');
 
       menuToggle.classList.toggle(
-        'active'
+        'active',
+        isOpen
+      );
+
+      menuToggle.setAttribute(
+        'aria-expanded',
+        String(isOpen)
+      );
+
+      menuToggle.setAttribute(
+        'aria-label',
+        isOpen
+          ? 'Fermer le menu'
+          : 'Ouvrir le menu'
       );
 
     }
@@ -967,9 +975,19 @@ if (
             'active'
           );
 
+          menuToggle.setAttribute(
+            'aria-expanded',
+            'false'
+          );
+
+          menuToggle.setAttribute(
+            'aria-label',
+            'Ouvrir le menu'
+          );
+
         }
       );
 
     });
 
-}
+            }
