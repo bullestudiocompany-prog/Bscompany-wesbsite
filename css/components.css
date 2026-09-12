@@ -520,6 +520,7 @@
 
   width: min(40%, 600px);
   max-height: 600px;
+  scale: 1.5;
 
   object-fit: contain;
   flex-shrink: 0;
