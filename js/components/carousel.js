@@ -36,40 +36,30 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
   }
 
       // =================================================
-// ANIMATION AUTOMATIQUE
-// =================================================
+  // ANIMATION AUTOMATIQUE
+  // =================================================
 
-let autoScrollTimer;
+  let autoScrollTimer;
 
-function startAutoScroll() {
+  function startAutoScroll() {
 
-  clearInterval(autoScrollTimer);
+    clearInterval(autoScrollTimer);
 
-  autoScrollTimer = setInterval(() => {
+    autoScrollTimer = setInterval(() => {
 
-    const cards =
-      [...viewport.querySelectorAll('.featured-card')];
+      const card = viewport.querySelector('.featured-card');
 
-    if (cards.length <= 1) return;
+      if (!card) return;
 
-    const card = cards[0];
+      const cardWidth = card.getBoundingClientRect().width;
+      const gap = 18;
 
-    const cardWidth =
-      card.getBoundingClientRect().width;
+      const maxScroll =
+        viewport.scrollWidth - viewport.clientWidth;
 
-    const gap = 18;
+      if (maxScroll <= 0) return;
 
-    const maxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
-
-    // =================================================
-    // CAS NORMAL : IL Y A ASSEZ D'ŒUVRES POUR DÉFILER
-    // =================================================
-
-    if (maxScroll > 0) {
-
-      const currentScroll =
-        viewport.scrollLeft;
+      const currentScroll = viewport.scrollLeft;
 
       const nextPosition =
         currentScroll + cardWidth + gap;
@@ -90,37 +80,8 @@ function startAutoScroll() {
 
       }
 
-      return;
-    }
+    }, 5000);
+  }
 
-    // =================================================
-    // CAS : SEULEMENT QUELQUES ŒUVRES ET AUCUN DÉFILEMENT
-    // =================================================
-
-    const clone =
-      card.cloneNode(true);
-
-    viewport.appendChild(clone);
-
-    const newMaxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
-
-    viewport.scrollTo({
-      left: newMaxScroll,
-      behavior: 'smooth'
-    });
-
-    setTimeout(() => {
-
-      card.remove();
-
-      clone.replaceWith(card);
-
-      viewport.scrollLeft = 0;
-
-    }, 700);
-
-  }, 5000);
+  startAutoScroll();
 }
-
-startAutoScroll();}
