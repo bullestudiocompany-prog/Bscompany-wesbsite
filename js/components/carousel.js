@@ -36,91 +36,96 @@ export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCo
   }
 
       // =================================================
-// ANIMATION AUTOMATIQUE
+// ANIMATION AUTOMATIQUE FLUIDE
 // =================================================
 
-let autoScrollTimer;
+let autoScrollAnimation;
+let lastTime = null;
 
 function startAutoScroll() {
 
-  clearInterval(autoScrollTimer);
+  cancelAnimationFrame(autoScrollAnimation);
 
-  autoScrollTimer = setInterval(() => {
+  lastTime = null;
+
+  function animate(currentTime) {
+
+    if (!lastTime) {
+      lastTime = currentTime;
+    }
+
+    const deltaTime =
+      currentTime - lastTime;
+
+    lastTime = currentTime;
 
     const cards =
       [...viewport.querySelectorAll('.featured-card')];
 
-    if (cards.length <= 1) return;
+    if (cards.length > 1) {
 
-    const card = cards[0];
+      const card = cards[0];
 
-    const cardWidth =
-      card.getBoundingClientRect().width;
+      const cardWidth =
+        card.getBoundingClientRect().width;
 
-    const gap = 18;
+      const gap = 18;
 
-    const maxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
+      const maxScroll =
+        viewport.scrollWidth -
+        viewport.clientWidth;
 
-    // =================================================
-    // CAS NORMAL : IL Y A ASSEZ D'ŒUVRES POUR DÉFILER
-    // =================================================
+      // =============================================
+      // CAS NORMAL : IL Y A DE L'ESPACE POUR DÉFILER
+      // =============================================
 
-    if (maxScroll > 0) {
+      if (maxScroll > 0) {
 
-      const currentScroll =
-        viewport.scrollLeft;
+        /*
+         * Vitesse en pixels par seconde.
+         * 25 = déplacement lent et fluide.
+         */
+        const speed = 25;
 
-      const nextPosition =
-        currentScroll + cardWidth + gap;
+        viewport.scrollLeft +=
+          speed * (deltaTime / 1000);
 
-      if (nextPosition >= maxScroll - 2) {
+        /*
+         * Retour au début lorsqu'on arrive
+         * à la fin du carrousel.
+         */
+        if (
+          viewport.scrollLeft >=
+          maxScroll - 1
+        ) {
 
-        viewport.scrollTo({
-          left: 0,
-          behavior: 'smooth'
-        });
+          viewport.scrollLeft = 0;
 
-      } else {
-
-        viewport.scrollTo({
-          left: nextPosition,
-          behavior: 'smooth'
-        });
+        }
 
       }
 
-      return;
+      // =============================================
+      // CAS : PAS ASSEZ D'ŒUVRES POUR DÉFILER
+      // =============================================
+
+      else {
+
+        /*
+         * On ne fait rien ici.
+         *
+         * Le carrousel reste simplement immobile
+         * lorsqu'il n'y a pas assez d'œuvres.
+         */
+      }
     }
 
-    // =================================================
-    // CAS : SEULEMENT QUELQUES ŒUVRES ET AUCUN DÉFILEMENT
-    // =================================================
+    autoScrollAnimation =
+      requestAnimationFrame(animate);
+  }
 
-    const clone =
-      card.cloneNode(true);
-
-    viewport.appendChild(clone);
-
-    const newMaxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
-
-    viewport.scrollTo({
-      left: newMaxScroll,
-      behavior: 'smooth'
-    });
-
-    setTimeout(() => {
-
-      card.remove();
-
-      clone.replaceWith(card);
-
-      viewport.scrollLeft = 0;
-
-    }, 700);
-
-  }, 5000);
+  autoScrollAnimation =
+    requestAnimationFrame(animate);
 }
 
 startAutoScroll();}
