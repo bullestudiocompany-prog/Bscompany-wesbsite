@@ -4,8 +4,7 @@ import {
   createFeaturedCard,
   timeAgo
 } from '../components/card.js';
-import { initCarousel } from '../components/carousel.js';
-
+import { initCarousel } from '../components/carousel.js?v=2';
 
 // =====================================================
 // DOM
@@ -623,15 +622,24 @@ function initGrandCarousel() {
           .join('');
 
       try {
+try {
 
-  initCarousel({
-  viewport: featuredContainer,
-  prevBtn: featuredPrev,
-  nextBtn: featuredNext,
-  dotsContainer: featuredDots,
-  itemCount: featured.length,
-  visibleCount: 4
-});
+  requestAnimationFrame(() => {
+
+    requestAnimationFrame(() => {
+
+      initCarousel({
+        viewport: featuredContainer,
+        prevBtn: featuredPrev,
+        nextBtn: featuredNext,
+        dotsContainer: featuredDots,
+        itemCount: featured.length,
+        visibleCount: 4
+      });
+
+    });
+
+  });
 
 } catch (carouselError) {
 
@@ -640,7 +648,7 @@ function initGrandCarousel() {
     carouselError
   );
 
-}
+      }
     }
 
     initGrandCarousel();
