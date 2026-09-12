@@ -8,23 +8,19 @@ export function initCarousel({
 }) {
   if (!viewport || itemCount === 0) return;
 
-  // Évite d'initialiser deux fois le même carrousel
   if (viewport.dataset.carouselInitialized === 'true') return;
   viewport.dataset.carouselInitialized = 'true';
 
-  // =================================================
-  // CONFIGURATION
-  // =================================================
+  const AUTO_SPEED = 35;
 
-  const AUTO_SPEED = 35; // pixels par seconde
   const pageCount = Math.max(
     1,
     Math.ceil(itemCount / visibleCount)
   );
 
-  // =================================================
-  // POINTS DU CARROUSEL
-  // =================================================
+  /* =========================
+     DOTS
+  ========================= */
 
   if (dotsContainer) {
     dotsContainer.innerHTML = Array.from(
@@ -36,55 +32,40 @@ export function initCarousel({
     ).join('');
   }
 
-  // =================================================
-  // CARTES ORIGINALES
-  // =================================================
+  /* =========================
+     CARTES ORIGINALES
+  ========================= */
 
   const originalCards = [
     ...viewport.querySelectorAll('.featured-card')
   ];
 
-  if (originalCards.length <= 1) {
-    return;
-  }
+  if (originalCards.length === 0) return;
 
-  // =================================================
-  // CALCUL DU GAP RÉEL
-  // =================================================
-
-  function getGap() {
-    const style = window.getComputedStyle(viewport);
-
-    const gap =
-      parseFloat(style.columnGap) ||
-      parseFloat(style.gap) ||
-      18;
-
-    return gap;
-  }
-
-  // =================================================
-  // LARGEUR D'UNE SÉRIE COMPLÈTE
-  // =================================================
+  /* =========================
+     MESURE D'UN ENSEMBLE
+  ========================= */
 
   function getSetWidth() {
-    const firstCard = originalCards[0];
+    const firstOriginal = originalCards[0];
 
-    if (!firstCard) return 0;
+    const firstClone = viewport.querySelector(
+      '[data-carousel-clone="true"]'
+    );
 
-    const cardWidth =
-      firstCard.getBoundingClientRect().width;
-
-    const gap = getGap();
+    if (!firstOriginal || !firstClone) {
+      return 0;
+    }
 
     return (
-      (cardWidth + gap) * originalCards.length
+      firstClone.offsetLeft -
+      firstOriginal.offsetLeft
     );
   }
 
-  // =================================================
-  // DUPLICATION DE LA SÉRIE
-  // =================================================
+  /* =========================
+     PREMIER ENSEMBLE DE COPIES
+  ========================= */
 
   originalCards.forEach((card) => {
     const clone = card.cloneNode(true);
@@ -94,22 +75,80 @@ export function initCarousel({
     viewport.appendChild(clone);
   });
 
-  // =================================================
-  // DÉFILEMENT MANUEL
-  // =================================================
+  let setWidth = getSetWidth();
 
-  function scrollByPage(direction) {
+  if (setWidth <= 0) return;
+
+  /* =========================
+     AJOUT DE COPIES SI BESOIN
+     
+     Cela évite que le carrousel
+     arrive au bout avant d'avoir
+     atteint une boucle complète.
+  ========================= */
+
+  while (
+    viewport.scrollWidth <
+    setWidth + viewport.clientWidth + 2
+  ) {
+    originalCards.forEach((card) => {
+      const clone = card.cloneNode(true);
+
+      clone.dataset.carouselClone = 'true';
+
+      viewport.appendChild(clone);
+    });
+  }
+
+  /* =========================
+     BOUTONS
+  ========================= */
+
+  function getCardStep() {
     const card = originalCards[0];
 
-    if (!card) return;
+    if (!card) return 0;
 
     const cardWidth =
       card.getBoundingClientRect().width;
 
-    const gap = getGap();
+    const style =
+      window.getComputedStyle(viewport);
+
+    const gap =
+      parseFloat(
+        style.columnGap ||
+        style.gap ||
+        '18'
+      ) || 18;
+
+    return cardWidth + gap;
+  }
+
+  function scrollByPage(direction) {
+    const step = getCardStep();
+
+    if (step <= 0) return;
 
     const distance =
-      (cardWidth + gap) * visibleCount;
+      step * visibleCount;
+
+    /*
+      Si on revient avant le début,
+      on se replace sur une copie
+      identique plus loin.
+    */
+
+    if (
+      direction < 0 &&
+      viewport.scrollLeft <= 0
+    ) {
+      setWidth = getSetWidth();
+
+      if (setWidth > 0) {
+        viewport.scrollLeft = setWidth;
+      }
+    }
 
     viewport.scrollBy({
       left: direction * distance,
@@ -117,22 +156,28 @@ export function initCarousel({
     });
   }
 
-  prevBtn?.addEventListener('click', () => {
-    scrollByPage(-1);
-  });
+  prevBtn?.addEventListener(
+    'click',
+    () => {
+      scrollByPage(-1);
+    }
+  );
 
-  nextBtn?.addEventListener('click', () => {
-    scrollByPage(1);
-  });
+  nextBtn?.addEventListener(
+    'click',
+    () => {
+      scrollByPage(1);
+    }
+  );
 
-  // =================================================
-  // POINTS
-  // =================================================
+  /* =========================
+     DOTS
+  ========================= */
 
   function updateDots() {
     if (!dotsContainer) return;
 
-    const setWidth = getSetWidth();
+    setWidth = getSetWidth();
 
     if (setWidth <= 0) return;
 
@@ -143,11 +188,14 @@ export function initCarousel({
       position += setWidth;
     }
 
-    const progress = position / setWidth;
+    const progress =
+      position / setWidth;
 
     const activeIndex = Math.min(
       pageCount - 1,
-      Math.floor(progress * pageCount)
+      Math.floor(
+        progress * pageCount
+      )
     );
 
     dotsContainer
@@ -160,11 +208,15 @@ export function initCarousel({
       });
   }
 
-  viewport.addEventListener('scroll', updateDots);
+  viewport.addEventListener(
+    'scroll',
+    updateDots,
+    { passive: true }
+  );
 
-  // =================================================
-  // ANIMATION CONTINUE
-  // =================================================
+  /* =========================
+     DÉFILEMENT AUTOMATIQUE
+  ========================= */
 
   let animationFrame = null;
   let lastTime = null;
@@ -179,17 +231,27 @@ export function initCarousel({
 
     lastTime = currentTime;
 
-    const setWidth = getSetWidth();
+    setWidth = getSetWidth();
 
     if (setWidth > 0) {
       const movement =
-        AUTO_SPEED * (deltaTime / 1000);
+        AUTO_SPEED *
+        (deltaTime / 1000);
 
       viewport.scrollLeft += movement;
 
-      // =================================================
-      // BOUCLE PARFAITEMENT INVISIBLE
-      // =================================================
+      /*
+        On a parcouru exactement
+        une série de cartes.
+
+        On revient au même contenu
+        visuel, mais sur la copie
+        suivante.
+
+        Résultat :
+        boucle continue sans saut
+        visible.
+      */
 
       if (
         viewport.scrollLeft >=
@@ -208,9 +270,9 @@ export function initCarousel({
   animationFrame =
     requestAnimationFrame(animate);
 
-  // =================================================
-  // NETTOYAGE SI LA PAGE EST QUITTÉE
-  // =================================================
+  /* =========================
+     NETTOYAGE
+  ========================= */
 
   window.addEventListener(
     'beforeunload',
@@ -223,4 +285,4 @@ export function initCarousel({
     },
     { once: true }
   );
-                 }
+  }
