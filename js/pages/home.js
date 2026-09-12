@@ -622,7 +622,6 @@ function initGrandCarousel() {
           .join('');
 
       try {
-try {
 
   requestAnimationFrame(() => {
 
