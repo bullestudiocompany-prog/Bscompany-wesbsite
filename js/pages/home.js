@@ -932,7 +932,7 @@ if (
     () => {
 
       const isOpen =
-        mobileMenu.classList.toggle('active');
+        mobileMenu.classList.toggle('mobile-open');
 
       menuToggle.classList.toggle(
         'active',
@@ -955,9 +955,7 @@ if (
   );
 
 
-  // ---------------------------------------------------
-  // Fermeture du menu lorsqu'on clique sur un lien
-  // ---------------------------------------------------
+  // Fermeture après clic sur un lien
 
   mobileMenu
     .querySelectorAll('a')
@@ -968,7 +966,7 @@ if (
         () => {
 
           mobileMenu.classList.remove(
-            'active'
+            'mobile-open'
           );
 
           menuToggle.classList.remove(
