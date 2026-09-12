@@ -1,127 +1,240 @@
-export function initCarousel({ viewport, prevBtn, nextBtn, dotsContainer, itemCount, visibleCount = 4 }) {
+export function initCarousel({
+  viewport,
+  prevBtn,
+  nextBtn,
+  dotsContainer,
+  itemCount,
+  visibleCount = 4
+}) {
   if (!viewport || itemCount === 0) return;
 
-  const pageCount = Math.max(1, Math.ceil(itemCount / visibleCount));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(itemCount / visibleCount)
+  );
+
+  // =====================================================
+  // POINTS DE NAVIGATION
+  // =====================================================
 
   if (dotsContainer) {
-    dotsContainer.innerHTML = Array.from({ length: pageCount })
-      .map((_, i) => `<span data-page="${i}" class="${i === 0 ? 'active' : ''}"></span>`)
+    dotsContainer.innerHTML = Array.from(
+      { length: pageCount }
+    )
+      .map(
+        (_, i) =>
+          `<span data-page="${i}" class="${i === 0 ? 'active' : ''}"></span>`
+      )
       .join('');
   }
 
+  // =====================================================
+  // DÉFILEMENT MANUEL
+  // =====================================================
+
   function scrollByPage(direction) {
-    const card = viewport.querySelector('.featured-card');
+    const card =
+      viewport.querySelector('.featured-card');
+
     if (!card) return;
-    const cardWidth = card.getBoundingClientRect().width;
+
+    const cardWidth =
+      card.getBoundingClientRect().width;
+
     const gap = 18;
-    viewport.scrollBy({ left: direction * (cardWidth + gap) * visibleCount, behavior: 'smooth' });
-  }
 
-  prevBtn?.addEventListener('click', () => scrollByPage(-1));
-  nextBtn?.addEventListener('click', () => scrollByPage(1));
-
-  if (dotsContainer) {
-    let scrollTimeout;
-    viewport.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-        const progress = maxScroll > 0 ? viewport.scrollLeft / maxScroll : 0;
-        const activeIndex = Math.round(progress * (pageCount - 1));
-        dotsContainer.querySelectorAll('span').forEach((dot, i) => {
-          dot.classList.toggle('active', i === activeIndex);
-        });
-      }, 80);
+    viewport.scrollBy({
+      left:
+        direction *
+        (cardWidth + gap) *
+        visibleCount,
+      behavior: 'smooth'
     });
   }
 
-      // =================================================
-// ANIMATION AUTOMATIQUE FLUIDE
-// =================================================
-
-let autoScrollAnimation;
-let lastTime = null;
-
-function startAutoScroll() {
-
-  cancelAnimationFrame(autoScrollAnimation);
-
-  lastTime = null;
-
-  function animate(currentTime) {
-
-    if (!lastTime) {
-      lastTime = currentTime;
+  prevBtn?.addEventListener(
+    'click',
+    () => {
+      scrollByPage(-1);
     }
+  );
 
-    const deltaTime =
-      currentTime - lastTime;
+  nextBtn?.addEventListener(
+    'click',
+    () => {
+      scrollByPage(1);
+    }
+  );
 
-    lastTime = currentTime;
+  // =====================================================
+  // MISE À JOUR DES POINTS
+  // =====================================================
 
-    const cards =
-      [...viewport.querySelectorAll('.featured-card')];
+  if (dotsContainer) {
+    let scrollTimeout;
 
-    if (cards.length > 1) {
+    viewport.addEventListener(
+      'scroll',
+      () => {
+        clearTimeout(scrollTimeout);
 
-      const card = cards[0];
+        scrollTimeout = setTimeout(() => {
+          const maxScroll =
+            viewport.scrollWidth -
+            viewport.clientWidth;
+
+          const progress =
+            maxScroll > 0
+              ? viewport.scrollLeft / maxScroll
+              : 0;
+
+          const activeIndex =
+            Math.round(
+              progress * (pageCount - 1)
+            );
+
+          dotsContainer
+            .querySelectorAll('span')
+            .forEach((dot, i) => {
+              dot.classList.toggle(
+                'active',
+                i === activeIndex
+              );
+            });
+        }, 80);
+      }
+    );
+  }
+
+  // =====================================================
+  // ANIMATION AUTOMATIQUE CONTINUE
+  // =====================================================
+
+  let autoScrollAnimation = null;
+  let lastTime = null;
+
+  const AUTO_SPEED = 25;
+
+  // =====================================================
+  // PRÉPARATION DE LA BOUCLE INFINIE
+  // =====================================================
+
+  const originalCards = [
+    ...viewport.querySelectorAll(
+      '.featured-card'
+    )
+  ];
+
+  if (originalCards.length > 1) {
+    originalCards.forEach(card => {
+      const clone =
+        card.cloneNode(true);
+
+      clone.setAttribute(
+        'data-carousel-clone',
+        'true'
+      );
+
+      viewport.appendChild(clone);
+    });
+  }
+
+  // =====================================================
+  // ANIMATION
+  // =====================================================
+
+  function startAutoScroll() {
+    cancelAnimationFrame(
+      autoScrollAnimation
+    );
+
+    lastTime = null;
+
+    function animate(currentTime) {
+
+      if (lastTime === null) {
+        lastTime = currentTime;
+      }
+
+      const deltaTime =
+        currentTime - lastTime;
+
+      lastTime = currentTime;
+
+      // -------------------------------------------------
+      // PAS ASSEZ D'ŒUVRES
+      // -------------------------------------------------
+
+      if (originalCards.length <= 1) {
+
+        autoScrollAnimation =
+          requestAnimationFrame(
+            animate
+          );
+
+        return;
+      }
+
+      // -------------------------------------------------
+      // LARGEUR D'UNE CARTE
+      // -------------------------------------------------
+
+      const firstCard =
+        originalCards[0];
+
+      if (!firstCard) {
+        autoScrollAnimation =
+          requestAnimationFrame(
+            animate
+          );
+
+        return;
+      }
 
       const cardWidth =
-        card.getBoundingClientRect().width;
+        firstCard.getBoundingClientRect()
+          .width;
 
       const gap = 18;
 
-      const maxScroll =
-        viewport.scrollWidth -
-        viewport.clientWidth;
+      const oneSetWidth =
+        (cardWidth + gap) *
+        originalCards.length;
 
-      // =============================================
-      // CAS NORMAL : IL Y A DE L'ESPACE POUR DÉFILER
-      // =============================================
+      // -------------------------------------------------
+      // DÉFILEMENT CONTINU
+      // -------------------------------------------------
 
-      if (maxScroll > 0) {
+      viewport.scrollLeft +=
+        AUTO_SPEED *
+        (deltaTime / 1000);
 
-        /*
-         * Vitesse en pixels par seconde.
-         * 25 = déplacement lent et fluide.
-         */
-        const speed = 25;
+      // -------------------------------------------------
+      // RETOUR INVISIBLE AU DÉBUT
+      // -------------------------------------------------
 
-        viewport.scrollLeft +=
-          speed * (deltaTime / 1000);
-
-        /*
-         * Retour au début lorsqu'on arrive
-         * à la fin du carrousel.
-         */
-        if (
-          viewport.scrollLeft >=
-          maxScroll - 1
-        ) {
-
-          viewport.scrollLeft = 0;
-
-        }
-
+      if (
+        viewport.scrollLeft >=
+        oneSetWidth
+      ) {
+        viewport.scrollLeft -=
+          oneSetWidth;
       }
 
-      // =============================================
-      // CAS : PAS ASSEZ D'ŒUVRES POUR DÉFILER
-      // =============================================
-
-      else {
-
-        /*
-         * On ne fait rien ici.
-         *
-         * Le carrousel reste simplement immobile
-         * lorsqu'il n'y a pas assez d'œuvres.
-         */
-      }
+      autoScrollAnimation =
+        requestAnimationFrame(
+          animate
+        );
     }
 
     autoScrollAnimation =
-      requestAnimationFrame(animate);
+      requestAnimationFrame(
+        animate
+      );
+  }
+
+  startAutoScroll();
+}      requestAnimationFrame(animate);
   }
 
   autoScrollAnimation =
