@@ -518,8 +518,8 @@
   position: relative;
   z-index: 1;
 
-  width: min(38%, 300px);
-  max-height: 270px;
+  width: min(45%, 380px);
+  max-height: 300px;
 
   object-fit: contain;
   flex-shrink: 0;
