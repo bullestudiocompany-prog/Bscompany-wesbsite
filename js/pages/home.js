@@ -933,14 +933,10 @@ loadHomePage();
 // =====================================================
 
 const menuToggle =
-  document.querySelector(
-    '.menu-toggle'
-  );
+  document.getElementById('mobileMenuBtn');
 
 const mobileMenu =
-  document.querySelector(
-    '.mobile-menu'
-  );
+  document.querySelector('.nav-links');
 
 
 if (
@@ -952,21 +948,31 @@ if (
     'click',
     () => {
 
-      mobileMenu.classList.toggle(
-        'active'
-      );
+      const isOpen =
+        mobileMenu.classList.toggle('mobile-open');
 
       menuToggle.classList.toggle(
-        'active'
+        'active',
+        isOpen
+      );
+
+      menuToggle.setAttribute(
+        'aria-expanded',
+        String(isOpen)
+      );
+
+      menuToggle.setAttribute(
+        'aria-label',
+        isOpen
+          ? 'Fermer le menu'
+          : 'Ouvrir le menu'
       );
 
     }
   );
 
 
-  // ---------------------------------------------------
-  // Fermeture du menu lorsqu'on clique sur un lien
-  // ---------------------------------------------------
+  // Fermeture après clic sur un lien
 
   mobileMenu
     .querySelectorAll('a')
@@ -977,11 +983,21 @@ if (
         () => {
 
           mobileMenu.classList.remove(
-            'active'
+            'mobile-open'
           );
 
           menuToggle.classList.remove(
             'active'
+          );
+
+          menuToggle.setAttribute(
+            'aria-expanded',
+            'false'
+          );
+
+          menuToggle.setAttribute(
+            'aria-label',
+            'Ouvrir le menu'
           );
 
         }
@@ -989,4 +1005,4 @@ if (
 
     });
 
-          }
+            }
