@@ -471,3 +471,29 @@ img{display:block;max-width:100%;}
     display: none;
   }
 }
+
+/* =========================
+   AJUSTEMENTS THÈME BLACK
+   ========================= */
+
+[data-theme="black"] .link-btn{
+  background:var(--surface);
+  color:var(--blue-600);
+}
+
+[data-theme="black"] .btn-light{
+  background:var(--surface);
+  color:var(--ink);
+}
+
+[data-theme="black"] .mobile-menu-btn{
+  color:var(--ink);
+}
+
+[data-theme="black"] .nav-links{
+  box-shadow:0 12px 25px rgba(0,0,0,0.35);
+}
+
+[data-theme="black"] .feature-icon{
+  --accent-soft:#151C2A;
+}
