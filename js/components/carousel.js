@@ -8,27 +8,36 @@ export function initCarousel({
 }) {
   if (!viewport || itemCount === 0) return;
 
-  if (viewport.dataset.carouselInitialized === 'true') return;
+  if (viewport.dataset.carouselInitialized === 'true') {
+    return;
+  }
+
   viewport.dataset.carouselInitialized = 'true';
 
-  const AUTO_SPEED = 35;
+  /* =========================
+     CONFIGURATION
+  ========================= */
+
+  const AUTO_SPEED = 30;
+
+  /* =========================
+     DOTS
+  ========================= */
 
   const pageCount = Math.max(
     1,
     Math.ceil(itemCount / visibleCount)
   );
 
-  /* =========================
-     DOTS
-  ========================= */
-
   if (dotsContainer) {
     dotsContainer.innerHTML = Array.from(
       { length: pageCount },
-      (_, i) =>
-        `<span data-page="${i}" class="${
-          i === 0 ? 'active' : ''
-        }"></span>`
+      (_, index) => `
+        <span
+          data-page="${index}"
+          class="${index === 0 ? 'active' : ''}"
+        ></span>
+      `
     ).join('');
   }
 
@@ -40,57 +49,68 @@ export function initCarousel({
     ...viewport.querySelectorAll('.featured-card')
   ];
 
-  if (originalCards.length === 0) return;
+  if (originalCards.length <= 1) {
+    return;
+  }
 
   /* =========================
-     MESURE D'UN ENSEMBLE
+     DÉSACTIVATION DU SNAP
+     
+     On ne modifie PAS le CSS.
+     On désactive seulement le snap
+     pendant que ce carrousel tourne.
   ========================= */
 
-  function getSetWidth() {
-    const firstOriginal = originalCards[0];
+  viewport.style.scrollSnapType = 'none';
 
-    const firstClone = viewport.querySelector(
-      '[data-carousel-clone="true"]'
+  /* =========================
+     MESURE
+  ========================= */
+
+  function getCardWidth() {
+    const card = originalCards[0];
+
+    if (!card) return 0;
+
+    return card.getBoundingClientRect().width;
+  }
+
+  function getGap() {
+    const style =
+      window.getComputedStyle(viewport);
+
+    return (
+      parseFloat(style.columnGap) ||
+      parseFloat(style.gap) ||
+      18
     );
+  }
 
-    if (!firstOriginal || !firstClone) {
+  function getSetWidth() {
+    const cardWidth = getCardWidth();
+    const gap = getGap();
+
+    if (cardWidth <= 0) {
       return 0;
     }
 
     return (
-      firstClone.offsetLeft -
-      firstOriginal.offsetLeft
+      (cardWidth + gap) *
+      originalCards.length
     );
   }
 
   /* =========================
-     PREMIER ENSEMBLE DE COPIES
+     CLONAGE
   ========================= */
 
-  originalCards.forEach((card) => {
-    const clone = card.cloneNode(true);
+  /*
+    On crée plusieurs séries de copies.
+    Cela garantit qu'il y aura toujours
+    du contenu devant le viewport.
+  */
 
-    clone.dataset.carouselClone = 'true';
-
-    viewport.appendChild(clone);
-  });
-
-  let setWidth = getSetWidth();
-
-  if (setWidth <= 0) return;
-
-  /* =========================
-     AJOUT DE COPIES SI BESOIN
-     
-     Cela évite que le carrousel
-     arrive au bout avant d'avoir
-     atteint une boucle complète.
-  ========================= */
-
-  while (
-    viewport.scrollWidth <
-    setWidth + viewport.clientWidth + 2
-  ) {
+  for (let set = 0; set < 4; set++) {
     originalCards.forEach((card) => {
       const clone = card.cloneNode(true);
 
@@ -104,51 +124,17 @@ export function initCarousel({
      BOUTONS
   ========================= */
 
-  function getCardStep() {
-    const card = originalCards[0];
-
-    if (!card) return 0;
-
-    const cardWidth =
-      card.getBoundingClientRect().width;
-
-    const style =
-      window.getComputedStyle(viewport);
-
-    const gap =
-      parseFloat(
-        style.columnGap ||
-        style.gap ||
-        '18'
-      ) || 18;
-
-    return cardWidth + gap;
-  }
-
   function scrollByPage(direction) {
-    const step = getCardStep();
+    const cardWidth = getCardWidth();
+    const gap = getGap();
 
-    if (step <= 0) return;
+    if (cardWidth <= 0) {
+      return;
+    }
 
     const distance =
-      step * visibleCount;
-
-    /*
-      Si on revient avant le début,
-      on se replace sur une copie
-      identique plus loin.
-    */
-
-    if (
-      direction < 0 &&
-      viewport.scrollLeft <= 0
-    ) {
-      setWidth = getSetWidth();
-
-      if (setWidth > 0) {
-        viewport.scrollLeft = setWidth;
-      }
-    }
+      (cardWidth + gap) *
+      visibleCount;
 
     viewport.scrollBy({
       left: direction * distance,
@@ -177,7 +163,7 @@ export function initCarousel({
   function updateDots() {
     if (!dotsContainer) return;
 
-    setWidth = getSetWidth();
+    const setWidth = getSetWidth();
 
     if (setWidth <= 0) return;
 
@@ -208,14 +194,8 @@ export function initCarousel({
       });
   }
 
-  viewport.addEventListener(
-    'scroll',
-    updateDots,
-    { passive: true }
-  );
-
   /* =========================
-     DÉFILEMENT AUTOMATIQUE
+     ANIMATION
   ========================= */
 
   let animationFrame = null;
@@ -231,7 +211,7 @@ export function initCarousel({
 
     lastTime = currentTime;
 
-    setWidth = getSetWidth();
+    const setWidth = getSetWidth();
 
     if (setWidth > 0) {
       const movement =
@@ -241,16 +221,12 @@ export function initCarousel({
       viewport.scrollLeft += movement;
 
       /*
-        On a parcouru exactement
-        une série de cartes.
+        Quand on a parcouru exactement
+        une série de cartes, on revient
+        en arrière de cette même distance.
 
-        On revient au même contenu
-        visuel, mais sur la copie
-        suivante.
-
-        Résultat :
-        boucle continue sans saut
-        visible.
+        Comme les cartes sont identiques,
+        l'utilisateur ne voit aucun saut.
       */
 
       if (
@@ -271,7 +247,8 @@ export function initCarousel({
     requestAnimationFrame(animate);
 
   /* =========================
-     NETTOYAGE
+     RETOUR AU TEMPS NORMAL
+     QUAND LA PAGE EST QUITTÉE
   ========================= */
 
   window.addEventListener(
@@ -285,4 +262,4 @@ export function initCarousel({
     },
     { once: true }
   );
-  }
+}
