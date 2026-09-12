@@ -8,6 +8,15 @@ export function initCarousel({
 }) {
   if (!viewport || itemCount === 0) return;
 
+  // Évite d'initialiser deux fois le même carrousel
+  if (viewport.dataset.carouselInitialized === 'true') return;
+  viewport.dataset.carouselInitialized = 'true';
+
+  // =================================================
+  // CONFIGURATION
+  // =================================================
+
+  const AUTO_SPEED = 35; // pixels par seconde
   const pageCount = Math.max(
     1,
     Math.ceil(itemCount / visibleCount)
@@ -18,30 +27,92 @@ export function initCarousel({
   // =================================================
 
   if (dotsContainer) {
-    dotsContainer.innerHTML = Array.from({ length: pageCount })
-      .map(
-        (_, i) =>
-          `<span data-page="${i}" class="${
-            i === 0 ? 'active' : ''
-          }"></span>`
-      )
-      .join('');
+    dotsContainer.innerHTML = Array.from(
+      { length: pageCount },
+      (_, i) =>
+        `<span data-page="${i}" class="${
+          i === 0 ? 'active' : ''
+        }"></span>`
+    ).join('');
   }
+
+  // =================================================
+  // CARTES ORIGINALES
+  // =================================================
+
+  const originalCards = [
+    ...viewport.querySelectorAll('.featured-card')
+  ];
+
+  if (originalCards.length <= 1) {
+    return;
+  }
+
+  // =================================================
+  // CALCUL DU GAP RÉEL
+  // =================================================
+
+  function getGap() {
+    const style = window.getComputedStyle(viewport);
+
+    const gap =
+      parseFloat(style.columnGap) ||
+      parseFloat(style.gap) ||
+      18;
+
+    return gap;
+  }
+
+  // =================================================
+  // LARGEUR D'UNE SÉRIE COMPLÈTE
+  // =================================================
+
+  function getSetWidth() {
+    const firstCard = originalCards[0];
+
+    if (!firstCard) return 0;
+
+    const cardWidth =
+      firstCard.getBoundingClientRect().width;
+
+    const gap = getGap();
+
+    return (
+      (cardWidth + gap) * originalCards.length
+    );
+  }
+
+  // =================================================
+  // DUPLICATION DE LA SÉRIE
+  // =================================================
+
+  originalCards.forEach((card) => {
+    const clone = card.cloneNode(true);
+
+    clone.dataset.carouselClone = 'true';
+
+    viewport.appendChild(clone);
+  });
 
   // =================================================
   // DÉFILEMENT MANUEL
   // =================================================
 
   function scrollByPage(direction) {
-    const card = viewport.querySelector('.featured-card');
+    const card = originalCards[0];
 
     if (!card) return;
 
-    const cardWidth = card.getBoundingClientRect().width;
-    const gap = 18;
+    const cardWidth =
+      card.getBoundingClientRect().width;
+
+    const gap = getGap();
+
+    const distance =
+      (cardWidth + gap) * visibleCount;
 
     viewport.scrollBy({
-      left: direction * (cardWidth + gap) * visibleCount,
+      left: direction * distance,
       behavior: 'smooth'
     });
   }
@@ -55,124 +126,101 @@ export function initCarousel({
   });
 
   // =================================================
-  // MISE À JOUR DES POINTS
+  // POINTS
   // =================================================
 
-  if (dotsContainer) {
-    let scrollTimeout;
+  function updateDots() {
+    if (!dotsContainer) return;
 
-    viewport.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
+    const setWidth = getSetWidth();
 
-      scrollTimeout = setTimeout(() => {
-        const maxScroll =
-          viewport.scrollWidth - viewport.clientWidth;
+    if (setWidth <= 0) return;
 
-        const progress =
-          maxScroll > 0
-            ? viewport.scrollLeft / maxScroll
-            : 0;
+    let position =
+      viewport.scrollLeft % setWidth;
 
-        const activeIndex = Math.round(
-          progress * (pageCount - 1)
+    if (position < 0) {
+      position += setWidth;
+    }
+
+    const progress = position / setWidth;
+
+    const activeIndex = Math.min(
+      pageCount - 1,
+      Math.floor(progress * pageCount)
+    );
+
+    dotsContainer
+      .querySelectorAll('span')
+      .forEach((dot, index) => {
+        dot.classList.toggle(
+          'active',
+          index === activeIndex
         );
-
-        dotsContainer
-          .querySelectorAll('span')
-          .forEach((dot, i) => {
-            dot.classList.toggle(
-              'active',
-              i === activeIndex
-            );
-          });
-      }, 80);
-    });
+      });
   }
 
+  viewport.addEventListener('scroll', updateDots);
+
   // =================================================
-  // ANIMATION AUTOMATIQUE
+  // ANIMATION CONTINUE
   // =================================================
 
-  let autoScrollTimer;
+  let animationFrame = null;
+  let lastTime = null;
 
-  function startAutoScroll() {
-    clearInterval(autoScrollTimer);
+  function animate(currentTime) {
+    if (lastTime === null) {
+      lastTime = currentTime;
+    }
 
-    autoScrollTimer = setInterval(() => {
-      const cards = [
-        ...viewport.querySelectorAll('.featured-card')
-      ];
+    const deltaTime =
+      currentTime - lastTime;
 
-      if (cards.length <= 1) return;
+    lastTime = currentTime;
 
-      const card = cards[0];
+    const setWidth = getSetWidth();
 
-      if (!card) return;
+    if (setWidth > 0) {
+      const movement =
+        AUTO_SPEED * (deltaTime / 1000);
 
-      const cardWidth =
-        card.getBoundingClientRect().width;
-
-      const gap = 18;
-
-      const maxScroll =
-        viewport.scrollWidth - viewport.clientWidth;
+      viewport.scrollLeft += movement;
 
       // =================================================
-      // CAS NORMAL
+      // BOUCLE PARFAITEMENT INVISIBLE
       // =================================================
 
-      if (maxScroll > 0) {
-        const currentScroll =
-          viewport.scrollLeft;
-
-        const nextPosition =
-          currentScroll + cardWidth + gap;
-
-        if (nextPosition >= maxScroll - 2) {
-          viewport.scrollTo({
-            left: 0,
-            behavior: 'smooth'
-          });
-        } else {
-          viewport.scrollTo({
-            left: nextPosition,
-            behavior: 'smooth'
-          });
-        }
-
-        return;
+      if (
+        viewport.scrollLeft >=
+        setWidth
+      ) {
+        viewport.scrollLeft -= setWidth;
       }
 
-      // =================================================
-      // CAS : PAS ASSEZ D'ŒUVRES POUR DÉFILER
-      // =================================================
+      updateDots();
+    }
 
-      const clone = card.cloneNode(true);
-
-      viewport.appendChild(clone);
-
-      const newMaxScroll =
-        viewport.scrollWidth - viewport.clientWidth;
-
-      viewport.scrollTo({
-        left: newMaxScroll,
-        behavior: 'smooth'
-      });
-
-      setTimeout(() => {
-        if (!card.isConnected) return;
-
-        card.remove();
-
-        if (clone.isConnected) {
-          clone.replaceWith(card);
-        }
-
-        viewport.scrollLeft = 0;
-      }, 700);
-
-    }, 5000);
+    animationFrame =
+      requestAnimationFrame(animate);
   }
 
-  startAutoScroll();
-    }
+  animationFrame =
+    requestAnimationFrame(animate);
+
+  // =================================================
+  // NETTOYAGE SI LA PAGE EST QUITTÉE
+  // =================================================
+
+  window.addEventListener(
+    'beforeunload',
+    () => {
+      if (animationFrame) {
+        cancelAnimationFrame(
+          animationFrame
+        );
+      }
+    },
+    { once: true }
+  );
+                 }
