@@ -1,1 +1,1480 @@
-<!DOCTYPE html> <html lang="fr"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>BSCompany — Administration</title> <style> * { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: Arial, sans-serif; background: #080b12; color: white; min-height: 100vh; } button, input, textarea, select { font: inherit; } button { cursor: pointer; } .hidden { display: none !important; } /* ========================= LOGIN ========================= */ #loginSection { width: min(430px, calc(100% - 30px)); margin: 70px auto; } .login-logo { text-align: center; font-size: 30px; font-weight: bold; color: #3b82f6; margin-bottom: 8px; } .login-subtitle { text-align: center; color: #8b98aa; margin-bottom: 25px; } .box { background: #111722; border: 1px solid #202a3a; border-radius: 16px; padding: 25px; } h2 { margin-bottom: 20px; } label { display: block; color: #aeb8c8; font-size: 13px; margin-bottom: 6px; } input, textarea, select { width: 100%; padding: 13px; margin-bottom: 16px; border-radius: 9px; border: 1px solid #293548; background: #0b1019; color: white; outline: none; } input:focus, textarea:focus, select:focus { border-color: #3b82f6; } textarea { min-height: 180px; resize: vertical; } button { border: none; border-radius: 9px; padding: 12px 16px; background: #2563eb; color: white; font-weight: bold; } button:hover { background: #1d4ed8; } button:disabled { opacity: .6; cursor: not-allowed; } .danger { background: #dc2626; } .danger:hover { background: #b91c1c; } .secondary { background: #202a3a; } .secondary:hover { background: #293548; } .success { color: #22c55e; } .error { color: #ef4444; } .info { color: #3b82f6; } #loginError, .status { min-height: 20px; margin-top: 5px; font-size: 14px; } /* ========================= ADMIN LAYOUT ========================= */ .admin-layout { display: flex; min-height: 100vh; } .sidebar { width: 240px; background: #0d121c; border-right: 1px solid #202a3a; padding: 20px 14px; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; } .brand { padding: 8px 10px 25px; font-size: 23px; font-weight: bold; color: #3b82f6; } .brand small { display: block; color: #7d899a; font-size: 11px; font-weight: normal; margin-top: 4px; } .nav { display: flex; flex-direction: column; gap: 7px; } .nav button { text-align: left; background: transparent; color: #aeb8c8; border-radius: 9px; } .nav button:hover, .nav button.active { background: #182338; color: white; } .sidebar-bottom { position: absolute; bottom: 20px; left: 14px; right: 14px; } .sidebar-bottom button { width: 100%; } .main { margin-left: 240px; width: calc(100% - 240px); padding: 30px; } .page { display: none; max-width: 1100px; margin: auto; } .page.active { display: block; } .page-header { margin-bottom: 25px; } .page-header h1 { font-size: 28px; margin-bottom: 7px; } .page-header p { color: #8b98aa; } /* ========================= DASHBOARD ========================= */ .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; } .stat { background: #111722; border: 1px solid #202a3a; border-radius: 14px; padding: 20px; } .stat-label { color: #8b98aa; font-size: 13px; } .stat-number { font-size: 30px; font-weight: bold; margin-top: 8px; } .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; } /* ========================= LISTES ========================= */ .list { display: grid; gap: 12px; } .item { background: #111722; border: 1px solid #202a3a; border-radius: 13px; padding: 16px; } .item-main { display: flex; gap: 15px; align-items: center; } .cover { width: 70px; height: 90px; object-fit: cover; border-radius: 8px; background: #080b12; flex-shrink: 0; } .item-info { flex: 1; min-width: 0; } .item-title { font-weight: bold; font-size: 17px; margin-bottom: 6px; } .item-meta { color: #8b98aa; font-size: 13px; line-height: 1.5; } .item-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; } .item-actions button { width: auto; padding: 9px 12px; font-size: 13px; } /* ========================= FORMS ========================= */ .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } .full { grid-column: 1 / -1; } .selected-work { background: #14203a; border: 1px solid #28416c; border-radius: 10px; padding: 14px; margin-bottom: 20px; } .selected-work span { color: #8b98aa; font-size: 12px; display: block; margin-bottom: 5px; } .selected-work strong { font-size: 17px; } /* ========================= SOUNDS ========================= */ .sound-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .sound-row audio { max-width: 300px; width: 100%; } .sound-name { flex: 1; min-width: 150px; } /* ========================= MOBILE ========================= */ @media (max-width: 750px) { .sidebar { width: 100%; height: auto; bottom: auto; position: relative; border-right: none; border-bottom: 1px solid #202a3a; padding: 12px; } .admin-layout { display: block; } .brand { padding: 5px 8px 12px; } .brand small { display: inline; margin-left: 5px; } .nav { flex-direction: row; overflow-x: auto; } .nav button { white-space: nowrap; width: auto; } .sidebar-bottom { position: static; margin-top: 8px; } .main { margin-left: 0; width: 100%; padding: 18px 12px; } .stats { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .full { grid-column: auto; } .item-main { align-items: flex-start; } .cover { width: 60px; height: 78px; } .page-header h1 { font-size: 23px; } } </style> </head> <body> <!-- ========================= LOGIN ========================= --> <section id="loginSection"> <div class="login-logo">BSCompany</div> <div class="login-subtitle">Administration</div> <div class="box"> <h2>Connexion</h2> <form id="loginForm"> <label for="loginEmail">Email</label> <input type="email" id="loginEmail" placeholder="admin@bscompany.com" required > <label for="loginPassword">Mot de passe</label> <input type="password" id="loginPassword" placeholder="••••••••" required > <button type="submit"> Se connecter </button> <p id="loginError"></p> </form> </div> </section> <!-- ========================= ADMIN ========================= --> <section id="adminSection" class="hidden"> <div class="admin-layout"> <!-- SIDEBAR --> <aside class="sidebar"> <div class="brand"> BSCompany <small>Administration</small> </div> <nav class="nav"> <button data-page="dashboard" class="active"> 📊 Dashboard </button> <button data-page="series"> 📚 Œuvres </button> <button data-page="new-series"> ➕ Nouvelle œuvre </button> <button data-page="sounds"> 🎵 Sons </button> <button data-page="carousel"> 🎞️ Carrousel </button> </nav> <div class="sidebar-bottom"> <button id="logoutBtn" class="danger"> 🚪 Déconnexion </button> </div> </aside> <!-- MAIN --> <main class="main"> <!-- ========================= DASHBOARD ========================= --> <section id="page-dashboard" class="page active"> <div class="page-header"> <h1>Dashboard</h1> <p>Vue générale de BSCompany.</p> </div> <div class="stats"> <div class="stat"> <div class="stat-label">Œuvres</div> <div class="stat-number" id="seriesCount">0</div> </div> <div class="stat"> <div class="stat-label">Chapitres</div> <div class="stat-number" id="chaptersCount">0</div> </div> <div class="stat"> <div class="stat-label">Sons</div> <div class="stat-number" id="soundsCount">0</div> </div> </div> <div class="box"> <h2>Actions rapides</h2> <div class="quick-actions"> <button data-page="new-series"> ➕ Créer une œuvre </button> <button data-page="series"> 📚 Voir toutes les œuvres </button> <button data-page="sounds"> 🎵 Gérer les sons </button> </div> </div> </section> <!-- ========================= SERIES ========================= --> <section id="page-series" class="page"> <div class="page-header"> <h1>Œuvres</h1> <p>Gère les séries et leurs chapitres.</p> </div> <div id="seriesList" class="list"> Chargement... </div> </section> <!-- ========================= NOUVELLE SERIE ========================= --> <section id="page-new-series" class="page"> <div class="page-header"> <h1>Créer une œuvre</h1> <p>Ajoute une nouvelle série au catalogue.</p> </div> <div class="box"> <form id="addSeriesForm"> <div class="form-grid"> <div> <label for="seriesTitle">Titre *</label> <input id="seriesTitle" type="text" placeholder="Titre de l'œuvre" required > </div> <div> <label for="seriesType">Type *</label> <select id="seriesType"> <option value="webcomic">Webcomic</option> <option value="novel">Novel</option> </select> </div> <div> <label for="seriesGenre">Genre</label> <input id="seriesGenre" type="text" placeholder="Action, Fantastique..." > </div> <div> <label for="seriesStatus">Statut</label> <select id="seriesStatus"> <option value="ongoing">En cours</option> <option value="completed">Terminé</option> <option value="hiatus">En pause</option> </select> </div> <div class="full"> <label for="seriesDescription"> Description * </label> <textarea id="seriesDescription" placeholder="Description de l'œuvre..." required ></textarea> </div> <div class="full"> <label for="seriesCover"> Couverture * </label> <input id="seriesCover" type="file" accept="image/*" required > </div> </div> <button id="seriesSubmitBtn" type="submit"> Publier l'œuvre </button> <p id="seriesStatusMsg" class="status"></p> </form> </div> </section> <!-- ========================= CHAPITRES ========================= --> <section id="page-chapters" class="page"> <div class="page-header"> <h1>Chapitres</h1> <p id="chapterSeriesDescription"> Gestion des chapitres. </p> </div> <div class="selected-work"> <span>Œuvre sélectionnée</span> <strong id="selectedSeriesTitle"> — </strong> </div> <div id="chaptersList" class="list" > Chargement... </div> <br> <button id="newChapterBtn"> ➕ Nouveau chapitre </button> </section> <!-- ========================= NOUVEAU CHAPITRE ========================= --> <section id="page-new-chapter" class="page"> <div class="page-header"> <h1>Nouveau chapitre</h1> <p> Ajoute un chapitre à l'œuvre sélectionnée. </p> </div> <div class="selected-work"> <span>Œuvre</span> <strong id="newChapterSeriesTitle"> — </strong> </div> <div class="box"> <form id="addChapterForm"> <div class="form-grid"> <!-- NUMÉRO INTERNE --> <div> <label for="chapterNumber"> Numéro interne * </label> <input id="chapterNumber" type="number" min="1" required > </div> <!-- NUMÉRO / LIBELLÉ AFFICHÉ --> <div> <label for="chapterLabel"> Numéro / libellé affiché * </label> <input id="chapterLabel" type="text" placeholder="Ex : 10.5, 11, Prologue..." required > </div> <!-- TITRE --> <div> <label for="chapterTitle"> Titre * </label> <input id="chapterTitle" type="text" placeholder="Titre du chapitre" required > </div> <div class="full"> <label for="chapterContent"> Contenu * </label> <textarea id="chapterContent" placeholder="Contenu du chapitre..." required ></textarea> </div> <div class="full"> <label for="chapterImage"> Image du chapitre * </label> <input id="chapterImage" type="file" accept="image/*" required > </div> <div class="full"> <label for="chapterSound"> Son d'ambiance </label> <select id="chapterSound"> <option value=""> Aucun son </option> </select> </div> </div> <button id="chapterSubmitBtn" type="submit"> Publier le chapitre </button> <p id="chapterStatusMsg" class="status"></p> </form> </div> </section> <!-- ========================= SONS ========================= --> <section id="page-sounds" class="page"> <div class="page-header"> <h1>Sons</h1> <p> Gère les fichiers audio du bucket Storage. </p> </div> <div class="box"> <h2>Ajouter un son</h2> <form id="soundForm"> <label for="soundFile"> Fichier audio </label> <input id="soundFile" type="file" accept="audio/*" required > <button id="soundSubmitBtn" type="submit"> Ajouter le son </button> <p id="soundStatusMsg" class="status"></p> </form> </div> <br> <div id="soundsList" class="list"> Chargement... </div> </section> <!-- ========================= CARROUSEL ========================= --> <section id="page-carousel" class="page"> <div class="page-header"> <h1>Carrousel</h1> <p> Gère les informations et événements du grand carrousel. </p> </div> <div class="box"> <h2>Ajouter un contenu</h2> <form id="carouselForm"> <div class="form-grid"> <div> <label for="carouselType"> Type * </label> <select id="carouselType" required> <option value="information"> Information </option> <option value="evenement"> Événement </option> </select> </div> <div> <label for="carouselDuration"> Durée d'affichage (secondes) * </label> <input id="carouselDuration" type="number" min="1" value="10" required > </div> <div class="full"> <label for="carouselTitle"> Titre * </label> <input id="carouselTitle" type="text" placeholder="Titre de l'information ou de l'événement" required > </div> <div class="full"> <label for="carouselDescription"> Description </label> <textarea id="carouselDescription" placeholder="Description..." ></textarea> </div> <div class="full"> <label for="carouselImage"> Image </label> <input id="carouselImage" type="file" accept="image/*" > </div> <div> <label for="carouselButtonText"> Texte du bouton </label> <input id="carouselButtonText" type="text" placeholder="Ex : Découvrir" > </div> <div> <label for="carouselButtonUrl"> Lien du bouton </label> <input id="carouselButtonUrl" type="text" placeholder="https://..." > </div> <div> <label for="carouselOrder"> Ordre d'affichage </label> <input id="carouselOrder" type="number" value="0" > </div> <div> <label for="carouselActive"> Statut </label> <select id="carouselActive"> <option value="true"> Actif </option> <option value="false"> Inactif </option> </select> </div> </div> <button id="carouselSubmitBtn" type="submit"> Ajouter au carrousel </button> <p id="carouselStatusMsg" class="status"></p> </form> </div> <br> <div> <h2>Contenus du carrousel</h2> <br> <div id="carouselList" class="list"> Chargement... </div> </div> </section> </main> </div> </section> <script type="module" src="./js/admin.js" ></script> </body> </html> 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSCompany — Administration</title>
+
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: Arial, sans-serif;
+background: #080b12;
+color: white;
+min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+font: inherit;
+}
+
+button {
+cursor: pointer;
+}
+
+.hidden {
+display: none !important;
+}
+
+/* =========================
+LOGIN
+========================= */
+
+#loginSection {
+width: min(430px, calc(100% - 30px));
+margin: 70px auto;
+}
+
+.login-logo {
+text-align: center;
+font-size: 30px;
+font-weight: bold;
+color: #3b82f6;
+margin-bottom: 8px;
+}
+
+.login-subtitle {
+text-align: center;
+color: #8b98aa;
+margin-bottom: 25px;
+}
+
+.box {
+background: #111722;
+border: 1px solid #202a3a;
+border-radius: 16px;
+padding: 25px;
+}
+
+h2 {
+margin-bottom: 20px;
+}
+
+label {
+display: block;
+color: #aeb8c8;
+font-size: 13px;
+margin-bottom: 6px;
+}
+
+input,
+textarea,
+select {
+width: 100%;
+padding: 13px;
+margin-bottom: 16px;
+border-radius: 9px;
+border: 1px solid #293548;
+background: #0b1019;
+color: white;
+outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+border-color: #3b82f6;
+}
+
+textarea {
+min-height: 180px;
+resize: vertical;
+}
+
+button {
+border: none;
+border-radius: 9px;
+padding: 12px 16px;
+background: #2563eb;
+color: white;
+font-weight: bold;
+}
+
+button:hover {
+background: #1d4ed8;
+}
+
+button:disabled {
+opacity: .6;
+cursor: not-allowed;
+}
+
+.danger {
+background: #dc2626;
+}
+
+.danger:hover {
+background: #b91c1c;
+}
+
+.secondary {
+background: #202a3a;
+}
+
+.secondary:hover {
+background: #293548;
+}
+
+.success {
+color: #22c55e;
+}
+
+.error {
+color: #ef4444;
+}
+
+.info {
+color: #3b82f6;
+}
+
+#loginError,
+.status {
+min-height: 20px;
+margin-top: 5px;
+font-size: 14px;
+}
+
+/* =========================
+ADMIN LAYOUT
+========================= */
+
+.admin-layout {
+display: flex;
+min-height: 100vh;
+}
+
+.sidebar {
+width: 240px;
+background: #0d121c;
+border-right: 1px solid #202a3a;
+padding: 20px 14px;
+flex-shrink: 0;
+position: fixed;
+left: 0;
+top: 0;
+bottom: 0;
+}
+
+.brand {
+padding: 8px 10px 25px;
+font-size: 23px;
+font-weight: bold;
+color: #3b82f6;
+}
+
+.brand small {
+display: block;
+color: #7d899a;
+font-size: 11px;
+font-weight: normal;
+margin-top: 4px;
+}
+
+.nav {
+display: flex;
+flex-direction: column;
+gap: 7px;
+}
+
+.nav button {
+text-align: left;
+background: transparent;
+color: #aeb8c8;
+border-radius: 9px;
+}
+
+.nav button:hover,
+.nav button.active {
+background: #182338;
+color: white;
+}
+
+.sidebar-bottom {
+position: absolute;
+bottom: 20px;
+left: 14px;
+right: 14px;
+}
+
+.sidebar-bottom button {
+width: 100%;
+}
+
+.main {
+margin-left: 240px;
+width: calc(100% - 240px);
+padding: 30px;
+}
+
+.page {
+display: none;
+max-width: 1100px;
+margin: auto;
+}
+
+.page.active {
+display: block;
+}
+
+.page-header {
+margin-bottom: 25px;
+}
+
+.page-header h1 {
+font-size: 28px;
+margin-bottom: 7px;
+}
+
+.page-header p {
+color: #8b98aa;
+}
+
+/* =========================
+DASHBOARD
+========================= */
+
+.stats {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 15px;
+margin-bottom: 25px;
+}
+
+.stat {
+background: #111722;
+border: 1px solid #202a3a;
+border-radius: 14px;
+padding: 20px;
+}
+
+.stat-label {
+color: #8b98aa;
+font-size: 13px;
+}
+
+.stat-number {
+font-size: 30px;
+font-weight: bold;
+margin-top: 8px;
+}
+
+.quick-actions {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 15px;
+}
+
+/* =========================
+LISTES
+========================= */
+
+.list {
+display: grid;
+gap: 12px;
+}
+
+.item {
+background: #111722;
+border: 1px solid #202a3a;
+border-radius: 13px;
+padding: 16px;
+}
+
+.item-main {
+display: flex;
+gap: 15px;
+align-items: center;
+}
+
+.cover {
+width: 70px;
+height: 90px;
+object-fit: cover;
+border-radius: 8px;
+background: #080b12;
+flex-shrink: 0;
+}
+
+.item-info {
+flex: 1;
+min-width: 0;
+}
+
+.item-title {
+font-weight: bold;
+font-size: 17px;
+margin-bottom: 6px;
+}
+
+.item-meta {
+color: #8b98aa;
+font-size: 13px;
+line-height: 1.5;
+}
+
+.item-actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 13px;
+}
+
+.item-actions button {
+width: auto;
+padding: 9px 12px;
+font-size: 13px;
+}
+
+/* =========================
+FORMS
+========================= */
+
+.form-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 15px;
+}
+
+.full {
+grid-column: 1 / -1;
+}
+
+.selected-work {
+background: #14203a;
+border: 1px solid #28416c;
+border-radius: 10px;
+padding: 14px;
+margin-bottom: 20px;
+}
+
+.selected-work span {
+color: #8b98aa;
+font-size: 12px;
+display: block;
+margin-bottom: 5px;
+}
+
+.selected-work strong {
+font-size: 17px;
+}
+
+/* =========================
+SOUNDS
+========================= */
+
+.sound-row {
+display: flex;
+align-items: center;
+gap: 10px;
+flex-wrap: wrap;
+}
+
+.sound-row audio {
+max-width: 300px;
+width: 100%;
+}
+
+.sound-name {
+flex: 1;
+min-width: 150px;
+}
+
+/* =========================
+MOBILE
+========================= */
+
+@media (max-width: 750px) {
+
+.sidebar {
+width: 100%;
+height: auto;
+bottom: auto;
+position: relative;
+border-right: none;
+border-bottom: 1px solid #202a3a;
+padding: 12px;
+}
+
+.admin-layout {
+display: block;
+}
+
+.brand {
+padding: 5px 8px 12px;
+}
+
+.brand small {
+display: inline;
+margin-left: 5px;
+}
+
+.nav {
+flex-direction: row;
+overflow-x: auto;
+}
+
+.nav button {
+white-space: nowrap;
+width: auto;
+}
+
+.sidebar-bottom {
+position: static;
+margin-top: 8px;
+}
+
+.main {
+margin-left: 0;
+width: 100%;
+padding: 18px 12px;
+}
+
+.stats {
+grid-template-columns: 1fr;
+}
+
+.quick-actions {
+grid-template-columns: 1fr;
+}
+
+.form-grid {
+grid-template-columns: 1fr;
+}
+
+.full {
+grid-column: auto;
+}
+
+.item-main {
+align-items: flex-start;
+}
+
+.cover {
+width: 60px;
+height: 78px;
+}
+
+.page-header h1 {
+font-size: 23px;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+LOGIN
+========================= -->
+
+<section id="loginSection">
+
+<div class="login-logo">BSCompany</div>
+
+<div class="login-subtitle">Administration</div>
+
+<div class="box">
+
+<h2>Connexion</h2>
+
+<form id="loginForm">
+
+<label for="loginEmail">Email</label>
+
+<input
+type="email"
+id="loginEmail"
+placeholder="admin@bscompany.com"
+required
+>
+
+<label for="loginPassword">Mot de passe</label>
+
+<input
+type="password"
+id="loginPassword"
+placeholder="••••••••"
+required
+>
+
+<button type="submit">
+Se connecter
+</button>
+
+<p id="loginError"></p>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+ADMIN
+========================= -->
+
+<section id="adminSection" class="hidden">
+
+<div class="admin-layout">
+
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+<div class="brand">
+BSCompany
+<small>Administration</small>
+</div>
+
+<nav class="nav">
+
+<button data-page="dashboard" class="active">
+📊 Dashboard
+</button>
+
+<button data-page="series">
+📚 Œuvres
+</button>
+
+<button data-page="new-series">
+➕ Nouvelle œuvre
+</button>
+
+<button data-page="sounds">
+🎵 Sons
+</button>
+
+<button data-page="carousel">
+🎞️ Carrousel
+</button>
+
+</nav>
+
+<div class="sidebar-bottom">
+
+<button id="logoutBtn" class="danger">
+🚪 Déconnexion
+</button>
+
+</div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+
+<!-- =========================
+DASHBOARD
+========================= -->
+
+<section id="page-dashboard" class="page active">
+
+<div class="page-header">
+
+<h1>Dashboard</h1>
+
+<p>Vue générale de BSCompany.</p>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+
+<div class="stat-label">
+Œuvres
+</div>
+
+<div class="stat-number" id="seriesCount">
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Chapitres
+</div>
+
+<div class="stat-number" id="chaptersCount">
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Sons
+</div>
+
+<div class="stat-number" id="soundsCount">
+0
+</div>
+
+</div>
+
+</div>
+
+
+<div class="box">
+
+<h2>Actions rapides</h2>
+
+<div class="quick-actions">
+
+<button data-page="new-series">
+➕ Créer une œuvre
+</button>
+
+<button data-page="series">
+📚 Voir toutes les œuvres
+</button>
+
+<button data-page="sounds">
+🎵 Gérer les sons
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+SERIES
+========================= -->
+
+<section id="page-series" class="page">
+
+<div class="page-header">
+
+<h1>Œuvres</h1>
+
+<p>Gère les séries et leurs chapitres.</p>
+
+</div>
+
+<div id="seriesList" class="list">
+Chargement...
+</div>
+
+</section>
+
+
+<!-- =========================
+NOUVELLE SERIE
+========================= -->
+
+<section id="page-new-series" class="page">
+
+<div class="page-header">
+
+<h1>Créer une œuvre</h1>
+
+<p>Ajoute une nouvelle série au catalogue.</p>
+
+</div>
+
+
+<div class="box">
+
+<form id="addSeriesForm">
+
+<div class="form-grid">
+
+
+<div>
+
+<label for="seriesTitle">
+Titre *
+</label>
+
+<input
+id="seriesTitle"
+type="text"
+placeholder="Titre de l'œuvre"
+required
+>
+
+</div>
+
+
+<div>
+
+<label for="seriesType">
+Type *
+</label>
+
+<select id="seriesType">
+
+<option value="webcomic">
+Webcomic
+</option>
+
+<option value="novel">
+Novel
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label for="seriesGenre">
+Genre
+</label>
+
+<input
+id="seriesGenre"
+type="text"
+placeholder="Action, Fantastique..."
+>
+
+</div>
+
+
+<div>
+
+<label for="seriesStatus">
+Statut
+</label>
+
+<select id="seriesStatus">
+
+<option value="ongoing">
+En cours
+</option>
+
+<option value="completed">
+Terminé
+</option>
+
+<option value="hiatus">
+En pause
+</option>
+
+</select>
+
+</div>
+
+
+<div class="full">
+
+<label for="seriesDescription">
+Description *
+</label>
+
+<textarea
+id="seriesDescription"
+placeholder="Description de l'œuvre..."
+required
+></textarea>
+
+</div>
+
+
+<div class="full">
+
+<label for="seriesCover">
+Couverture *
+</label>
+
+<input
+id="seriesCover"
+type="file"
+accept="image/*"
+required
+>
+
+</div>
+
+
+</div>
+
+
+<button id="seriesSubmitBtn" type="submit">
+Publier l'œuvre
+</button>
+
+<p id="seriesStatusMsg" class="status"></p>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+MODIFIER UNE OEUVRE
+========================= -->
+
+<section id="page-edit-series" class="page">
+
+<div class="page-header">
+
+<h1>Modifier une œuvre</h1>
+
+<p>Modifie les informations de l'œuvre sélectionnée.</p>
+
+</div>
+
+
+<div class="box">
+
+<form id="editSeriesForm">
+
+<div class="form-grid">
+
+
+<div>
+
+<label for="editSeriesTitle">
+Titre *
+</label>
+
+<input
+id="editSeriesTitle"
+type="text"
+placeholder="Titre de l'œuvre"
+required
+>
+
+</div>
+
+
+<div>
+
+<label for="editSeriesType">
+Type *
+</label>
+
+<select id="editSeriesType">
+
+<option value="webcomic">
+Webcomic
+</option>
+
+<option value="novel">
+Novel
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label for="editSeriesGenre">
+Genre
+</label>
+
+<input
+id="editSeriesGenre"
+type="text"
+placeholder="Action, Fantastique..."
+>
+
+</div>
+
+
+<div>
+
+<label for="editSeriesStatus">
+Statut
+</label>
+
+<select id="editSeriesStatus">
+
+<option value="ongoing">
+En cours
+</option>
+
+<option value="completed">
+Terminé
+</option>
+
+<option value="hiatus">
+En pause
+</option>
+
+</select>
+
+</div>
+
+
+<div class="full">
+
+<label for="editSeriesDescription">
+Description *
+</label>
+
+<textarea
+id="editSeriesDescription"
+placeholder="Description de l'œuvre..."
+required
+></textarea>
+
+</div>
+
+
+<div class="full">
+
+<label for="editSeriesCover">
+Nouvelle couverture
+</label>
+
+<input
+id="editSeriesCover"
+type="file"
+accept="image/*"
+>
+
+<p class="item-meta">
+Laisse vide pour conserver la couverture actuelle.
+</p>
+
+</div>
+
+
+</div>
+
+
+<button id="editSeriesSubmitBtn" type="submit">
+Enregistrer les modifications
+</button>
+
+<button
+id="cancelEditSeriesBtn"
+type="button"
+class="secondary"
+style="margin-left:8px;"
+>
+Annuler
+</button>
+
+
+<p id="editSeriesStatusMsg" class="status"></p>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+CHAPITRES
+========================= -->
+
+<section id="page-chapters" class="page">
+
+<div class="page-header">
+
+<h1>Chapitres</h1>
+
+<p id="chapterSeriesDescription">
+Gestion des chapitres.
+</p>
+
+</div>
+
+
+<div class="selected-work">
+
+<span>
+Œuvre sélectionnée
+</span>
+
+<strong id="selectedSeriesTitle">
+—
+</strong>
+
+</div>
+
+
+<div id="chaptersList" class="list">
+Chargement...
+</div>
+
+<br>
+
+<button id="newChapterBtn">
+➕ Nouveau chapitre
+</button>
+
+</section>
+
+
+<!-- =========================
+NOUVEAU CHAPITRE
+========================= -->
+
+<section id="page-new-chapter" class="page">
+
+<div class="page-header">
+
+<h1>Nouveau chapitre</h1>
+
+<p>
+Ajoute un chapitre à l'œuvre sélectionnée.
+</p>
+
+</div>
+
+
+<div class="selected-work">
+
+<span>
+Œuvre
+</span>
+
+<strong id="newChapterSeriesTitle">
+—
+</strong>
+
+</div>
+
+
+<div class="box">
+
+<form id="addChapterForm">
+
+<div class="form-grid">
+
+
+<!-- NUMÉRO INTERNE -->
+
+<div>
+
+<label for="chapterNumber">
+Numéro interne *
+</label>
+
+<input
+id="chapterNumber"
+type="number"
+min="1"
+required
+>
+
+</div>
+
+
+<!-- NUMÉRO / LIBELLÉ AFFICHÉ -->
+
+<div>
+
+<label for="chapterLabel">
+Numéro / libellé affiché *
+</label>
+
+<input
+id="chapterLabel"
+type="text"
+placeholder="Ex : 10.5, 11, Prologue..."
+required
+>
+
+</div>
+
+
+<!-- TITRE -->
+
+<div>
+
+<label for="chapterTitle">
+Titre *
+</label>
+
+<input
+id="chapterTitle"
+type="text"
+placeholder="Titre du chapitre"
+required
+>
+
+</div>
+
+
+<div class="full">
+
+<label for="chapterContent">
+Contenu *
+</label>
+
+<textarea
+id="chapterContent"
+placeholder="Contenu du chapitre..."
+required
+></textarea>
+
+</div>
+
+
+<div class="full">
+
+<label for="chapterImage">
+Image du chapitre *
+</label>
+
+<input
+id="chapterImage"
+type="file"
+accept="image/*"
+required
+>
+
+</div>
+
+
+<div class="full">
+
+<label for="chapterSound">
+Son d'ambiance
+</label>
+
+<select id="chapterSound">
+
+<option value="">
+Aucun son
+</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+<button id="chapterSubmitBtn" type="submit">
+Publier le chapitre
+</button>
+
+<p id="chapterStatusMsg" class="status"></p>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+SONS
+========================= -->
+
+<section id="page-sounds" class="page">
+
+<div class="page-header">
+
+<h1>Sons</h1>
+
+<p>
+Gère les fichiers audio du bucket Storage.
+</p>
+
+</div>
+
+
+<div class="box">
+
+<h2>
+Ajouter un son
+</h2>
+
+
+<form id="soundForm">
+
+<label for="soundFile">
+Fichier audio
+</label>
+
+<input
+id="soundFile"
+type="file"
+accept="audio/*"
+required
+>
+
+<button id="soundSubmitBtn" type="submit">
+Ajouter le son
+</button>
+
+<p id="soundStatusMsg" class="status"></p>
+
+</form>
+
+</div>
+
+
+<br>
+
+
+<div id="soundsList" class="list">
+Chargement...
+</div>
+
+</section>
+
+
+<!-- =========================
+CARROUSEL
+========================= -->
+
+<section id="page-carousel" class="page">
+
+<div class="page-header">
+
+<h1>Carrousel</h1>
+
+<p>
+Gère les informations et événements du grand carrousel.
+</p>
+
+</div>
+
+
+<div class="box">
+
+<h2>
+Ajouter un contenu
+</h2>
+
+
+<form id="carouselForm">
+
+<div class="form-grid">
+
+
+<div>
+
+<label for="carouselType">
+Type *
+</label>
+
+<select id="carouselType" required>
+
+<option value="information">
+Information
+</option>
+
+<option value="evenement">
+Événement
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label for="carouselDuration">
+Durée d'affichage (secondes) *
+</label>
+
+<input
+id="carouselDuration"
+type="number"
+min="1"
+value="10"
+required
+>
+
+</div>
+
+
+<div class="full">
+
+<label for="carouselTitle">
+Titre *
+</label>
+
+<input
+id="carouselTitle"
+type="text"
+placeholder="Titre de l'information ou de l'événement"
+required
+>
+
+</div>
+
+
+<div class="full">
+
+<label for="carouselDescription">
+Description
+</label>
+
+<textarea
+id="carouselDescription"
+placeholder="Description..."
+></textarea>
+
+</div>
+
+
+<div class="full">
+
+<label for="carouselImage">
+Image
+</label>
+
+<input
+id="carouselImage"
+type="file"
+accept="image/*"
+>
+
+</div>
+
+
+<div>
+
+<label for="carouselButtonText">
+Texte du bouton
+</label>
+
+<input
+id="carouselButtonText"
+type="text"
+placeholder="Ex : Découvrir"
+>
+
+</div>
+
+
+<div>
+
+<label for="carouselButtonUrl">
+Lien du bouton
+</label>
+
+<input
+id="carouselButtonUrl"
+type="text"
+placeholder="https://..."
+>
+
+</div>
+
+
+<div>
+
+<label for="carouselOrder">
+Ordre d'affichage
+</label>
+
+<input
+id="carouselOrder"
+type="number"
+value="0"
+>
+
+</div>
+
+
+<div>
+
+<label for="carouselActive">
+Statut
+</label>
+
+<select id="carouselActive">
+
+<option value="true">
+Actif
+</option>
+
+<option value="false">
+Inactif
+</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+<button id="carouselSubmitBtn" type="submit">
+Ajouter au carrousel
+</button>
+
+<p id="carouselStatusMsg" class="status"></p>
+
+</form>
+
+</div>
+
+
+<br>
+
+
+<div>
+
+<h2>
+Contenus du carrousel
+</h2>
+
+<br>
+
+<div id="carouselList" class="list">
+Chargement...
+</div>
+
+</div>
+
+</section>
+
+
+</main>
+
+</div>
+
+</section>
+
+
+<script
+type="module"
+src="./js/admin.js"
+></script>
+
+</body>
+  </html>
