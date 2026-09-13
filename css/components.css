@@ -632,16 +632,12 @@
 
   .grand-carousel-slide.grand-carousel-information,
   .grand-carousel-slide.grand-carousel-evenement{
-    min-height: 300px;
-
-    padding: 26px 16px;
-
+    min-height: 310px;
+    padding: 26px 14px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
-    gap: 12px;
-
+    gap: 8px;
     border-radius: 18px;
   }
 
@@ -650,9 +646,7 @@
   .grand-carousel-evenement::before{
     top: 14px;
     left: 16px;
-
     padding: 4px 8px;
-
     font-size: 8px;
     letter-spacing: 0.8px;
   }
@@ -665,9 +659,9 @@
   .grand-carousel-evenement > img{
     order: 1;
 
-    width: 47%;
-    height: 235px;
-    max-height: 235px;
+    width: 54%;
+    height: 250px;
+    max-height: 250px;
 
     object-fit: contain;
 
@@ -689,7 +683,7 @@
   .grand-carousel-evenement .grand-carousel-content{
     order: 2;
 
-    width: 53%;
+    width: 46%;
     max-width: none;
 
     padding-top: 25px;
@@ -704,7 +698,7 @@
   .grand-carousel-evenement .grand-carousel-content h2{
     margin: 0 0 7px;
 
-    font-size: 21px;
+    font-size: 20px;
     line-height: 1.12;
 
     letter-spacing: -0.3px;
@@ -713,11 +707,11 @@
   /* Description */
   .grand-carousel-information .grand-carousel-content p,
   .grand-carousel-evenement .grand-carousel-content p{
-    margin: 0 0 12px;
+    margin: 0 0 10px;
 
     max-width: 100%;
 
-    font-size: 11px;
+    font-size: 10.5px;
     line-height: 1.45;
 
     color: rgba(255,255,255,0.72);
@@ -731,13 +725,13 @@
   /* Bouton */
   .grand-carousel-information .grand-carousel-button,
   .grand-carousel-evenement .grand-carousel-button{
-    padding: 8px 11px;
+    padding: 7px 10px;
 
-    border-radius: 9px;
+    border-radius: 8px;
 
     font-size: 10px;
 
-    gap: 6px;
+    gap: 5px;
   }
 
   .grand-carousel-information .grand-carousel-button::before{
@@ -747,4 +741,4 @@
   .grand-carousel-evenement .grand-carousel-button::before{
     font-size: 11px;
   }
-    }
+  }
