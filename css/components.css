@@ -623,31 +623,107 @@
 
     text-align: left;
   }
+/* =====================================================
+   GRAND CARROUSEL — RESPONSIVE MOBILE
+   Annonces / Événements
+   ===================================================== */
 
-  /* Titre plus raisonnable */
-  .grand-carousel-information .grand-carousel-content h2,
-  .grand-carousel-evenement .grand-carousel-content h2{
-    margin: 0 0 8px;
+@media (max-width: 600px){
 
-    font-size: 24px;
-    line-height: 1.12;
-    letter-spacing: -0.4px;
+  .grand-carousel-slide.grand-carousel-information,
+  .grand-carousel-slide.grand-carousel-evenement{
+    min-height: 300px;
+
+    padding: 26px 16px;
+
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    border-radius: 18px;
   }
 
-  /* Description plus compacte */
+  /* Étiquette */
+  .grand-carousel-information::before,
+  .grand-carousel-evenement::before{
+    top: 14px;
+    left: 16px;
+
+    padding: 4px 8px;
+
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+
+  /* =====================================================
+     IMAGE — GAUCHE
+     ===================================================== */
+
+  .grand-carousel-information > img,
+  .grand-carousel-evenement > img{
+    order: 1;
+
+    width: 47%;
+    height: 235px;
+    max-height: 235px;
+
+    object-fit: contain;
+
+    scale: 1;
+
+    flex-shrink: 0;
+
+    margin: 0;
+
+    filter:
+      drop-shadow(0 12px 22px rgba(0,0,0,0.25));
+  }
+
+  /* =====================================================
+     TEXTE — DROITE
+     ===================================================== */
+
+  .grand-carousel-information .grand-carousel-content,
+  .grand-carousel-evenement .grand-carousel-content{
+    order: 2;
+
+    width: 53%;
+    max-width: none;
+
+    padding-top: 25px;
+
+    text-align: left;
+
+    min-width: 0;
+  }
+
+  /* Titre */
+  .grand-carousel-information .grand-carousel-content h2,
+  .grand-carousel-evenement .grand-carousel-content h2{
+    margin: 0 0 7px;
+
+    font-size: 21px;
+    line-height: 1.12;
+
+    letter-spacing: -0.3px;
+  }
+
+  /* Description */
   .grand-carousel-information .grand-carousel-content p,
   .grand-carousel-evenement .grand-carousel-content p{
-    margin: 0 0 14px;
+    margin: 0 0 12px;
 
     max-width: 100%;
 
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.45;
 
     color: rgba(255,255,255,0.72);
 
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -655,10 +731,20 @@
   /* Bouton */
   .grand-carousel-information .grand-carousel-button,
   .grand-carousel-evenement .grand-carousel-button{
-    padding: 9px 14px;
+    padding: 8px 11px;
 
-    border-radius: 10px;
+    border-radius: 9px;
 
-    font-size: 12px;
+    font-size: 10px;
+
+    gap: 6px;
   }
-}
+
+  .grand-carousel-information .grand-carousel-button::before{
+    font-size: 13px;
+  }
+
+  .grand-carousel-evenement .grand-carousel-button::before{
+    font-size: 11px;
+  }
+    }
