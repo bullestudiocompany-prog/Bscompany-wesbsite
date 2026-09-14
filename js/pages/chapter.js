@@ -37,6 +37,191 @@ const chapterId = params.get("id");
 
 let currentChapter = null;
 
+
+/* =========================================================
+   SEO
+========================================================= */
+
+function cleanText(text) {
+  if (!text) {
+    return "";
+  }
+
+  return text
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function truncateText(text, maxLength = 155) {
+  const clean = cleanText(text);
+
+  if (clean.length <= maxLength) {
+    return clean;
+  }
+
+  return `${clean.substring(0, maxLength - 1).trim()}…`;
+}
+
+function setMetaName(name, content) {
+  if (!content) {
+    return;
+  }
+
+  let meta = document.querySelector(
+    `meta[name="${name}"]`
+  );
+
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", name);
+    document.head.appendChild(meta);
+  }
+
+  meta.setAttribute("content", content);
+}
+
+function setMetaProperty(property, content) {
+  if (!content) {
+    return;
+  }
+
+  let meta = document.querySelector(
+    `meta[property="${property}"]`
+  );
+
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("property", property);
+    document.head.appendChild(meta);
+  }
+
+  meta.setAttribute("content", content);
+}
+
+function setCanonical(url) {
+  let canonical = document.querySelector(
+    'link[rel="canonical"]'
+  );
+
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.setAttribute("rel", "canonical");
+    document.head.appendChild(canonical);
+  }
+
+  canonical.setAttribute("href", url);
+}
+
+function setChapterSEO(chapter) {
+  const series = chapter.series || {};
+
+  const title =
+    chapter.title ||
+    (
+      chapter.chapter_number !== null &&
+      chapter.chapter_number !== undefined
+        ? `Chapitre ${chapter.chapter_number}`
+        : "Chapitre"
+    );
+
+  const seriesName =
+    series.title || "BSCompany";
+
+  const number =
+    chapter.chapter_number !== null &&
+    chapter.chapter_number !== undefined
+      ? `Chapitre ${chapter.chapter_number}`
+      : "";
+
+  const pageTitle = number
+    ? `${seriesName} — ${number} : ${title} | BSCompany`
+    : `${seriesName} — ${title} | BSCompany`;
+
+  const chapterContent = cleanText(
+    chapter.content || ""
+  );
+
+  const seriesDescription = cleanText(
+    series.description || ""
+  );
+
+  let description = chapterContent;
+
+  if (!description) {
+    description = seriesDescription;
+  }
+
+  if (!description) {
+    description =
+      `Lisez ${title} de ${seriesName} sur BSCompany et découvrez cette histoire ainsi que ses prochains chapitres.`;
+  }
+
+  description = truncateText(description, 155);
+
+  const canonicalUrl =
+    `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(chapter.id)}`;
+
+  document.title = pageTitle;
+
+  setMetaName(
+    "description",
+    description
+  );
+
+  setMetaName(
+    "robots",
+    "index, follow"
+  );
+
+  setCanonical(canonicalUrl);
+
+  setMetaProperty(
+    "og:type",
+    "article"
+  );
+
+  setMetaProperty(
+    "og:title",
+    pageTitle
+  );
+
+  setMetaProperty(
+    "og:description",
+    description
+  );
+
+  setMetaProperty(
+    "og:url",
+    canonicalUrl
+  );
+
+  if (chapter.chapter_image_url) {
+    setMetaProperty(
+      "og:image",
+      chapter.chapter_image_url
+    );
+  } else if (
+    Array.isArray(chapter.image_urls) &&
+    chapter.image_urls.length > 0
+  ) {
+    setMetaProperty(
+      "og:image",
+      chapter.image_urls[0]
+    );
+  } else if (series.cover_url) {
+    setMetaProperty(
+      "og:image",
+      series.cover_url
+    );
+  }
+}
+
+
+/* =========================================================
+   CHARGEMENT DU CHAPITRE
+========================================================= */
+
 async function loadChapter() {
   console.log("🔵 loadChapter démarre");
 
@@ -56,16 +241,24 @@ async function loadChapter() {
         id,
         title,
         type,
-        cover_url
+        cover_url,
+        description
       )
     `)
     .eq("id", chapterId)
     .single();
 
-  console.log("🟡 Réponse Supabase :", { data, error });
+  console.log("🟡 Réponse Supabase :", {
+    data,
+    error
+  });
 
   if (error || !data) {
-    console.error("🔴 Erreur chapitre :", error);
+    console.error(
+      "🔴 Erreur chapitre :",
+      error
+    );
+
     showError();
     return;
   }
@@ -74,17 +267,28 @@ async function loadChapter() {
 
   currentChapter = data;
 
+  /*
+   * SEO dynamique
+   */
+  setChapterSEO(data);
+
   renderChapter(data);
 
-  console.log("🟢 renderChapter terminé");
+  console.log(
+    "🟢 renderChapter terminé"
+  );
 
   await loadChapterNavigation(data);
 
-  console.log("🟢 navigation terminée");
+  console.log(
+    "🟢 navigation terminée"
+  );
 
   setupAudio(data);
 
-  console.log("🟢 audio terminé");
+  console.log(
+    "🟢 audio terminé"
+  );
 
   loading.hidden = true;
   reader.hidden = false;
@@ -93,97 +297,155 @@ async function loadChapter() {
     readerControls.hidden = false;
   }
 
-  console.log("✅ LECTEUR AFFICHÉ");
+  console.log(
+    "✅ LECTEUR AFFICHÉ"
+  );
 
   registerView(data);
 }
 
-function renderChapter(chapter) {
-  const number = chapter.chapter_number ?? "";
 
-  chapterTitle.textContent = chapter.title || `Chapitre ${number}`;
+/* =========================================================
+   AFFICHAGE DU CHAPITRE
+========================================================= */
+
+function renderChapter(chapter) {
+  const number =
+    chapter.chapter_number ?? "";
+
+  chapterTitle.textContent =
+    chapter.title ||
+    `Chapitre ${number}`;
 
   if (number !== "") {
-    chapterNumber.textContent = `Chapitre ${number}`;
-    paperChapterNumber.textContent = `Chapitre ${number}`;
+    chapterNumber.textContent =
+      `Chapitre ${number}`;
+
+    paperChapterNumber.textContent =
+      `Chapitre ${number}`;
   } else {
     chapterNumber.textContent = "";
     paperChapterNumber.textContent = "";
   }
 
-  seriesTitle.textContent = chapter.series?.title || "";
+  seriesTitle.textContent =
+    chapter.series?.title || "";
 
-  const type = chapter.series?.type || "";
+  const type =
+    chapter.series?.type || "";
 
   if (type === "novel") {
-    chapterType.textContent = "Roman";
-  } else if (type === "webcomic" || type === "webtoon") {
-    chapterType.textContent = "Webcomic";
+    chapterType.textContent =
+      "Roman";
+  } else if (
+    type === "webcomic" ||
+    type === "webtoon"
+  ) {
+    chapterType.textContent =
+      "Webcomic";
   } else {
-    chapterType.textContent = type;
+    chapterType.textContent =
+      type;
   }
 
   if (chapter.series?.id) {
-    backToSeries.href = `serie.html?id=${encodeURIComponent(chapter.series.id)}`;
+    backToSeries.href =
+      `serie.html?id=${encodeURIComponent(
+        chapter.series.id
+      )}`;
   }
 
-  const mainImage = chapter.chapter_image_url || null;
+  const mainImage =
+    chapter.chapter_image_url || null;
 
   if (mainImage) {
     chapterImage.src = mainImage;
-    chapterImage.alt = chapter.title || "Image du chapitre";
+
+    chapterImage.alt =
+      chapter.title ||
+      "Image du chapitre";
+
     chapterImage.hidden = false;
 
-    chapterBackground.src = mainImage;
+    chapterBackground.src =
+      mainImage;
+
     chapterBackground.alt = "";
   } else {
-    let fallbackImages = chapter.image_urls || [];
+    let fallbackImages =
+      chapter.image_urls || [];
 
     if (typeof fallbackImages === "string") {
       try {
-        fallbackImages = JSON.parse(fallbackImages);
+        fallbackImages =
+          JSON.parse(fallbackImages);
       } catch {
-        fallbackImages = [fallbackImages];
+        fallbackImages =
+          [fallbackImages];
       }
     }
 
-    if (Array.isArray(fallbackImages) && fallbackImages.length > 0) {
-      chapterImage.src = fallbackImages[0];
-      chapterImage.alt = chapter.title || "Image du chapitre";
+    if (
+      Array.isArray(fallbackImages) &&
+      fallbackImages.length > 0
+    ) {
+      chapterImage.src =
+        fallbackImages[0];
+
+      chapterImage.alt =
+        chapter.title ||
+        "Image du chapitre";
+
       chapterImage.hidden = false;
 
-      chapterBackground.src = fallbackImages[0];
+      chapterBackground.src =
+        fallbackImages[0];
     } else {
       chapterImage.hidden = true;
-      chapterBackground.removeAttribute("src");
+
+      chapterBackground.removeAttribute(
+        "src"
+      );
     }
   }
 
   chapterText.innerHTML = "";
 
   if (chapter.content) {
-    const paragraphs = chapter.content
-      .split(/\n\s*\n/)
-      .map(paragraph => paragraph.trim())
-      .filter(Boolean);
+    const paragraphs =
+      chapter.content
+        .split(/\n\s*\n/)
+        .map(paragraph =>
+          paragraph.trim()
+        )
+        .filter(Boolean);
 
     paragraphs.forEach(paragraph => {
-      const p = document.createElement("p");
+      const p =
+        document.createElement("p");
 
-      const parts = paragraph.split(/(https?:\/\/[^\s<]+)/g);
+      const parts =
+        paragraph.split(
+          /(https?:\/\/[^\s<]+)/g
+        );
 
       parts.forEach(part => {
-        if (/^https?:\/\/[^\s<]+$/.test(part)) {
-          // Création du lien
-          const link = document.createElement("a");
+        if (
+          /^https?:\/\/[^\s<]+$/.test(
+            part
+          )
+        ) {
+          const link =
+            document.createElement("a");
+
           link.href = part;
           link.textContent = part;
           link.target = "_blank";
-          link.rel = "noopener noreferrer";
+          link.rel =
+            "noopener noreferrer";
 
           p.appendChild(link);
         } else {
-          // Texte normal
           p.appendChild(
             document.createTextNode(part)
           );
@@ -193,18 +455,24 @@ function renderChapter(chapter) {
       chapterText.appendChild(p);
     });
   } else {
-    const p = document.createElement("p");
-    p.textContent = "Ce chapitre ne contient pas encore de texte.";
+    const p =
+      document.createElement("p");
+
+    p.textContent =
+      "Ce chapitre ne contient pas encore de texte.";
+
     chapterText.appendChild(p);
   }
 
   chapterImages.innerHTML = "";
 
-  let images = chapter.image_urls || [];
+  let images =
+    chapter.image_urls || [];
 
   if (typeof images === "string") {
     try {
-      images = JSON.parse(images);
+      images =
+        JSON.parse(images);
     } catch {
       images = [images];
     }
@@ -215,60 +483,96 @@ function renderChapter(chapter) {
   }
 
   images
-    .filter(url => url && url !== chapter.chapter_image_url)
+    .filter(
+      url =>
+        url &&
+        url !== chapter.chapter_image_url
+    )
     .forEach(url => {
-      const img = document.createElement("img");
+      const img =
+        document.createElement("img");
 
       img.src = url;
-      img.alt = chapter.title || "Illustration du chapitre";
+
+      img.alt =
+        chapter.title ||
+        "Illustration du chapitre";
+
       img.loading = "lazy";
 
       chapterImages.appendChild(img);
     });
 }
 
-async function loadChapterNavigation(chapter) {
-  const seriesId = chapter.series_id;
+
+/* =========================================================
+   NAVIGATION ENTRE CHAPITRES
+========================================================= */
+
+async function loadChapterNavigation(
+  chapter
+) {
+  const seriesId =
+    chapter.series_id;
 
   if (!seriesId) {
     return;
   }
 
-  const { data: chapters, error } = await supabase
-    .from("chapters")
-    .select(`
-      id,
-      chapter_number,
-      title
-    `)
-    .eq("series_id", seriesId)
-    .order("chapter_number", { ascending: true });
+  const { data: chapters, error } =
+    await supabase
+      .from("chapters")
+      .select(`
+        id,
+        chapter_number,
+        title
+      `)
+      .eq("series_id", seriesId)
+      .order("chapter_number", {
+        ascending: true
+      });
 
   if (error || !chapters) {
-    console.error("Navigation chapitres :", error);
+    console.error(
+      "Navigation chapitres :",
+      error
+    );
+
     return;
   }
 
-  const currentIndex = chapters.findIndex(
-    chapterItem => chapterItem.id === chapter.id
-  );
+  const currentIndex =
+    chapters.findIndex(
+      chapterItem =>
+        chapterItem.id === chapter.id
+    );
 
   if (currentIndex > 0) {
-    const previous = chapters[currentIndex - 1];
+    const previous =
+      chapters[currentIndex - 1];
 
     previousChapter.href =
-      `chapter.html?id=${encodeURIComponent(previous.id)}`;
+      `chapter.html?id=${encodeURIComponent(
+        previous.id
+      )}`;
 
     previousChapter.hidden = false;
   } else {
     previousChapter.hidden = true;
   }
 
-  if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
-    const next = chapters[currentIndex + 1];
+  if (
+    currentIndex !== -1 &&
+    currentIndex <
+      chapters.length - 1
+  ) {
+    const next =
+      chapters[currentIndex + 1];
 
     nextChapter.href =
-      `chapter.html?id=${encodeURIComponent(next.id)}`;
+      `chapter.html?id=${encodeURIComponent(
+        next.id
+      )}`;
 
     nextChapter.hidden = false;
   } else {
@@ -276,12 +580,24 @@ async function loadChapterNavigation(chapter) {
   }
 }
 
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
 function setupAudio(chapter) {
-  if (!audio || !audioSection || !playButton) {
+  if (
+    !audio ||
+    !audioSection ||
+    !playButton
+  ) {
     return;
   }
 
-  const soundUrl = chapter.sound_url || chapter.sound_id || null;
+  const soundUrl =
+    chapter.sound_url ||
+    chapter.sound_id ||
+    null;
 
   if (!soundUrl) {
     audioSection.hidden = true;
@@ -290,56 +606,99 @@ function setupAudio(chapter) {
 
   audio.src = soundUrl;
   audio.loop = true;
-  audio.volume = Number(volume?.value || 1);
+
+  audio.volume =
+    Number(volume?.value || 1);
 
   audioSection.hidden = false;
 
-  playButton.addEventListener("click", async () => {
-    if (audio.paused) {
-      try {
-        await audio.play();
+  playButton.addEventListener(
+    "click",
+    async () => {
+      if (audio.paused) {
+        try {
+          await audio.play();
+          updatePlayButton();
+        } catch (error) {
+          console.warn(
+            "Lecture audio impossible :",
+            error
+          );
+        }
+      } else {
+        audio.pause();
         updatePlayButton();
-      } catch (error) {
-        console.warn("Lecture audio impossible :", error);
       }
-    } else {
-      audio.pause();
-      updatePlayButton();
     }
-  });
+  );
 
-  audio.addEventListener("canplay", attemptAutoplay, { once: true });
+  audio.addEventListener(
+    "canplay",
+    attemptAutoplay,
+    { once: true }
+  );
 
-  audio.addEventListener("timeupdate", updateAudioProgress);
-  audio.addEventListener("loadedmetadata", updateAudioProgress);
+  audio.addEventListener(
+    "timeupdate",
+    updateAudioProgress
+  );
 
-  progress?.addEventListener("input", () => {
-    if (!audio.duration) {
-      return;
+  audio.addEventListener(
+    "loadedmetadata",
+    updateAudioProgress
+  );
+
+  progress?.addEventListener(
+    "input",
+    () => {
+      if (!audio.duration) {
+        return;
+      }
+
+      audio.currentTime =
+        (Number(progress.value) / 100) *
+        audio.duration;
     }
+  );
 
-    audio.currentTime =
-      (Number(progress.value) / 100) * audio.duration;
-  });
+  muteButton?.addEventListener(
+    "click",
+    () => {
+      audio.muted =
+        !audio.muted;
 
-  muteButton?.addEventListener("click", () => {
-    audio.muted = !audio.muted;
-    updateMuteButton();
-  });
-
-  volume?.addEventListener("input", () => {
-    audio.volume = Number(volume.value);
-
-    if (audio.volume > 0) {
-      audio.muted = false;
+      updateMuteButton();
     }
+  );
 
-    updateMuteButton();
-  });
+  volume?.addEventListener(
+    "input",
+    () => {
+      audio.volume =
+        Number(volume.value);
 
-  audio.addEventListener("play", updatePlayButton);
-  audio.addEventListener("pause", updatePlayButton);
-  audio.addEventListener("ended", updatePlayButton);
+      if (audio.volume > 0) {
+        audio.muted = false;
+      }
+
+      updateMuteButton();
+    }
+  );
+
+  audio.addEventListener(
+    "play",
+    updatePlayButton
+  );
+
+  audio.addEventListener(
+    "pause",
+    updatePlayButton
+  );
+
+  audio.addEventListener(
+    "ended",
+    updatePlayButton
+  );
 
   updatePlayButton();
   updateMuteButton();
@@ -359,29 +718,46 @@ function updatePlayButton() {
     return;
   }
 
-  const playIcon = playButton.querySelector(".play-icon");
-  const pauseIcon = playButton.querySelector(".pause-icon");
+  const playIcon =
+    playButton.querySelector(
+      ".play-icon"
+    );
+
+  const pauseIcon =
+    playButton.querySelector(
+      ".pause-icon"
+    );
 
   if (audio.paused) {
     if (playIcon) {
-      playIcon.style.display = "block";
+      playIcon.style.display =
+        "block";
     }
 
     if (pauseIcon) {
-      pauseIcon.style.display = "none";
+      pauseIcon.style.display =
+        "none";
     }
 
-    playButton.setAttribute("aria-label", "Lire");
+    playButton.setAttribute(
+      "aria-label",
+      "Lire"
+    );
   } else {
     if (playIcon) {
-      playIcon.style.display = "none";
+      playIcon.style.display =
+        "none";
     }
 
     if (pauseIcon) {
-      pauseIcon.style.display = "block";
+      pauseIcon.style.display =
+        "block";
     }
 
-    playButton.setAttribute("aria-label", "Mettre en pause");
+    playButton.setAttribute(
+      "aria-label",
+      "Mettre en pause"
+    );
   }
 }
 
@@ -390,68 +766,110 @@ function updateMuteButton() {
     return;
   }
 
-  const svg = muteButton.querySelector("svg");
+  const svg =
+    muteButton.querySelector(
+      "svg"
+    );
 
   if (!svg) {
     return;
   }
 
-  if (audio.muted || audio.volume === 0) {
+  if (
+    audio.muted ||
+    audio.volume === 0
+  ) {
     svg.innerHTML = `
       <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
       <path d="m18 9-5 6M13 9l5 6"/>
     `;
 
-    muteButton.setAttribute("aria-label", "Activer le son");
+    muteButton.setAttribute(
+      "aria-label",
+      "Activer le son"
+    );
   } else {
     svg.innerHTML = `
       <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
       <path d="M17 9.5a4 4 0 0 1 0 5M19.5 7a7.5 7.5 0 0 1 0 10"/>
     `;
 
-    muteButton.setAttribute("aria-label", "Couper le son");
+    muteButton.setAttribute(
+      "aria-label",
+      "Couper le son"
+    );
   }
 }
 
 function updateAudioProgress() {
-  if (!audio || !progress) {
+  if (
+    !audio ||
+    !progress
+  ) {
     return;
   }
 
-  if (audio.duration && Number.isFinite(audio.duration)) {
+  if (
+    audio.duration &&
+    Number.isFinite(audio.duration)
+  ) {
     progress.value =
-      (audio.currentTime / audio.duration) * 100;
+      (audio.currentTime /
+        audio.duration) *
+      100;
   } else {
     progress.value = 0;
   }
 
   if (audioTime) {
-    audioTime.textContent = formatTime(audio.currentTime);
+    audioTime.textContent =
+      formatTime(
+        audio.currentTime
+      );
   }
 }
 
 function formatTime(seconds) {
-  if (!seconds || !Number.isFinite(seconds)) {
+  if (
+    !seconds ||
+    !Number.isFinite(seconds)
+  ) {
     return "0:00";
   }
 
-  const minutes = Math.floor(seconds / 60);
+  const minutes =
+    Math.floor(seconds / 60);
 
-  const remaining = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, "0");
+  const remaining =
+    Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
 
   return `${minutes}:${remaining}`;
 }
 
-function getVisitorId() {
-  const STORAGE_KEY = "bscompany_visitor_id";
 
-  let visitorId = localStorage.getItem(STORAGE_KEY);
+/* =========================================================
+   VUES
+========================================================= */
+
+function getVisitorId() {
+  const STORAGE_KEY =
+    "bscompany_visitor_id";
+
+  let visitorId =
+    localStorage.getItem(
+      STORAGE_KEY
+    );
 
   if (!visitorId) {
-    visitorId = crypto.randomUUID();
-    localStorage.setItem(STORAGE_KEY, visitorId);
+    visitorId =
+      crypto.randomUUID();
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      visitorId
+    );
   }
 
   return visitorId;
@@ -459,82 +877,140 @@ function getVisitorId() {
 
 async function registerView(chapter) {
   try {
-    console.log("👁️ Enregistrement de la vue...");
+    console.log(
+      "👁️ Enregistrement de la vue..."
+    );
 
-    const visitorId = getVisitorId();
+    const visitorId =
+      getVisitorId();
 
-    const { error: insertError } = await supabase
-      .from("chapter_views")
-      .upsert(
-        {
-          chapter_id: chapter.id,
-          visitor_id: visitorId
-        },
-        {
-          onConflict: "chapter_id,visitor_id",
-          ignoreDuplicates: true
-        }
-      );
+    const { error: insertError } =
+      await supabase
+        .from("chapter_views")
+        .upsert(
+          {
+            chapter_id:
+              chapter.id,
+            visitor_id:
+              visitorId
+          },
+          {
+            onConflict:
+              "chapter_id,visitor_id",
+            ignoreDuplicates:
+              true
+          }
+        );
 
     if (insertError) {
-      console.error("Erreur enregistrement vue :", insertError);
+      console.error(
+        "Erreur enregistrement vue :",
+        insertError
+      );
+
       return;
     }
 
-    const { count, error: countError } = await supabase
+    const {
+      count,
+      error: countError
+    } = await supabase
       .from("chapter_views")
       .select("id", {
         count: "exact",
         head: true
       })
-      .eq("chapter_id", chapter.id);
+      .eq(
+        "chapter_id",
+        chapter.id
+      );
 
     if (countError) {
-      console.error("Erreur comptage vues :", countError);
+      console.error(
+        "Erreur comptage vues :",
+        countError
+      );
+
       return;
     }
 
     if (chapterViews) {
-      chapterViews.textContent = count ?? 0;
+      chapterViews.textContent =
+        count ?? 0;
     }
 
-    console.log("✅ Vue enregistrée");
+    console.log(
+      "✅ Vue enregistrée"
+    );
   } catch (error) {
-    console.error("Erreur système des vues :", error);
+    console.error(
+      "Erreur système des vues :",
+      error
+    );
   }
 }
 
-async function setupLikeButton(chapter) {
-  if (!likeButton || !likeCount) {
+
+/* =========================================================
+   LIKES
+========================================================= */
+
+async function setupLikeButton(
+  chapter
+) {
+  if (
+    !likeButton ||
+    !likeCount
+  ) {
     return;
   }
 
-  const visitorId = getVisitorId();
+  const visitorId =
+    getVisitorId();
 
-  const { count, error: countError } = await supabase
+  const {
+    count,
+    error: countError
+  } = await supabase
     .from("likes")
     .select("*", {
       count: "exact",
       head: true
     })
-    .eq("chapter_id", chapter.id);
+    .eq(
+      "chapter_id",
+      chapter.id
+    );
 
   if (countError) {
-    console.error("Erreur chargement likes :", countError);
+    console.error(
+      "Erreur chargement likes :",
+      countError
+    );
+
     likeCount.textContent = "0";
   } else {
-    likeCount.textContent = count ?? 0;
+    likeCount.textContent =
+      count ?? 0;
   }
 
   let visitorLiked = false;
 
-  const { data: existingLike, error: existingLikeError } =
-    await supabase
-      .from("likes")
-      .select("chapter_id")
-      .eq("chapter_id", chapter.id)
-      .eq("visitor_id", visitorId)
-      .maybeSingle();
+  const {
+    data: existingLike,
+    error: existingLikeError
+  } = await supabase
+    .from("likes")
+    .select("chapter_id")
+    .eq(
+      "chapter_id",
+      chapter.id
+    )
+    .eq(
+      "visitor_id",
+      visitorId
+    )
+    .maybeSingle();
 
   if (existingLikeError) {
     console.error(
@@ -542,105 +1018,163 @@ async function setupLikeButton(chapter) {
       existingLikeError
     );
   } else {
-    visitorLiked = !!existingLike;
+    visitorLiked =
+      !!existingLike;
   }
 
-  updateLikeButton(visitorLiked);
+  updateLikeButton(
+    visitorLiked
+  );
 
-  likeButton.onclick = async () => {
-    likeButton.disabled = true;
+  likeButton.onclick =
+    async () => {
+      likeButton.disabled =
+        true;
 
-    try {
-      if (visitorLiked) {
-        const { error } = await supabase
-          .from("likes")
-          .delete()
-          .eq("chapter_id", chapter.id)
-          .eq("visitor_id", visitorId);
+      try {
+        if (visitorLiked) {
+          const { error } =
+            await supabase
+              .from("likes")
+              .delete()
+              .eq(
+                "chapter_id",
+                chapter.id
+              )
+              .eq(
+                "visitor_id",
+                visitorId
+              );
 
-        if (error) {
-          throw error;
+          if (error) {
+            throw error;
+          }
+
+          visitorLiked = false;
+        } else {
+          const { error } =
+            await supabase
+              .from("likes")
+              .insert({
+                user_id: null,
+                visitor_id:
+                  visitorId,
+                chapter_id:
+                  chapter.id,
+                profil_id: null,
+                series_id:
+                  chapter.series_id
+              });
+
+          if (error) {
+            throw error;
+          }
+
+          visitorLiked = true;
         }
 
-        visitorLiked = false;
-      } else {
-        const { error } = await supabase
+        const {
+          count,
+          error: refreshError
+        } = await supabase
           .from("likes")
-          .insert({
-            user_id: null,
-            visitor_id: visitorId,
-            chapter_id: chapter.id,
-            profil_id: null,
-            series_id: chapter.series_id
-          });
+          .select("*", {
+            count: "exact",
+            head: true
+          })
+          .eq(
+            "chapter_id",
+            chapter.id
+          );
 
-        if (error) {
-          throw error;
+        if (refreshError) {
+          throw refreshError;
         }
 
-        visitorLiked = true;
+        likeCount.textContent =
+          count ?? 0;
+
+        updateLikeButton(
+          visitorLiked
+        );
+      } catch (error) {
+        console.error(
+          "Erreur Like :",
+          error
+        );
+
+        alert(
+          "ERREUR LIKE\n\n" +
+          "Message : " +
+          (
+            error?.message ||
+            "Aucun message"
+          ) +
+          "\n\n" +
+          "Code : " +
+          (
+            error?.code ||
+            "Aucun code"
+          ) +
+          "\n\n" +
+          "Details : " +
+          (
+            error?.details ||
+            "Aucun détail"
+          ) +
+          "\n\n" +
+          "Hint : " +
+          (
+            error?.hint ||
+            "Aucun hint"
+          )
+        );
+      } finally {
+        likeButton.disabled =
+          false;
       }
-
-      const { count, error: refreshError } = await supabase
-        .from("likes")
-        .select("*", {
-          count: "exact",
-          head: true
-        })
-        .eq("chapter_id", chapter.id);
-
-      if (refreshError) {
-        throw refreshError;
-      }
-
-      likeCount.textContent = count ?? 0;
-
-      updateLikeButton(visitorLiked);
-    } catch (error) {
-      console.error("Erreur Like :", error);
-
-      alert(
-        "ERREUR LIKE\n\n" +
-        "Message : " +
-        (error?.message || "Aucun message") +
-        "\n\n" +
-        "Code : " +
-        (error?.code || "Aucun code") +
-        "\n\n" +
-        "Details : " +
-        (error?.details || "Aucun détail") +
-        "\n\n" +
-        "Hint : " +
-        (error?.hint || "Aucun hint")
-      );
-    } finally {
-      likeButton.disabled = false;
-    }
-  };
+    };
 }
 
-function updateLikeButton(isLiked) {
-  if (!likeButton || !likeIcon) {
+function updateLikeButton(
+  isLiked
+) {
+  if (
+    !likeButton ||
+    !likeIcon
+  ) {
     return;
   }
 
   if (isLiked) {
-    likeIcon.textContent = "♥";
+    likeIcon.textContent =
+      "♥";
 
-    likeButton.classList.add("liked");
+    likeButton.classList.add(
+      "liked"
+    );
 
-    likeButton.setAttribute("aria-pressed", "true");
+    likeButton.setAttribute(
+      "aria-pressed",
+      "true"
+    );
 
     likeButton.setAttribute(
       "aria-label",
       "Retirer le Like"
     );
   } else {
-    likeIcon.textContent = "♡";
+    likeIcon.textContent =
+      "♡";
 
-    likeButton.classList.remove("liked");
+    likeButton.classList.remove(
+      "liked"
+    );
 
-    likeButton.setAttribute("aria-pressed", "false");
+    likeButton.setAttribute(
+      "aria-pressed",
+      "false"
+    );
 
     likeButton.setAttribute(
       "aria-label",
@@ -649,23 +1183,38 @@ function updateLikeButton(isLiked) {
   }
 }
 
+
+/* =========================================================
+   COMMENTAIRES
+========================================================= */
+
 function setupComments() {
   if (!commentButton) {
     return;
   }
 
-  commentButton.addEventListener("click", () => {
-    const commentsSection =
-      document.getElementById("commentsSection");
+  commentButton.addEventListener(
+    "click",
+    () => {
+      const commentsSection =
+        document.getElementById(
+          "commentsSection"
+        );
 
-    if (commentsSection) {
-      commentsSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      if (commentsSection) {
+        commentsSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
     }
-  });
+  );
 }
+
+
+/* =========================================================
+   ERREUR
+========================================================= */
 
 function showError() {
   loading.hidden = true;
@@ -678,30 +1227,64 @@ function showError() {
   errorBox.hidden = false;
 }
 
-const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-const navLinks = document.getElementById("navLinks");
 
-if (mobileMenuBtn && navLinks) {
-  mobileMenuBtn.addEventListener("click", () => {
-    const opened =
-      navLinks.classList.toggle("mobile-open");
+/* =========================================================
+   MENU MOBILE
+========================================================= */
 
-    mobileMenuBtn.setAttribute(
-      "aria-expanded",
-      opened ? "true" : "false"
-    );
-  });
+const mobileMenuBtn =
+  document.getElementById(
+    "mobileMenuBtn"
+  );
+
+const navLinks =
+  document.getElementById(
+    "navLinks"
+  );
+
+if (
+  mobileMenuBtn &&
+  navLinks
+) {
+  mobileMenuBtn.addEventListener(
+    "click",
+    () => {
+      const opened =
+        navLinks.classList.toggle(
+          "mobile-open"
+        );
+
+      mobileMenuBtn.setAttribute(
+        "aria-expanded",
+        opened
+          ? "true"
+          : "false"
+      );
+    }
+  );
 }
 
+
+/* =========================================================
+   DÉMARRAGE
+========================================================= */
+
 async function startReader() {
-  console.log("🚀 Démarrage du lecteur");
+  console.log(
+    "🚀 Démarrage du lecteur"
+  );
 
   await loadChapter();
 
-  console.log("🏁 loadChapter terminé");
+  console.log(
+    "🏁 loadChapter terminé"
+  );
 
   if (currentChapter) {
-    setupLikeButton(currentChapter);
+    setupLikeButton(
+      currentChapter
+    );
+
     setupComments();
   }
 }
