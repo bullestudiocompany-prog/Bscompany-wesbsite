@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Pages principales -->
 
   <url>
     <loc>https://bscompany.vercel.app/</loc>
@@ -19,6 +22,45 @@
 
   <url>
     <loc>https://bscompany.vercel.app/a-propos.html</loc>
+  </url>
+
+
+  <!-- Œuvres -->
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=450db992-a1a0-420c-8dba-3498bc763d17</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=034b0324-1dd1-43ed-85b9-b1cfdb5123d6</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=5f9b2687-4cb8-4f5a-8349-658a10607b38</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=04ec9d73-b860-4c3d-a7fe-e146797a02f6</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=d4242226-0748-4da4-bc42-6bd132550382</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=e097b67c-50c8-403b-aa42-82d29a3dac7c</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=974693ee-f1e4-4e83-8f58-2e0ca4554eaa</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=eafbc2a7-ac41-4c53-8c7a-fe9b5ec170c3</loc>
+  </url>
+
+  <url>
+    <loc>https://bscompany.vercel.app/serie.html?id=825a3de2-53c6-4649-822c-a28690c20fde</loc>
   </url>
 
 </urlset>
