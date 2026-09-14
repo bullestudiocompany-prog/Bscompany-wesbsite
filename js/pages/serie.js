@@ -6,10 +6,108 @@ const headerContainer = document.getElementById('seriesHeader');
 const chaptersContainer = document.getElementById('chaptersList');
 const chaptersCountEl = document.getElementById('chaptersCount');
 
+/* =========================================================
+   URL
+========================================================= */
+
 function getSeriesIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get('id');
 }
+
+/* =========================================================
+   SEO DYNAMIQUE
+========================================================= */
+
+function setMetaName(name, content) {
+  let meta = document.querySelector(`meta[name="${name}"]`);
+
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', name);
+    document.head.appendChild(meta);
+  }
+
+  meta.setAttribute('content', content);
+}
+
+function setMetaProperty(property, content) {
+  let meta = document.querySelector(`meta[property="${property}"]`);
+
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('property', property);
+    document.head.appendChild(meta);
+  }
+
+  meta.setAttribute('content', content);
+}
+
+function setCanonical(url) {
+  let canonical = document.querySelector('link[rel="canonical"]');
+
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+
+  canonical.setAttribute('href', url);
+}
+
+function cleanDescription(text) {
+  if (!text) {
+    return '';
+  }
+
+  return text
+    .toString()
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function setSeriesSEO(series, seriesId) {
+  const title = series.title
+    ? `${series.title} — BSCompany`
+    : 'BSCompany — Œuvre';
+
+  const rawDescription = cleanDescription(series.description);
+
+  const description = rawDescription
+    ? rawDescription.slice(0, 155)
+    : `Découvrez ${series.title || 'cette œuvre'} sur BSCompany et explorez ses chapitres.`;
+
+  /*
+     URL canonique exacte de l'œuvre.
+     On conserve le paramètre id car il fait partie
+     de l'architecture actuelle de serie.html.
+  */
+  const canonicalUrl =
+    `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(seriesId)}`;
+
+  /* Title */
+  document.title = title;
+
+  /* Meta description */
+  setMetaName('description', description);
+
+  /* Robots */
+  setMetaName('robots', 'index, follow');
+
+  /* Open Graph */
+  setMetaProperty('og:type', 'website');
+  setMetaProperty('og:title', title);
+  setMetaProperty('og:description', description);
+  setMetaProperty('og:url', canonicalUrl);
+
+  /* Canonical */
+  setCanonical(canonicalUrl);
+}
+
+/* =========================================================
+   TYPE DE L'ŒUVRE
+========================================================= */
 
 function typeLabel(rawType) {
   const slug = (rawType || 'webnovel').toString().trim().toLowerCase();
@@ -262,7 +360,13 @@ async function loadSeriePage() {
   }
 
   /* ---------------------------------------------------------
-     2. Calculer les vraies vues depuis chapter_views
+     2. SEO de l'œuvre
+  --------------------------------------------------------- */
+
+  setSeriesSEO(series, seriesId);
+
+  /* ---------------------------------------------------------
+     3. Calculer les vraies vues depuis chapter_views
   --------------------------------------------------------- */
 
   const totalViews = await getSeriesViews(seriesId);
@@ -275,7 +379,7 @@ async function loadSeriePage() {
   );
 
   /* ---------------------------------------------------------
-     3. Calculer les vrais likes depuis likes
+     4. Calculer les vrais likes depuis likes
   --------------------------------------------------------- */
 
   const totalLikes = await getSeriesLikes(seriesId);
@@ -304,13 +408,13 @@ async function loadSeriePage() {
   };
 
   /* ---------------------------------------------------------
-     4. Afficher l'en-tête
+     5. Afficher l'en-tête
   --------------------------------------------------------- */
 
   renderSeriesHeader(seriesWithStats);
 
   /* ---------------------------------------------------------
-     5. Récupérer les chapitres
+     6. Récupérer les chapitres
   --------------------------------------------------------- */
 
   const { data: chapters, error: chaptersError } = await supabase
@@ -341,7 +445,7 @@ async function loadSeriePage() {
   }
 
   /* ---------------------------------------------------------
-     6. Trier les chapitres
+     7. Trier les chapitres
   --------------------------------------------------------- */
 
   const sorted = [...chapters].sort((a, b) => {
