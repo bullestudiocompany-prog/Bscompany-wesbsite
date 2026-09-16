@@ -4,19 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
   <title>Webcomics — BSCompany</title>
 
   <meta
     name="description"
-    content="Découvrez les webcomics publiés par BSCompany. Explorez des histoires originales, illustrées et créées par des auteurs et artistes passionnés."
+    content="Découvrez les webcomics, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
   >
 
   <meta
@@ -30,11 +22,17 @@
   >
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Webcomics — BSCompany">
+
+  <meta
+    property="og:title"
+    content="Webcomics — BSCompany"
+  >
+
   <meta
     property="og:description"
-    content="Explorez les webcomics de BSCompany et découvrez des histoires originales créées par des auteurs et artistes passionnés."
+    content="Découvrez les webcomics, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
   >
+
   <meta
     property="og:url"
     content="https://bscompany.vercel.app/webcomic.html"
@@ -47,78 +45,189 @@
 
   <link rel="stylesheet" href="css/main.css?v=3">
   <link rel="stylesheet" href="css/components.css?v=3">
-    
+
+
   <style>
-    /* =========================
-       PAGE WEBComics
-       ========================= */
+    /* ================================
+       OUTILS DU CATALOGUE
+       ================================ */
 
-    .empty-page {
-      min-height: calc(100vh - 80px);
+    .catalogue-tools {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 24px 0;
     }
 
-    .empty-content {
-      max-width: 620px;
+    .catalogue-search {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .catalogue-search input,
+    .catalogue-tools select {
       width: 100%;
-      text-align: center;
-      background: var(--surface);
+      height: 42px;
+      padding: 0 13px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 50px 35px;
-      box-shadow: var(--shadow-card);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
     }
 
-    .empty-icon {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 24px;
-      border-radius: 20px;
-      background: #EEF4FF;
-      color: var(--blue-600);
-      display: flex;
-      align-items: center;
+    .catalogue-search input:focus,
+    .catalogue-tools select:focus {
+      border-color: #7c3aed;
+    }
+
+    .catalogue-filter {
+      width: 180px;
+    }
+
+    .catalogue-count {
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--slate-400);
+    }
+
+
+    /* ================================
+       CATALOGUE DES WEBCOMICS
+       CARTES COMPACTES
+       ================================ */
+
+    #webcomics-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(auto-fill, minmax(170px, 200px));
+
       justify-content: center;
-      font-size: 34px;
+
+      gap: 22px 18px;
+      width: 100%;
     }
 
-    .empty-content h1 {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--navy-900);
-      margin-bottom: 12px;
+    #webcomics-grid .story-card {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
     }
 
-    .empty-content h1 span {
-      color: var(--blue-600);
+    #webcomics-grid .story-top {
+      display: flex;
+      flex-direction: column;
+
+      padding: 0;
+      gap: 0;
     }
 
-    .empty-content p {
-      max-width: 480px;
-      margin: 0 auto 28px;
-      color: var(--slate-600);
+    #webcomics-grid .story-cover {
+      width: 100%;
+      height: auto;
+
+      aspect-ratio: 2 / 3;
+
+      flex-shrink: 0;
+
+      border-radius: 0;
+      overflow: hidden;
+    }
+
+    #webcomics-grid .story-cover img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+      display: block;
+    }
+
+    #webcomics-grid .story-info {
+      padding: 10px 11px 9px;
+      min-width: 0;
+    }
+
+    #webcomics-grid .type-badge {
+      font-size: 10px;
+      padding: 4px 7px;
+    }
+
+    #webcomics-grid .story-title {
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.3;
+
+      margin-top: 7px;
+
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+
+      overflow: hidden;
     }
 
-    @media (max-width: 560px) {
-      .empty-page {
-        padding: 40px 18px;
+    #webcomics-grid .story-desc {
+      display: none;
+    }
+
+    #webcomics-grid .story-time {
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
+    #webcomics-grid .story-footer {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    #webcomics-grid .story-stats {
+      gap: 9px;
+    }
+
+
+    /* ================================
+       TABLETTE / PETITS ÉCRANS
+       ================================ */
+
+    @media (max-width: 700px) {
+
+      #webcomics-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+
+        max-width: 420px;
+        margin: 0 auto;
+
+        gap: 16px 12px;
       }
 
-      .empty-content {
-        padding: 38px 22px;
+      .catalogue-filter {
+        width: 100%;
       }
 
-      .empty-content h1 {
-        font-size: 24px;
+    }
+
+
+    /* ================================
+       PETITS TÉLÉPHONES
+       ================================ */
+
+    @media (max-width: 380px) {
+
+      #webcomics-grid {
+        gap: 14px 10px;
       }
+
     }
   </style>
 </head>
+
 
 <body>
 
@@ -131,16 +240,34 @@
     <div class="brand">
       <div>
         <div class="brand-title">BSCompany</div>
-        <div class="brand-slogan">PARTAGEZ VOTRE BULLE</div>
+
+        <div class="brand-slogan">
+          PARTAGEZ VOTRE BULLE
+        </div>
       </div>
     </div>
 
+
     <nav class="nav-links">
-      <a href="index.html">Accueil</a>
-      <a href="webcomic.html" class="active">Webcomics</a>
-      <a href="romans.html">Romans</a>
-      <a href="a-propos.html">À propos de nous</a>
+
+      <a href="index.html">
+        Accueil
+      </a>
+
+      <a href="webcomic.html" class="active">
+        Webcomics
+      </a>
+
+      <a href="romans.html">
+        Romans
+      </a>
+
+      <a href="a-propos.html">
+        À propos de nous
+      </a>
+
     </nav>
+
 
     <button
       class="mobile-menu-btn"
@@ -152,7 +279,9 @@
       ☰
     </button>
 
+
     <div class="nav-actions">
+
       <a
         class="btn-primary"
         href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
@@ -161,35 +290,110 @@
       >
         Nous suivre
       </a>
+
     </div>
 
   </header>
 
 
   <!-- =========================
-       CONTENU
+       CATALOGUE WEBCOMICS
        ========================= -->
 
-  <main class="empty-page">
+  <main class="container">
 
-    <section class="empty-content">
+    <section class="section-header">
 
-      <div class="empty-icon">
-        📖
+      <div>
+
+        <h1 class="section-title">
+          Nos <span>Webcomics</span>
+        </h1>
+
+        <p class="section-sub">
+          Découvrez toutes les histoires illustrées disponibles sur BSCompany.
+        </p>
+
       </div>
 
-      <h1>
-        Aucun <span>webcomic</span> pour le moment
-      </h1>
+    </section>
 
-      <p>
-        Désolé, nous n’avons pas encore de webcomic disponible.
-        Nos premiers webcomics arriveront très bientôt sur BSCompany.
+
+    <!-- =========================
+         OUTILS DE RECHERCHE
+         ========================= -->
+
+    <section class="catalogue-tools">
+
+      <div class="catalogue-search">
+
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Rechercher un webcomic..."
+          autocomplete="off"
+        >
+
+      </div>
+
+
+      <div class="catalogue-filter">
+
+        <select id="genreFilter">
+
+          <option value="all">
+            Tous les genres
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="catalogue-filter">
+
+        <select id="sortSelect">
+
+          <option value="recent">
+            Plus récents
+          </option>
+
+          <option value="popular">
+            Plus populaires
+          </option>
+
+        </select>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         COMPTEUR
+         ========================= -->
+
+    <div
+      id="resultsCount"
+      class="catalogue-count"
+    >
+      Chargement...
+    </div>
+
+
+    <!-- =========================
+         GRILLE DES WEBCOMICS
+         ========================= -->
+
+    <section
+      id="webcomics-grid"
+      class="recent-grid"
+      aria-live="polite"
+    >
+
+      <p class="empty-state">
+        Chargement des webcomics...
       </p>
-
-      <a href="index.html" class="btn-primary btn-lg">
-        ← Retour à l’accueil
-      </a>
 
     </section>
 
@@ -201,46 +405,823 @@
        ========================= -->
 
   <script>
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const navLinks = document.querySelector('.nav-links');
+
+    const mobileMenuBtn =
+      document.getElementById('mobileMenuBtn');
+
+    const navLinks =
+      document.querySelector('.nav-links');
+
 
     if (mobileMenuBtn && navLinks) {
-      mobileMenuBtn.addEventListener('click', () => {
-        const isOpen = navLinks.classList.toggle('mobile-open');
 
-        mobileMenuBtn.setAttribute(
-          'aria-expanded',
-          String(isOpen)
-        );
+      mobileMenuBtn.addEventListener(
+        'click',
+        () => {
 
-        mobileMenuBtn.setAttribute(
-          'aria-label',
-          isOpen ? 'Fermer le menu' : 'Ouvrir le menu'
-        );
+          const isOpen =
+            navLinks.classList.toggle('mobile-open');
 
-        mobileMenuBtn.textContent = isOpen ? '✕' : '☰';
-      });
-
-      navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          navLinks.classList.remove('mobile-open');
 
           mobileMenuBtn.setAttribute(
             'aria-expanded',
-            'false'
+            String(isOpen)
           );
+
 
           mobileMenuBtn.setAttribute(
             'aria-label',
-            'Ouvrir le menu'
+            isOpen
+              ? 'Fermer le menu'
+              : 'Ouvrir le menu'
           );
 
-          mobileMenuBtn.textContent = '☰';
+
+          mobileMenuBtn.textContent =
+            isOpen ? '✕' : '☰';
+
+        }
+      );
+
+
+      navLinks
+        .querySelectorAll('a')
+        .forEach(link => {
+
+          link.addEventListener(
+            'click',
+            () => {
+
+              navLinks.classList.remove(
+                'mobile-open'
+              );
+
+
+              mobileMenuBtn.setAttribute(
+                'aria-expanded',
+                'false'
+              );
+
+
+              mobileMenuBtn.setAttribute(
+                'aria-label',
+                'Ouvrir le menu'
+              );
+
+
+              mobileMenuBtn.textContent = '☰';
+
+            }
+          );
+
         });
-      });
+
     }
+
   </script>
 
+
+  <!-- =========================
+       SUPABASE + CATALOGUE
+       ========================= -->
+
+  <script type="module">
+
+    import { supabase }
+      from './js/config/supabase.js';
+
+    import { createCard }
+      from './js/components/card.js';
+
+
+    const webcomicsGrid =
+      document.getElementById('webcomics-grid');
+
+    const searchInput =
+      document.getElementById('searchInput');
+
+    const genreFilter =
+      document.getElementById('genreFilter');
+
+    const sortSelect =
+      document.getElementById('sortSelect');
+
+    const resultsCount =
+      document.getElementById('resultsCount');
+
+
+    let allWebcomics = [];
+
+
+    /* =========================
+       RÉCUPÉRER LES VUES
+       ========================= */
+
+    async function attachSeriesViews(series) {
+
+      if (!series || series.length === 0) {
+        return [];
+      }
+
+
+      const seriesIds =
+        series.map(webcomic => webcomic.id);
+
+
+      const {
+        data: chapters,
+        error: chaptersError
+      } = await supabase
+
+        .from('chapters')
+
+        .select('id, series_id')
+
+        .in('series_id', seriesIds);
+
+
+      if (chaptersError) {
+
+        console.error(
+          'Erreur lors de la récupération des chapitres :',
+          chaptersError
+        );
+
+        throw chaptersError;
+
+      }
+
+
+      /* Aucun chapitre = 0 vue */
+
+      if (!chapters || chapters.length === 0) {
+
+        return series.map(webcomic => ({
+
+          ...webcomic,
+
+          views: 0,
+
+          vues: 0
+
+        }));
+
+      }
+
+
+      const chapterIds =
+        chapters.map(
+          chapter => chapter.id
+        );
+
+
+      /* =========================
+         RÉCUPÉRER LES VUES
+         ========================= */
+
+      const {
+        data: views,
+        error: viewsError
+      } = await supabase
+
+        .from('chapter_views')
+
+        .select('chapter_id')
+
+        .in('chapter_id', chapterIds);
+
+
+      if (viewsError) {
+
+        console.error(
+          'Erreur lors de la récupération des vues :',
+          viewsError
+        );
+
+        throw viewsError;
+
+      }
+
+
+      /* =========================
+         COMPTER LES VUES
+         PAR CHAPITRE
+         ========================= */
+
+      const viewsByChapter = {};
+
+
+      (views || []).forEach(view => {
+
+        if (!view.chapter_id) {
+          return;
+        }
+
+
+        viewsByChapter[view.chapter_id] =
+          (viewsByChapter[view.chapter_id] || 0) + 1;
+
+      });
+
+
+      /* =========================
+         ADDITIONNER LES VUES
+         PAR WEBCOMIC
+         ========================= */
+
+      const viewsBySeries = {};
+
+
+      chapters.forEach(chapter => {
+
+        const chapterViews =
+          viewsByChapter[chapter.id] || 0;
+
+
+        viewsBySeries[chapter.series_id] =
+          (viewsBySeries[chapter.series_id] || 0) +
+          chapterViews;
+
+      });
+
+
+      /* =========================
+         AJOUTER LES VUES
+         AUX WEBCOMICS
+         ========================= */
+
+      return series.map(webcomic => {
+
+        const totalViews =
+          viewsBySeries[webcomic.id] || 0;
+
+
+        return {
+
+          ...webcomic,
+
+          views: totalViews,
+
+          vues: totalViews
+
+        };
+
+      });
+
+    }
+
+
+    /* =========================
+       RÉCUPÉRER LES LIKES
+       ========================= */
+
+    async function attachSeriesLikes(series) {
+
+      if (!series || series.length === 0) {
+        return [];
+      }
+
+
+      const seriesIds =
+        series.map(webcomic => webcomic.id);
+
+
+      const {
+        data: chapters,
+        error: chaptersError
+      } = await supabase
+
+        .from('chapters')
+
+        .select('id, series_id')
+
+        .in('series_id', seriesIds);
+
+
+      if (chaptersError) {
+
+        console.error(
+          'Erreur lors de la récupération des chapitres pour les likes :',
+          chaptersError
+        );
+
+        throw chaptersError;
+
+      }
+
+
+      /* Aucun chapitre = 0 like */
+
+      if (!chapters || chapters.length === 0) {
+
+        return series.map(webcomic => ({
+
+          ...webcomic,
+
+          likes: 0
+
+        }));
+
+      }
+
+
+      const chapterIds =
+        chapters.map(
+          chapter => chapter.id
+        );
+
+
+      /* =========================
+         RÉCUPÉRER LES LIKES
+         ========================= */
+
+      const {
+        data: likes,
+        error: likesError
+      } = await supabase
+
+        .from('likes')
+
+        .select('chapter_id')
+
+        .in('chapter_id', chapterIds);
+
+
+      if (likesError) {
+
+        console.error(
+          'Erreur lors de la récupération des likes :',
+          likesError
+        );
+
+        throw likesError;
+
+      }
+
+
+      /* =========================
+         COMPTER LES LIKES
+         PAR CHAPITRE
+         ========================= */
+
+      const likesByChapter = {};
+
+
+      (likes || []).forEach(like => {
+
+        if (!like.chapter_id) {
+          return;
+        }
+
+
+        likesByChapter[like.chapter_id] =
+          (likesByChapter[like.chapter_id] || 0) + 1;
+
+      });
+
+
+      /* =========================
+         ADDITIONNER LES LIKES
+         PAR WEBCOMIC
+         ========================= */
+
+      const likesBySeries = {};
+
+
+      chapters.forEach(chapter => {
+
+        const chapterLikes =
+          likesByChapter[chapter.id] || 0;
+
+
+        likesBySeries[chapter.series_id] =
+          (likesBySeries[chapter.series_id] || 0) +
+          chapterLikes;
+
+      });
+
+
+      /* =========================
+         AJOUTER LES LIKES
+         AUX WEBCOMICS
+         ========================= */
+
+      return series.map(webcomic => {
+
+        const totalLikes =
+          likesBySeries[webcomic.id] || 0;
+
+
+        return {
+
+          ...webcomic,
+
+          likes: totalLikes
+
+        };
+
+      });
+
+    }
+
+
+    /* =========================
+       CHARGEMENT DES WEBCOMICS
+       ========================= */
+
+    async function loadWebcomics() {
+
+      try {
+
+        const {
+          data: series,
+          error
+        } = await supabase
+
+          .from('series')
+
+          .select('*')
+
+          /*
+            On accepte les différents types
+            utilisés par le routeur Webcomic :
+            webcomic, manga, webtoon, comic et bd.
+          */
+
+          .in(
+            'type',
+            [
+              'webcomic',
+              'manga',
+              'webtoon',
+              'comic',
+              'bd'
+            ]
+          );
+
+
+        if (error) {
+
+          console.error(
+            'Erreur Supabase (webcomics):',
+            error
+          );
+
+
+          webcomicsGrid.innerHTML = `
+            <p class="error-state">
+              Impossible de charger les webcomics
+              pour le moment.
+            </p>
+          `;
+
+
+          resultsCount.textContent = '';
+
+          return;
+
+        }
+
+
+        /*
+          Récupération des vues
+          depuis chapter_views.
+        */
+
+        allWebcomics =
+          await attachSeriesViews(
+            series || []
+          );
+
+
+        /*
+          Récupération des likes
+          depuis likes.
+        */
+
+        allWebcomics =
+          await attachSeriesLikes(
+            allWebcomics
+          );
+
+
+        if (allWebcomics.length === 0) {
+
+          webcomicsGrid.innerHTML = `
+            <p class="empty-state">
+              Aucun webcomic n'est disponible
+              pour le moment.
+            </p>
+          `;
+
+
+          resultsCount.textContent =
+            '0 webcomic';
+
+          return;
+
+        }
+
+
+        populateGenres();
+
+        renderWebcomics();
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'Erreur inattendue lors du chargement des webcomics:',
+          error
+        );
+
+
+        webcomicsGrid.innerHTML = `
+          <p class="error-state">
+            Impossible de contacter la base de données.
+            Vérifie ta connexion et réessaie.
+          </p>
+        `;
+
+
+        resultsCount.textContent = '';
+
+      }
+
+    }
+
+
+    /* =========================
+       GENRES
+       ========================= */
+
+    function populateGenres() {
+
+      const genres = new Set();
+
+
+      allWebcomics.forEach(webcomic => {
+
+        if (!webcomic.genre) {
+          return;
+        }
+
+
+        webcomic.genre
+          .split(',')
+          .map(genre => genre.trim())
+          .filter(Boolean)
+          .forEach(genre => {
+
+            genres.add(genre);
+
+          });
+
+      });
+
+
+      const sortedGenres =
+        [...genres].sort(
+          (a, b) => a.localeCompare(b)
+        );
+
+
+      genreFilter.innerHTML = `
+        <option value="all">
+          Tous les genres
+        </option>
+      `;
+
+
+      sortedGenres.forEach(genre => {
+
+        const option =
+          document.createElement('option');
+
+
+        option.value = genre;
+
+        option.textContent = genre;
+
+
+        genreFilter.appendChild(option);
+
+      });
+
+    }
+
+
+    /* =========================
+       AFFICHAGE
+       ========================= */
+
+    function renderWebcomics() {
+
+      const search =
+        searchInput.value
+          .trim()
+          .toLowerCase();
+
+
+      const selectedGenre =
+        genreFilter.value;
+
+
+      const sort =
+        sortSelect.value;
+
+
+      let webcomics =
+        [...allWebcomics];
+
+
+      /* =========================
+         RECHERCHE
+         ========================= */
+
+      if (search) {
+
+        webcomics =
+          webcomics.filter(webcomic => {
+
+            const title =
+              webcomic.title || '';
+
+
+            const description =
+              webcomic.description || '';
+
+
+            const genre =
+              webcomic.genre || '';
+
+
+            const content = `
+              ${title}
+              ${description}
+              ${genre}
+            `.toLowerCase();
+
+
+            return content.includes(search);
+
+          });
+
+      }
+
+
+      /* =========================
+         FILTRE GENRE
+         ========================= */
+
+      if (selectedGenre !== 'all') {
+
+        webcomics =
+          webcomics.filter(webcomic => {
+
+            if (!webcomic.genre) {
+              return false;
+            }
+
+
+            return webcomic.genre
+              .split(',')
+              .map(g => g.trim())
+              .includes(selectedGenre);
+
+          });
+
+      }
+
+
+      /* =========================
+         TRI
+         ========================= */
+
+      if (sort === 'popular') {
+
+        webcomics.sort((a, b) => {
+
+          const viewsA =
+            Number(
+              a.views ??
+              a.vues ??
+              0
+            );
+
+
+          const viewsB =
+            Number(
+              b.views ??
+              b.vues ??
+              0
+            );
+
+
+          return viewsB - viewsA;
+
+        });
+
+      }
+
+      else {
+
+        webcomics.sort((a, b) => {
+
+          const dateA =
+            new Date(
+              a.created_at || 0
+            ).getTime();
+
+
+          const dateB =
+            new Date(
+              b.created_at || 0
+            ).getTime();
+
+
+          return dateB - dateA;
+
+        });
+
+      }
+
+
+      /* =========================
+         COMPTEUR
+         ========================= */
+
+      const count =
+        webcomics.length;
+
+
+      resultsCount.textContent =
+        `${count} webcomic${count > 1 ? 's' : ''}`;
+
+
+      /* =========================
+         AUCUN RÉSULTAT
+         ========================= */
+
+      if (count === 0) {
+
+        webcomicsGrid.innerHTML = `
+          <p class="empty-state">
+            Aucun webcomic ne correspond
+            à votre recherche.
+          </p>
+        `;
+
+        return;
+
+      }
+
+
+      /* =========================
+         CARTES
+         ========================= */
+
+      webcomicsGrid.innerHTML =
+        webcomics
+          .map(webcomic => createCard(webcomic))
+          .join('');
+
+    }
+
+
+    /* =========================
+       ÉVÉNEMENTS
+       ========================= */
+
+    searchInput.addEventListener(
+      'input',
+      renderWebcomics
+    );
+
+
+    genreFilter.addEventListener(
+      'change',
+      renderWebcomics
+    );
+
+
+    sortSelect.addEventListener(
+      'change',
+      renderWebcomics
+    );
+
+
+    /* =========================
+       LANCEMENT
+       ========================= */
+
+    loadWebcomics();
+
+  </script>
+
+
   <script src="js/theme.js"></script>
+
 </body>
   </html>
