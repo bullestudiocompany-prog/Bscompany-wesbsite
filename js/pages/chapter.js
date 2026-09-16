@@ -55,7 +55,9 @@ let currentChapter = null;
 function normalizeType(type) {
   return String(type || "")
     .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s*\/\s*/g, "/")
+    .replace(/\s+/g, " ");
 }
 
 
@@ -87,23 +89,74 @@ function isWebcomicType(type) {
     normalized === "webcomic" ||
     normalized === "manga" ||
     normalized === "comic" ||
-    normalized === "bd" ||
-    isWebtoonType(normalized)
+    normalized === "bd"
   );
 }
 
 
+/*
+ * Détermine le lecteur à utiliser.
+ *
+ * On regarde maintenant :
+ * - series.type
+ * - series.format
+ *
+ * Cela évite qu'une œuvre Webtoon soit envoyée
+ * accidentellement vers le lecteur Manga.
+ */
 function getContentType(chapter) {
-  const type = normalizeType(chapter?.series?.type);
+  const type =
+    normalizeType(
+      chapter?.series?.type
+    );
 
-  if (isWebtoonType(type)) {
+  const format =
+    normalizeType(
+      chapter?.series?.format
+    );
+
+  const values = [
+    type,
+    format
+  ];
+
+  /*
+   * WEBTOON
+   */
+  if (
+    values.some(value =>
+      isWebtoonType(value)
+    )
+  ) {
     return "webtoon";
   }
 
-  if (isWebcomicType(type)) {
+  /*
+   * ROMAN
+   */
+  if (
+    values.some(value =>
+      isNovelType(value)
+    )
+  ) {
+    return "novel";
+  }
+
+  /*
+   * MANGA / WEBCOMIC / BD
+   */
+  if (
+    values.some(value =>
+      isWebcomicType(value)
+    )
+  ) {
     return "manga";
   }
 
+  /*
+   * Par défaut :
+   * on conserve le comportement Roman.
+   */
   return "novel";
 }
 
@@ -373,6 +426,7 @@ async function loadChapter() {
           id,
           title,
           type,
+          format,
           cover_url,
           description
         )
@@ -424,13 +478,6 @@ async function loadChapter() {
     }
 
     currentChapter = data;
-
-    console.log(
-      "BSCompany lecteur :",
-      getContentType(data),
-      "— pages :",
-      getChapterImages(data).length
-    );
 
     setChapterSEO(data);
 
@@ -1284,13 +1331,6 @@ function createMangaArrow(
 
 /* =========================================================
    LECTEUR WEBTOON
-   ---------------------------------------------------------
-   - lecture verticale
-   - découpage visuel automatique
-   - aucun Canvas
-   - compatible images Supabase/CORS
-   - zoom
-   - fonctionnement mobile
 ========================================================= */
 
 function renderWebtoonChapter(chapter) {
@@ -1440,12 +1480,6 @@ function renderWebtoonChapter(chapter) {
     stage
   );
 
-  /*
-   * IMPORTANT :
-   * Le lecteur est ajouté au DOM AVANT
-   * le calcul de clientWidth.
-   */
-
   readingArea.appendChild(
     webtoonReader
   );
@@ -1554,13 +1588,6 @@ function renderWebtoonChapter(chapter) {
             naturalHeight:
               source.naturalHeight
           });
-
-          console.log(
-            `Webtoon image ${imageIndex + 1}:`,
-            source.naturalWidth,
-            "x",
-            source.naturalHeight
-          );
 
           resolve();
         };
@@ -1690,11 +1717,6 @@ function renderWebtoonChapter(chapter) {
       data.naturalHeight *
       scale;
 
-    /*
-     * Image courte :
-     * aucun découpage nécessaire.
-     */
-
     if (
       displayedHeight <=
       MAX_SLICE_HEIGHT
@@ -1711,10 +1733,6 @@ function renderWebtoonChapter(chapter) {
         displayedHeight /
         MAX_SLICE_HEIGHT
       );
-
-    console.log(
-      `Découpage Webtoon image ${data.index + 1} : ${sliceCount} morceaux`
-    );
 
     for (
       let sliceIndex = 0;
@@ -1902,11 +1920,6 @@ function renderWebtoonChapter(chapter) {
 
     renderAllSlices();
 
-    /*
-     * La fin du chapitre est ajoutée
-     * après le traitement des images.
-     */
-
     webtoonReader.appendChild(
       createWebcomicChapterEnd()
     );
@@ -1953,12 +1966,13 @@ function renderWebcomicEmptyState(
 
   reader.innerHTML = "";
 
+  const contentType =
+    getContentType(chapter);
+
   reader.appendChild(
     createWebcomicHeader(
       chapter,
-      isWebtoonType(
-        chapter.series?.type
-      )
+      contentType === "webtoon"
         ? "Webtoon"
         : "Manga"
     )
