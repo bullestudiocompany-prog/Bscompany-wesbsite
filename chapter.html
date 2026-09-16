@@ -8,12 +8,12 @@
     content="width=device-width, initial-scale=1.0"
   >
 
+  <!-- SEO dynamique : chapter.js remplacera ces valeurs -->
   <title>Lecture — BSCompany</title>
 
   <meta
-    id="metaDescription"
     name="description"
-    content="Lisez ce chapitre sur BSCompany."
+    content="Lisez ce chapitre publié par BSCompany et découvrez de nouvelles histoires."
   >
 
   <meta
@@ -22,228 +22,182 @@
   >
 
   <link
-    id="canonicalUrl"
     rel="canonical"
-    href=""
+    href="https://bscompany.vercel.app/chapter.html"
   >
 
-  <meta
-    property="og:type"
-    content="article"
-  >
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
 
   <meta
-    property="og:site_name"
-    content="BSCompany"
-  >
-
-  <meta
-    id="ogTitle"
     property="og:title"
     content="Lecture — BSCompany"
   >
 
   <meta
-    id="ogDescription"
     property="og:description"
-    content="Lisez ce chapitre sur BSCompany."
+    content="Lisez ce chapitre publié par BSCompany et découvrez de nouvelles histoires."
   >
 
   <meta
-    id="ogImage"
-    property="og:image"
-    content=""
+    property="og:url"
+    content="https://bscompany.vercel.app/chapter.html"
   >
 
-  <meta
-    id="twitterTitle"
-    name="twitter:title"
-    content="Lecture — BSCompany"
+  <link
+    rel="stylesheet"
+    href="./css/main.css"
   >
 
-  <meta
-    id="twitterDescription"
-    name="twitter:description"
-    content="Lisez ce chapitre sur BSCompany."
+  <link
+    rel="stylesheet"
+    href="./css/components.css"
   >
 
-  <meta
-    id="twitterImage"
-    name="twitter:image"
-    content=""
+  <link
+    rel="stylesheet"
+    href="./css/chapter.css"
   >
-
-  <link rel="stylesheet" href="./css/main.css">
-  <link rel="stylesheet" href="./css/components.css">
-  <link rel="stylesheet" href="./css/chapter.css">
 </head>
 
 <body class="chapter-page-body">
 
-  <!-- BACKGROUND -->
-  <div
-    id="chapterBackground"
-    class="reader-background"
-    aria-hidden="true"
-  >
-    <div class="reader-background-image"></div>
+  <!-- =====================================================
+       ARRIÈRE-PLAN VISUEL
+  ====================================================== -->
+
+  <div class="reader-background" aria-hidden="true">
+    <img id="chapterBackground" src="" alt="">
     <div class="reader-background-overlay"></div>
   </div>
 
-  <!-- NAVBAR -->
-  <header class="reader-header">
-    <div class="reader-header-inner">
 
-      <a
-        href="./index.html"
-        class="reader-logo"
-        aria-label="Retour à l'accueil"
-      >
-        <span class="reader-logo-mark">🫧</span>
+  <!-- =====================================================
+       NAVBAR
+  ====================================================== -->
 
-        <span class="reader-logo-text">
-          <strong>BSCompany</strong>
-          <small>PARTAGEZ VOTRE BULLE</small>
-        </span>
+  <header class="site-header reader-header">
+    <nav class="navbar">
+
+      <a href="index.html" class="logo">
+        <span>Ᏸ.Ꮥ.CᎧᎷᎮᏗᏁᎩ</span>
       </a>
 
-      <nav
-        id="navLinks"
-        class="reader-nav"
-        aria-label="Navigation principale"
+      <button
+  id="themeToggle"
+  class="theme-toggle"
+  type="button"
+  aria-label="Changer de thème"
+>
+  <span class="theme-icon">☀</span>
+      </button>
+      
+      <button
+        class="mobile-menu-btn"
+        id="mobileMenuBtn"
+        type="button"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
       >
-        <a href="./index.html">Accueil</a>
-        <a href="./webcomic.html">Webcomics</a>
-        <a href="./romans.html">Romans</a>
-        <a href="./a-propos.html">À propos</a>
+        ☰
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Accueil</a>
+        <a href="webcomic.html">Webcomics</a>
+        <a href="romans.html">Romans</a>
+        <a href="a-propos.html">À propos de nous</a>
 
         <a
-          href="https://whatsapp.com/channel/"
+          href="https://whatsapp.com/channel/0029VbBGxSU6rsQxlv5ldD3F"
           target="_blank"
           rel="noopener noreferrer"
         >
-          WhatsApp
+          Nous suivre
         </a>
-      </nav>
-
-      <div class="reader-header-actions">
-
-        <button
-          id="themeToggle"
-          class="reader-header-button"
-          type="button"
-          aria-label="Changer de thème"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              d="M21 12.8A8.5 8.5 0 0 1 11.2 3a8.5 8.5 0 1 0 9.8 9.8Z"
-            />
-          </svg>
-        </button>
-
-        <button
-          id="mobileMenuButton"
-          class="reader-header-button reader-menu-button"
-          type="button"
-          aria-label="Ouvrir le menu"
-          aria-expanded="false"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-
       </div>
-    </div>
+
+    </nav>
   </header>
 
-  <!-- LOADING -->
-  <main>
 
-    <section
-      id="chapterLoading"
-      class="chapter-state chapter-loading"
-    >
-      <div class="chapter-loader"></div>
+  <!-- =====================================================
+       PAGE
+  ====================================================== -->
 
-      <h1>Chargement du chapitre</h1>
+  <main class="reader-page">
 
-      <p>
-        Préparation de votre lecture…
-      </p>
-    </section>
+    <!-- CHARGEMENT -->
 
-    <!-- ERROR -->
-    <section
+    <div id="chapterLoading" class="chapter-state">
+      <div class="loading-spinner"></div>
+      <p>Préparation de votre lecture...</p>
+    </div>
+
+
+    <!-- ERREUR -->
+
+    <div
       id="chapterError"
       class="chapter-state chapter-error"
       hidden
     >
-      <div class="chapter-state-icon">
-        !
-      </div>
+      <div class="error-icon">!</div>
 
-      <h1>Impossible de charger ce chapitre</h1>
+      <h2>Chapitre introuvable</h2>
 
-      <p id="chapterErrorMessage">
-        Une erreur est survenue pendant le chargement.
+      <p>
+        Impossible de charger ce chapitre.
       </p>
 
-      <a
-        href="./index.html"
-        class="reader-primary-button"
-      >
+      <a href="index.html" class="chapter-back-btn">
         Retour à l'accueil
       </a>
-    </section>
+    </div>
 
-    <!-- READER -->
-    <section
-      id="chapterReader"
-      class="reader-page"
-      hidden
-    >
 
-      <!-- HERO / INFO -->
-      <div class="reader-hero">
+    <!-- =====================================================
+         LECTEUR
+    ====================================================== -->
+
+    <article id="chapterReader" class="reader" hidden>
+
+
+      <!-- =================================================
+           EN-TÊTE DU CHAPITRE
+      ================================================== -->
+
+      <header class="reader-hero">
 
         <a
-          id="backToSeries"
           href="#"
+          id="backToSeries"
           class="reader-back"
         >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-
+          <span class="back-arrow">←</span>
           <span>Retour à l'œuvre</span>
         </a>
 
+
         <div class="chapter-cover-area">
 
-          <div
-            id="chapterImageWrap"
-            class="chapter-image-wrap"
-          >
+          <!-- Image principale -->
+
+          <div class="chapter-image-wrap">
+
             <img
               id="chapterImage"
               class="chapter-main-image"
               src=""
               alt=""
-              loading="eager"
             >
 
             <div class="chapter-image-glow"></div>
+
           </div>
+
+
+          <!-- Informations -->
 
           <div class="chapter-heading">
 
@@ -251,280 +205,95 @@
               id="chapterType"
               class="chapter-type"
             >
-              Chapitre
             </span>
 
-            <a
+            <p
               id="seriesTitle"
               class="series-name"
-              href="#"
             >
-              —
-            </a>
+            </p>
 
-            <div
+            <p
               id="chapterNumber"
               class="chapter-number"
             >
-              Chapitre
-            </div>
+            </p>
 
             <h1 id="chapterTitle">
-              —
+              Chapitre
             </h1>
 
           </div>
+
         </div>
-      </div>
 
-      <!-- NOVEL / COMMON READING AREA -->
-      <div
-        id="readingArea"
-        class="reading-area"
-      >
+      </header>
 
-        <!-- ROMAN -->
+
+      <!-- =================================================
+           ZONE DE LECTURE
+      ================================================== -->
+
+      <section class="reading-area">
+
+        <div class="paper-shadow"></div>
+
         <article
+          class="reading-paper"
           id="readingPaper"
-          class="reading-paper novel-reader"
         >
 
           <div class="paper-top">
-            <span id="paperChapterNumber">
-              Chapitre
+
+            <span class="paper-label">
+              BSCompany
             </span>
+
+            <span
+              class="paper-chapter"
+              id="paperChapterNumber"
+            >
+            </span>
+
           </div>
+
 
           <div
             id="chapterText"
             class="chapter-text"
-          ></div>
+          >
+          </div>
+
 
           <div
             id="chapterImages"
             class="chapter-images"
-          ></div>
+          >
+          </div>
+
 
           <div class="paper-end">
-            <span>Fin du chapitre</span>
+            <span>— Fin du chapitre —</span>
           </div>
 
         </article>
 
-        <!-- MANGA -->
-        <section
-          id="mangaReader"
-          class="comic-reader manga-reader"
-          hidden
-          aria-label="Lecteur Manga"
-        >
+      </section>
 
-          <div class="comic-reader-top">
 
-            <div class="comic-reader-info">
-              <span class="comic-format-label">
-                MANGA
-              </span>
+      <!-- =================================================
+           NAVIGATION
+      ================================================== -->
 
-              <span
-                id="mangaPageCounter"
-                class="comic-page-counter"
-              >
-                0 / 0
-              </span>
-            </div>
-
-            <button
-              id="mangaFullscreen"
-              class="comic-icon-button"
-              type="button"
-              aria-label="Plein écran"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5" />
-              </svg>
-            </button>
-
-          </div>
-
-          <div
-            id="mangaViewport"
-            class="manga-viewport"
-            tabindex="0"
-            aria-label="Page du manga"
-          >
-
-            <button
-              id="mangaPrevious"
-              class="manga-arrow manga-arrow-left"
-              type="button"
-              aria-label="Page précédente"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-
-            <div
-              id="mangaPageStage"
-              class="manga-page-stage"
-            >
-              <img
-                id="mangaPageImage"
-                class="manga-page-image"
-                src=""
-                alt=""
-                draggable="false"
-              >
-
-              <div
-                id="mangaPageLoading"
-                class="manga-page-loading"
-                hidden
-              >
-                <div class="chapter-loader"></div>
-              </div>
-            </div>
-
-            <button
-              id="mangaNext"
-              class="manga-arrow manga-arrow-right"
-              type="button"
-              aria-label="Page suivante"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-
-          </div>
-
-          <div class="manga-bottom-controls">
-
-            <button
-              id="mangaBottomPrevious"
-              type="button"
-              class="comic-control-button"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-
-              <span>Précédente</span>
-            </button>
-
-            <span
-              id="mangaBottomCounter"
-              class="comic-bottom-counter"
-            >
-              1 / 1
-            </span>
-
-            <button
-              id="mangaBottomNext"
-              type="button"
-              class="comic-control-button"
-            >
-              <span>Suivante</span>
-
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-
-          </div>
-
-        </section>
-
-        <!-- WEBTOON -->
-        <section
-          id="webtoonReader"
-          class="comic-reader webtoon-reader"
-          hidden
-          aria-label="Lecteur Webtoon"
-        >
-
-          <div class="webtoon-topbar">
-
-            <div>
-              <span class="comic-format-label">
-                WEBTOON
-              </span>
-
-              <span
-                id="webtoonPageCount"
-                class="webtoon-page-count"
-              >
-                0 images
-              </span>
-            </div>
-
-            <button
-              id="webtoonFullscreen"
-              class="comic-icon-button"
-              type="button"
-              aria-label="Plein écran"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5" />
-              </svg>
-            </button>
-
-          </div>
-
-          <div
-            id="webtoonPages"
-            class="webtoon-pages"
-          ></div>
-
-          <div
-            id="webtoonEnd"
-            class="webtoon-end"
-          >
-            <div class="webtoon-end-line"></div>
-
-            <span>Fin du chapitre</span>
-          </div>
-
-        </section>
-
-      </div>
-
-      <!-- CHAPTER NAVIGATION -->
-      <nav
-        class="chapter-navigation"
-        aria-label="Navigation entre les chapitres"
-      >
+      <nav class="chapter-navigation">
 
         <a
-          id="previousChapter"
           href="#"
+          id="previousChapter"
           class="chapter-nav-btn previous"
+          hidden
         >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <span class="nav-arrow">←</span>
 
           <span class="nav-content">
             <small>Précédent</small>
@@ -532,187 +301,221 @@
           </span>
         </a>
 
+
         <a
-          id="nextChapter"
           href="#"
+          id="nextChapter"
           class="chapter-nav-btn next"
+          hidden
         >
           <span class="nav-content">
             <small>Suivant</small>
             <strong>Chapitre suivant</strong>
           </span>
 
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+          <span class="nav-arrow">→</span>
         </a>
 
       </nav>
 
-    </section>
+
+    </article>
+
   </main>
 
-  <!-- FLOATING READER CONTROLS -->
-  <aside
-    id="readerControls"
-    class="reader-controls"
-    hidden
-    aria-label="Contrôles du lecteur"
-  >
 
-    <div class="reader-control-panel">
+  <!-- =====================================================
+       BARRE FLOTTANTE
+  ====================================================== -->
 
-      <div class="control-stats">
+ <aside id="readerControls" class="reader-controls" hidden>
 
-        <div class="control-stat">
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-            <circle cx="12" cy="12" r="2.5" />
+  <div class="reader-control-panel">
+
+    <!-- Petite poignée décorative -->
+    <div class="panel-handle">
+      <span></span>
+    </div>
+
+    <!-- STATISTIQUES -->
+    <div class="control-stats">
+
+      <!-- Vues -->
+      <div class="control-stat">
+        <span class="control-svg">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+            <circle cx="12" cy="12" r="2.8"/>
           </svg>
+        </span>
 
-          <span id="chapterViews">0</span>
-        </div>
-
-        <button
-          id="commentButton"
-          type="button"
-          class="control-button"
-          aria-label="Commentaires"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3v-5.5A7.5 7.5 0 0 1 11.5 4h1A7.5 7.5 0 0 1 20 11.5Z" />
-          </svg>
-
-          <span id="commentCount">0</span>
-        </button>
-
-        <button
-          id="likeButton"
-          type="button"
-          class="control-button like-button"
-          aria-label="J'aime"
-          aria-pressed="false"
-        >
-          <svg
-            id="likeIcon"
-            class="like-svg"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M20.8 8.7c0 5.1-8.8 10.3-8.8 10.3S3.2 13.8 3.2 8.7A4.7 4.7 0 0 1 12 6.4a4.7 4.7 0 0 1 8.8 2.3Z" />
-          </svg>
-
-          <span id="likeCount">0</span>
-        </button>
-
+        <span class="control-info">
+          <strong id="chapterViews">0</strong>
+          <small>vues</small>
+        </span>
       </div>
 
-      <!-- AUDIO -->
-      <div
-        id="audioSection"
-        class="floating-audio"
-        hidden
+
+      <!-- Commentaires -->
+      <button
+        id="commentButton"
+        class="control-button"
+        type="button"
+        aria-label="Commentaires"
       >
+        <span class="control-svg">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3v-5.2A7.5 7.5 0 0 1 4.5 4h8A7.5 7.5 0 0 1 20 11.5Z"/>
+            <path d="M8 10h8M8 13.5h5"/>
+          </svg>
+        </span>
 
-        <div class="audio-icon-box">
+        <span class="control-info">
+          <strong id="commentCount">0</strong>
+          <small>commentaires</small>
+        </span>
+      </button>
+
+
+      <!-- Like -->
+      <button
+        id="likeButton"
+        class="like-button"
+        type="button"
+        aria-pressed="false"
+        aria-label="Aimer ce chapitre"
+      >
+        <span id="likeIcon" class="like-svg">
+
           <svg
+            class="heart-outline"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-            <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
-          </svg>
-        </div>
-
-        <button
-          id="audioPlay"
-          class="audio-play-button"
-          type="button"
-          aria-label="Lire"
-        >
-          <svg
-            class="play-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M8 5v14l11-7Z" />
+            <path d="M20.8 8.7c0 5.4-8.8 10.3-8.8 10.3S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/>
           </svg>
 
           <svg
-            class="pause-icon"
+            class="heart-filled"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+            <path d="M12 20.2S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5C20.8 14.1 12 20.2 12 20.2Z"/>
           </svg>
-        </button>
 
-        <div class="audio-progress-area">
+        </span>
 
-          <div class="audio-top-line">
-            <span id="audioTime">0:00</span>
-          </div>
-
-          <input
-            id="audioProgress"
-            class="audio-progress"
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-            step="0.1"
-            aria-label="Progression audio"
-          >
-
-        </div>
-
-        <button
-          id="audioMute"
-          class="audio-small-button"
-          type="button"
-          aria-label="Couper le son"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-            <path d="m17 9 4 6M21 9l-4 6" />
-          </svg>
-        </button>
-
-        <input
-          id="audioVolume"
-          class="audio-volume"
-          type="range"
-          min="0"
-          max="1"
-          value="1"
-          step="0.01"
-          aria-label="Volume"
-        >
-
-        <audio
-          id="chapterAudio"
-          preload="metadata"
-        ></audio>
-
-      </div>
+        <span id="likeCount">0</span>
+      </button>
 
     </div>
+
+
+    <!-- AUDIO -->
+    <div
+      id="audioSection"
+      class="floating-audio"
+      hidden
+    >
+
+      <div class="audio-icon-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+          <path d="M17 9.5a4 4 0 0 1 0 5M19.5 7a7.5 7.5 0 0 1 0 10"/>
+        </svg>
+      </div>
+
+      <audio
+        id="chapterAudio"
+        preload="auto"
+        loop
+      ></audio>
+
+
+      <button
+        id="audioPlay"
+        class="audio-play-button"
+        type="button"
+        aria-label="Lire"
+      >
+        <svg
+          class="play-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M8 5.5v13l10-6.5-10-6.5Z"/>
+        </svg>
+
+        <svg
+          class="pause-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M7 5h3v14H7zM14 5h3v14h-3z"/>
+        </svg>
+      </button>
+
+
+      <div class="audio-progress-area">
+
+        <div class="audio-top-line">
+          <span>Ambiance</span>
+          <span id="audioTime">0:00</span>
+        </div>
+
+        <input
+          id="audioProgress"
+          class="audio-progress"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          step="0.1"
+          aria-label="Progression audio"
+        >
+
+      </div>
+
+
+      <button
+        id="audioMute"
+        class="audio-small-button"
+        type="button"
+        aria-label="Couper le son"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9v6h4l5 4V5L9 9H5Z"/>
+          <path d="m18 9-5 6M13 9l5 6"/>
+        </svg>
+      </button>
+
+
+      <input
+        id="audioVolume"
+        class="audio-volume"
+        type="range"
+        min="0"
+        max="1"
+        value="1"
+        step="0.05"
+        aria-label="Volume"
+      >
+
+    </div>
+
+  </div>
+
   </aside>
 
-  <script type="module" src="./js/pages/chapter.js"></script>
-  <script src="./js/theme.js"></script>
+  <!-- =====================================================
+       SCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="./js/pages/chapter.js"
+  ></script>
+  <script src="js/theme.js"></script>
 
 </body>
-</html>
+  </html>
