@@ -1,34 +1,18 @@
 /* =========================================================
-   BSCompany — CHAPTER READER
-   Roman / Manga / Webtoon
+   BSCompany — LECTEUR DE CHAPITRE
 ========================================================= */
 
 :root {
-  --reader-bg: #eef4fb;
-  --reader-surface: rgba(255, 255, 255, 0.86);
-  --reader-surface-solid: #ffffff;
+  --reader-blue: #2563eb;
+  --reader-purple: #7c3aed;
   --reader-text: #172033;
-  --reader-muted: #667085;
-  --reader-border: rgba(23, 32, 51, 0.10);
-
-  --reader-blue: #4385f5;
-  --reader-blue-dark: #2864ca;
-  --reader-purple: #7b61ff;
-
-  --reader-paper: #ffffff;
-  --reader-paper-text: #202124;
-
-  --reader-dark: #0c0d11;
-  --reader-dark-2: #15171d;
-  --reader-dark-3: #20232b;
-
-  --reader-radius: 18px;
-  --reader-shadow:
-    0 18px 50px rgba(22, 35, 60, 0.12);
-
-  --reader-transition:
-    180ms ease;
+  --reader-muted: #64748b;
+  --reader-paper: #fffdf8;
+  --reader-paper-edge: #eee9df;
+  --reader-glass: rgba(255, 255, 255, 0.72);
+  --reader-glass-border: rgba(255, 255, 255, 0.55);
 }
+
 
 /* =========================================================
    BASE
@@ -36,1716 +20,1886 @@
 
 .chapter-page-body {
   min-height: 100vh;
-  margin: 0;
-  background: var(--reader-bg);
+  background: #eef2ff;
   color: var(--reader-text);
   overflow-x: hidden;
 }
 
-.chapter-page-body a {
-  text-decoration: none;
-}
-
-[hidden] {
-  display: none !important;
-}
 
 /* =========================================================
-   BACKGROUND
+   ARRIÈRE-PLAN
 ========================================================= */
 
 .reader-background {
   position: fixed;
   inset: 0;
-  z-index: -10;
+  z-index: -2;
   overflow: hidden;
-  pointer-events: none;
-  background: var(--reader-bg);
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(124, 58, 237, 0.22),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(37, 99, 235, 0.20),
+      transparent 40%
+    ),
+    #e9eefb;
 }
 
-.reader-background-image {
+.reader-background img {
   position: absolute;
-  inset: -60px;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  filter: blur(35px);
-  transform: scale(1.12);
-  opacity: 0.24;
+  inset: -50px;
+  width: calc(100% + 100px);
+  height: calc(100% + 100px);
+
+  object-fit: cover;
+
+  filter:
+    blur(30px)
+    saturate(1.05);
+
+  opacity: 0.28;
+
+  transform: scale(1.08);
 }
 
 .reader-background-overlay {
   position: absolute;
   inset: 0;
+
   background:
     linear-gradient(
       180deg,
-      rgba(238, 244, 251, 0.88),
-      rgba(238, 244, 251, 0.96)
+      rgba(238, 242, 255, 0.65),
+      rgba(255, 255, 255, 0.82)
     );
 }
 
+
 /* =========================================================
-   HEADER
+   NAVBAR
 ========================================================= */
 
 .reader-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;
-  border-bottom: 1px solid var(--reader-border);
-  background: rgba(255, 255, 255, 0.78);
+  position: relative;
+  z-index: 20;
+
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.55);
 }
 
-.reader-header-inner {
-  width: min(1180px, calc(100% - 32px));
-  min-height: 68px;
-  margin: 0 auto;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.reader-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--reader-text);
-  flex-shrink: 0;
-}
-
-.reader-logo-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
-
-  display: grid;
-  place-items: center;
-
-  background:
-    linear-gradient(
-      135deg,
-      #5aa2ff,
-      #8067ff
-    );
-
-  box-shadow:
-    0 8px 22px rgba(67, 133, 245, 0.25);
-
-  font-size: 19px;
-}
-
-.reader-logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.05;
-}
-
-.reader-logo-text strong {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.reader-logo-text small {
-  margin-top: 4px;
-  color: var(--reader-blue);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-}
-
-.reader-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.reader-nav a {
-  padding: 9px 12px;
-  border-radius: 10px;
-  color: var(--reader-muted);
-  font-size: 14px;
-  font-weight: 600;
-  transition:
-    background var(--reader-transition),
-    color var(--reader-transition);
-}
-
-.reader-nav a:hover {
-  color: var(--reader-blue);
-  background: rgba(67, 133, 245, 0.08);
-}
-
-.reader-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.reader-header-button {
-  width: 40px;
-  height: 40px;
-
-  display: grid;
-  place-items: center;
-
-  border: 1px solid var(--reader-border);
-  border-radius: 12px;
-
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--reader-text);
-
-  cursor: pointer;
-
-  transition:
-    transform var(--reader-transition),
-    background var(--reader-transition);
-}
-
-.reader-header-button:hover {
-  transform: translateY(-1px);
-  background: #ffffff;
-}
-
-.reader-header-button svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.reader-menu-button {
-  display: none;
-}
-
-/* =========================================================
-   STATES
-========================================================= */
-
-.chapter-state {
-  width: min(700px, calc(100% - 32px));
-  min-height: 60vh;
-  margin: 0 auto;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  text-align: center;
-}
-
-.chapter-state h1 {
-  margin: 18px 0 8px;
-  font-size: 25px;
-}
-
-.chapter-state p {
-  margin: 0 0 22px;
-  color: var(--reader-muted);
-}
-
-.chapter-loader {
-  width: 36px;
-  height: 36px;
-
-  border: 3px solid rgba(67, 133, 245, 0.18);
-  border-top-color: var(--reader-blue);
-  border-radius: 50%;
-
-  animation:
-    chapterSpin 0.8s linear infinite;
-}
-
-@keyframes chapterSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.chapter-state-icon {
-  width: 52px;
-  height: 52px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 50%;
-
-  background: rgba(245, 87, 87, 0.10);
-  color: #e04444;
-
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.reader-primary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 12px 18px;
-
-  border-radius: 12px;
-
-  background: var(--reader-blue);
-  color: #ffffff;
-
-  font-weight: 700;
-
-  box-shadow:
-    0 8px 24px rgba(67, 133, 245, 0.22);
-}
 
 /* =========================================================
    PAGE
 ========================================================= */
 
 .reader-page {
-  width: min(1180px, calc(100% - 32px));
+  width: min(100%, 1100px);
   margin: 0 auto;
-  padding: 28px 0 190px;
+
+  padding:
+    30px
+    24px
+    180px;
 }
 
+
 /* =========================================================
-   HERO
+   ÉTATS
+========================================================= */
+
+.chapter-state {
+  min-height: 60vh;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  color: var(--reader-muted);
+}
+
+.loading-spinner {
+  width: 42px;
+  height: 42px;
+
+  margin-bottom: 18px;
+
+  border:
+    3px solid rgba(37, 99, 235, 0.15);
+
+  border-top-color: var(--reader-blue);
+
+  border-radius: 50%;
+
+  animation:
+    readerSpin 0.8s linear infinite;
+}
+
+@keyframes readerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chapter-error {
+  min-height: 70vh;
+}
+
+.error-icon {
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 50%;
+
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.chapter-error h2 {
+  margin: 0 0 8px;
+}
+
+.chapter-error p {
+  margin: 0 0 24px;
+}
+
+.chapter-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 20px;
+
+  border-radius: 14px;
+
+  background: var(--reader-blue);
+  color: #fff;
+
+  text-decoration: none;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.22);
+}
+
+
+/* =========================================================
+   EN-TÊTE
 ========================================================= */
 
 .reader-hero {
-  margin-bottom: 28px;
+  padding-top: 10px;
+  text-align: center;
 }
 
 .reader-back {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 
-  margin-bottom: 20px;
+  margin-bottom: 35px;
 
-  color: var(--reader-muted);
+  padding: 9px 15px;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.6);
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  color: var(--reader-text);
+
+  text-decoration: none;
+
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 650;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .reader-back:hover {
-  color: var(--reader-blue);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.72);
 }
 
-.reader-back svg {
-  width: 18px;
-  height: 18px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.back-arrow {
+  font-size: 18px;
 }
+
+
+/* =========================================================
+   IMAGE DU CHAPITRE
+========================================================= */
 
 .chapter-cover-area {
   display: flex;
+
+  flex-direction: column;
+
   align-items: center;
-  gap: 26px;
 
-  padding: 22px;
-
-  border: 1px solid var(--reader-border);
-  border-radius: 24px;
-
-  background: var(--reader-surface);
-
-  box-shadow:
-    var(--reader-shadow);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  gap: 25px;
 }
 
 .chapter-image-wrap {
   position: relative;
 
-  width: 150px;
-  min-width: 150px;
-  aspect-ratio: 3 / 4;
+  width: min(100%, 520px);
 
-  border-radius: 16px;
-  overflow: hidden;
+  border-radius: 28px;
 
-  background: var(--reader-dark-2);
+  isolation: isolate;
 }
 
 .chapter-main-image {
-  width: 100%;
-  height: 100%;
+  position: relative;
+  z-index: 2;
+
   display: block;
 
+  width: 100%;
+  max-height: 560px;
+
   object-fit: cover;
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.20);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.65);
+
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .chapter-image-glow {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
 
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 1;
+
+  inset: 18px;
+
+  border-radius: 35px;
+
+  background: inherit;
+
+  filter: blur(35px);
+
+  opacity: 0.6;
+
+  transform:
+    translateY(25px)
+    scale(0.94);
 }
 
+
+/* =========================================================
+   INFORMATIONS CHAPITRE
+========================================================= */
+
 .chapter-heading {
-  min-width: 0;
+  max-width: 800px;
 }
 
 .chapter-type {
   display: inline-flex;
 
-  padding: 6px 9px;
+  padding: 6px 13px;
 
   border-radius: 999px;
 
-  background: rgba(67, 133, 245, 0.10);
-  color: var(--reader-blue);
+  background:
+    linear-gradient(
+      135deg,
+      var(--reader-blue),
+      var(--reader-purple)
+    );
 
-  font-size: 10px;
+  color: #fff;
+
+  font-size: 11px;
   font-weight: 800;
+
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.20);
 }
 
 .series-name {
-  display: block;
-
-  margin-top: 11px;
+  margin: 15px 0 3px;
 
   color: var(--reader-muted);
 
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.series-name:hover {
-  color: var(--reader-blue);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .chapter-number {
-  margin-top: 10px;
+  margin: 0 0 5px;
 
   color: var(--reader-blue);
 
   font-size: 13px;
   font-weight: 800;
-}
 
-.chapter-heading h1 {
-  margin: 6px 0 0;
-
-  color: var(--reader-text);
-
-  font-size: clamp(25px, 4vw, 42px);
-  line-height: 1.08;
-}
-
-/* =========================================================
-   READING AREA
-========================================================= */
-
-.reading-area {
-  position: relative;
-  width: 100%;
-}
-
-/* =========================================================
-   ROMAN
-========================================================= */
-
-.reading-paper {
-  width: min(840px, 100%);
-  margin: 0 auto;
-
-  overflow: hidden;
-
-  border: 1px solid rgba(23, 32, 51, 0.08);
-  border-radius: 22px;
-
-  background: var(--reader-paper);
-
-  color: var(--reader-paper-text);
-
-  box-shadow:
-    0 20px 60px rgba(23, 32, 51, 0.10);
-}
-
-.paper-top {
-  padding: 22px 34px;
-
-  border-bottom: 1px solid rgba(23, 32, 51, 0.07);
-
-  color: var(--reader-muted);
-
-  font-size: 12px;
-  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.chapter-text {
-  padding: 40px 52px 30px;
-
-  font-size: 18px;
-  line-height: 1.9;
-}
-
-.chapter-text p {
-  margin: 0 0 1.35em;
-}
-
-.chapter-text a {
-  color: var(--reader-blue);
-  text-decoration: underline;
-}
-
-.empty-reading-message {
-  color: var(--reader-muted);
-}
-
-.chapter-images {
-  padding: 0 30px 20px;
-}
-
-.chapter-inline-image {
-  margin: 25px 0;
-}
-
-.chapter-inline-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-
-  border-radius: 12px;
-}
-
-.paper-end {
-  padding: 30px;
-
-  border-top: 1px solid rgba(23, 32, 51, 0.07);
-
-  text-align: center;
-
-  color: var(--reader-muted);
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* =========================================================
-   COMIC SHARED
-========================================================= */
-
-.comic-reader {
-  position: relative;
-}
-
-.comic-format-label {
-  color: rgba(255, 255, 255, 0.72);
-
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-}
-
-.comic-icon-button {
-  width: 38px;
-  height: 38px;
-
-  display: grid;
-  place-items: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 11px;
-
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-
-  cursor: pointer;
-
-  transition:
-    background var(--reader-transition),
-    transform var(--reader-transition);
-}
-
-.comic-icon-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px);
-}
-
-.comic-icon-button svg {
-  width: 18px;
-  height: 18px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.comic-empty-state {
-  width: min(500px, calc(100% - 30px));
-  margin: 70px auto;
-  padding: 45px 25px;
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.04);
-
-  color: #ffffff;
-
-  text-align: center;
-}
-
-.comic-empty-icon {
-  font-size: 40px;
-  opacity: 0.7;
-}
-
-.comic-empty-state h2 {
-  margin: 16px 0 8px;
-}
-
-.comic-empty-state p {
+#chapterTitle {
   margin: 0;
-  color: rgba(255, 255, 255, 0.58);
+
+  color: #111827;
+
+  font-size: clamp(30px, 6vw, 58px);
+
+  line-height: 1.05;
+
+  letter-spacing: -0.035em;
+
+  text-wrap: balance;
 }
 
+
 /* =========================================================
-   MANGA
+   ZONE DE LECTURE
 ========================================================= */
 
-.manga-reader {
-  padding: 14px;
+.reading-area {
+  position: relative;
 
-  border-radius: 20px;
+  margin-top: 70px;
+}
+
+.reading-paper {
+  position: relative;
+  z-index: 2;
+
+  width: min(100%, 820px);
+
+  margin: 0 auto;
+
+  padding:
+    75px
+    clamp(28px, 7vw, 82px)
+    90px;
 
   background:
     linear-gradient(
       180deg,
-      #111217,
-      #090a0d
+      #fffefa 0%,
+      #fffdf8 100%
     );
 
+  border:
+    1px solid var(--reader-paper-edge);
+
+  border-radius: 7px;
+
   box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.28);
-
-  color: #ffffff;
-}
-
-.comic-reader-top {
-  height: 46px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 6px 10px;
-}
-
-.comic-reader-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.comic-page-counter {
-  color: rgba(255, 255, 255, 0.62);
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.manga-viewport {
-  position: relative;
-
-  min-height: min(78vh, 920px);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    0 30px 80px rgba(15, 23, 42, 0.13),
+    0 5px 15px rgba(15, 23, 42, 0.06);
 
   overflow: hidden;
+}
 
-  border-radius: 14px;
+
+/* effet page */
+
+.reading-paper::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+  left: 32px;
+
+  width: 1px;
 
   background:
-    radial-gradient(
-      circle at center,
-      #252832 0%,
-      #111217 65%,
-      #090a0d 100%
+    rgba(239, 68, 68, 0.13);
+}
+
+.reading-paper::after {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 9px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 99, 235, 0.08),
+      rgba(124, 58, 237, 0.08)
     );
-
-  outline: none;
-
-  touch-action: pan-y;
 }
 
-.manga-page-stage {
-  position: relative;
 
-  width: 100%;
-  height: min(78vh, 920px);
+/* ombre sous la feuille */
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  transition:
-    opacity 150ms ease,
-    transform 150ms ease;
-}
-
-.manga-page-stage.page-changing {
-  animation: mangaPageChange 180ms ease;
-}
-
-@keyframes mangaPageChange {
-  0% {
-    opacity: 0.55;
-    transform: translateX(8px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.manga-page-image {
-  display: block;
-
-  max-width: 100%;
-  max-height: 100%;
-
-  width: auto;
-  height: auto;
-
-  object-fit: contain;
-
-  user-select: none;
-  -webkit-user-drag: none;
-
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.30);
-}
-
-.manga-page-loading {
+.paper-shadow {
   position: absolute;
-  inset: 0;
 
-  display: grid;
-  place-items: center;
+  z-index: 1;
 
-  background: rgba(0, 0, 0, 0.18);
-}
+  left: 5%;
+  right: 5%;
+  bottom: -20px;
 
-.manga-page-loading .chapter-loader {
-  border-color:
-    rgba(255, 255, 255, 0.18);
+  height: 50px;
 
-  border-top-color:
-    #ffffff;
-}
-
-.manga-arrow {
-  position: absolute;
-  z-index: 5;
-
-  top: 50%;
-  transform: translateY(-50%);
-
-  width: 46px;
-  height: 46px;
-
-  display: grid;
-  place-items: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 50%;
 
-  background: rgba(0, 0, 0, 0.45);
-  color: #ffffff;
+  background: rgba(15, 23, 42, 0.16);
 
-  cursor: pointer;
-
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-  transition:
-    opacity var(--reader-transition),
-    background var(--reader-transition),
-    transform var(--reader-transition);
+  filter: blur(24px);
 }
 
-.manga-arrow:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.manga-arrow:disabled {
-  opacity: 0.20;
-  cursor: default;
-}
-
-.manga-arrow-left {
-  left: 16px;
-}
-
-.manga-arrow-right {
-  right: 16px;
-}
-
-.manga-arrow svg {
-  width: 22px;
-  height: 22px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.manga-bottom-controls {
-  min-height: 52px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 10px;
-
-  padding: 10px 5px 2px;
-}
-
-.comic-control-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  min-width: 105px;
-
-  padding: 9px 11px;
-
-  border: 0;
-  border-radius: 10px;
-
-  background: transparent;
-  color: rgba(255, 255, 255, 0.76);
-
-  font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.comic-control-button:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-}
-
-.comic-control-button:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-
-.comic-control-button svg {
-  width: 17px;
-  height: 17px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.comic-bottom-counter {
-  color: rgba(255, 255, 255, 0.60);
-
-  font-size: 12px;
-  font-weight: 700;
-}
 
 /* =========================================================
-   WEBTOON
+   ENTÊTE DE PAGE
 ========================================================= */
 
-.webtoon-reader {
-  width: min(900px, 100%);
-  margin: 0 auto;
-
-  border-radius: 18px;
-
-  background: #090a0d;
-
-  box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.26);
-
-  overflow: hidden;
-}
-
-.webtoon-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-
-  min-height: 54px;
-
+.paper-top {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 
-  padding: 8px 12px;
+  margin-bottom: 55px;
 
-  background: rgba(9, 10, 13, 0.88);
+  padding-bottom: 15px;
 
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  border-bottom:
+    1px solid rgba(100, 116, 139, 0.12);
+
+  color: #94a3b8;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.webtoon-topbar > div {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.paper-chapter {
+  color: #94a3b8;
 }
 
-.webtoon-page-count {
-  color: rgba(255, 255, 255, 0.50);
 
-  font-size: 11px;
-  font-weight: 600;
+/* =========================================================
+   TEXTE
+========================================================= */
+
+.chapter-text {
+  color: #293241;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 19px;
+
+  line-height: 2;
+
+  letter-spacing: 0.005em;
 }
 
-.webtoon-pages {
-  width: 100%;
-
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-
-  gap: 0;
-
-  background: #090a0d;
+.chapter-text p {
+  margin:
+    0 0 27px;
 }
 
-.webtoon-page {
-  width: 100%;
-  margin: 0;
-  padding: 0;
+.chapter-text p:first-child::first-letter {
+  float: left;
 
-  line-height: 0;
+  margin:
+    7px
+    9px
+    0
+    0;
 
-  background: #090a0d;
+  color: var(--reader-blue);
+
+  font-size: 4.1em;
+  font-weight: 700;
+
+  line-height: 0.78;
 }
 
-.webtoon-page img {
+
+/* =========================================================
+   IMAGE(S) DANS LE CHAPITRE
+========================================================= */
+
+.chapter-images {
+  margin-top: 50px;
+}
+
+.chapter-images img {
+  display: block;
+
   width: 100%;
   height: auto;
 
-  display: block;
+  margin:
+    0
+    auto
+    35px;
 
-  margin: 0;
-  padding: 0;
+  border-radius: 12px;
 
-  object-fit: contain;
-
-  vertical-align: middle;
+  box-shadow:
+    0 15px 35px rgba(15, 23, 42, 0.13);
 }
 
-.webtoon-end {
-  min-height: 170px;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* =========================================================
+   FIN DE PAGE
+========================================================= */
 
-  gap: 15px;
+.paper-end {
+  margin-top: 65px;
 
-  background: #090a0d;
+  padding-top: 30px;
 
-  color: rgba(255, 255, 255, 0.48);
+  border-top:
+    1px solid rgba(100, 116, 139, 0.14);
+
+  text-align: center;
+
+  color: #94a3b8;
 
   font-size: 12px;
   font-weight: 700;
+
+  letter-spacing: 0.08em;
 }
 
-.webtoon-end-line {
-  width: 80px;
-  height: 1px;
-
-  background: rgba(255, 255, 255, 0.12);
-}
 
 /* =========================================================
-   CHAPTER NAVIGATION
+   NAVIGATION
 ========================================================= */
 
 .chapter-navigation {
-  width: min(840px, 100%);
-  margin: 35px auto 0;
+  width: min(100%, 820px);
 
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
 
-  gap: 14px;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin:
+    45px
+    auto
+    0;
 }
 
 .chapter-nav-btn {
-  min-height: 74px;
-
   display: flex;
+
   align-items: center;
 
-  gap: 12px;
+  gap: 14px;
 
-  padding: 14px 16px;
+  min-width: 220px;
 
-  border: 1px solid var(--reader-border);
-  border-radius: 16px;
+  padding: 15px 18px;
 
-  background: var(--reader-surface);
+  border:
+    1px solid rgba(255, 255, 255, 0.65);
+
+  border-radius: 18px;
+
+  background:
+    rgba(255, 255, 255, 0.62);
+
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 
   color: var(--reader-text);
 
+  text-decoration: none;
+
   box-shadow:
-    0 10px 28px rgba(23, 32, 51, 0.07);
+    0 10px 30px rgba(15, 23, 42, 0.07);
 
   transition:
-    transform var(--reader-transition),
-    border-color var(--reader-transition);
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .chapter-nav-btn:hover {
-  transform: translateY(-2px);
-  border-color: rgba(67, 133, 245, 0.28);
+  transform: translateY(-3px);
+
+  background:
+    rgba(255, 255, 255, 0.86);
 }
 
 .chapter-nav-btn.next {
-  justify-content: flex-end;
+  margin-left: auto;
   text-align: right;
 }
 
-.chapter-nav-btn.disabled {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.chapter-nav-btn > svg {
-  width: 22px;
-  height: 22px;
-
-  flex-shrink: 0;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.nav-arrow {
+  font-size: 25px;
+  color: var(--reader-blue);
 }
 
 .nav-content {
-  min-width: 0;
-
   display: flex;
+
   flex-direction: column;
-  gap: 4px;
+
+  gap: 3px;
 }
 
 .nav-content small {
   color: var(--reader-muted);
 
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
+
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .nav-content strong {
-  overflow: hidden;
-
-  color: var(--reader-text);
-
   font-size: 13px;
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
+
 /* =========================================================
-   FLOATING CONTROLS
+   BARRE FLOTTANTE
 ========================================================= */
 
 .reader-controls {
   position: fixed;
 
+  z-index: 100;
+
   left: 50%;
   bottom: 18px;
 
-  z-index: 200;
-
-  width: min(650px, calc(100% - 24px));
+  width: min(
+    calc(100% - 30px),
+    850px
+  );
 
   transform: translateX(-50%);
 
-  transition:
-    opacity 180ms ease,
-    transform 180ms ease;
-}
-
-.reader-controls.controls-hidden {
-  opacity: 0.20;
-  transform:
-    translateX(-50%)
-    translateY(10px);
-}
-
-.reader-controls:hover {
-  opacity: 1;
-  transform:
-    translateX(-50%)
-    translateY(0);
-}
-
-.reader-control-panel {
   display: flex;
+
   align-items: center;
+
   gap: 12px;
 
-  min-height: 58px;
+  padding: 10px 12px;
 
-  padding: 8px 10px;
+  border:
+    1px solid var(--reader-glass-border);
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 17px;
+  border-radius: 25px;
 
   background:
-    rgba(16, 18, 24, 0.90);
+    rgba(255, 255, 255, 0.64);
 
-  color: #ffffff;
+  backdrop-filter:
+    blur(25px)
+    saturate(1.2);
+
+  -webkit-backdrop-filter:
+    blur(25px)
+    saturate(1.2);
 
   box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.28);
+    0 20px 50px rgba(15, 23, 42, 0.16);
 
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  animation:
+    controlAppear 0.35s ease;
 }
 
-.control-stats {
+@keyframes controlAppear {
+  from {
+    opacity: 0;
+    transform:
+      translate(-50%, 15px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translate(-50%, 0);
+  }
+}
+
+
+/* =========================================================
+   STATISTIQUES
+========================================================= */
+
+.floating-stats {
   display: flex;
+
   align-items: center;
+
   gap: 5px;
 }
 
 .control-stat,
 .control-button {
-  min-width: 39px;
-  height: 39px;
+  display: flex;
 
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
 
-  gap: 5px;
+  gap: 8px;
+
+  min-height: 46px;
+
+  padding: 6px 10px;
 
   border: 0;
-  border-radius: 11px;
+
+  border-radius: 15px;
 
   background: transparent;
 
-  color: rgba(255, 255, 255, 0.70);
+  color: var(--reader-text);
 
-  font-size: 11px;
-  font-weight: 700;
+  font: inherit;
+
+  text-decoration: none;
 }
 
 .control-button {
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .control-button:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
+  background:
+    rgba(255, 255, 255, 0.7);
+
+  transform: translateY(-1px);
 }
 
-.control-button:disabled {
-  opacity: 0.5;
-  cursor: default;
+.control-icon,
+.stat-icon {
+  font-size: 18px;
 }
 
-.control-stat svg,
-.control-button svg {
-  width: 18px;
-  height: 18px;
+.control-stat strong,
+.control-button strong {
+  display: block;
 
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  font-size: 13px;
 }
 
-.like-button.liked {
-  color: #ff5b79;
+.control-stat small,
+.control-button small {
+  display: block;
+
+  color: var(--reader-muted);
+
+  font-size: 9px;
 }
 
-.like-svg {
-  fill: none;
+.like-button.active {
+  color: #e11d48;
 }
 
-.like-svg.heart-filled {
-  fill: currentColor;
-  stroke: currentColor;
+.like-button.active .control-icon {
+  transform: scale(1.08);
 }
+
 
 /* =========================================================
-   AUDIO
+   AUDIO FLOTTANT
 ========================================================= */
 
 .floating-audio {
-  min-width: 0;
-
   flex: 1;
 
   display: flex;
+
   align-items: center;
-  gap: 8px;
-}
 
-.audio-icon-box {
-  width: 34px;
-  height: 34px;
+  gap: 10px;
 
-  flex-shrink: 0;
+  min-width: 0;
 
-  display: grid;
-  place-items: center;
+  padding-left: 10px;
 
-  border-radius: 10px;
-
-  background:
-    rgba(67, 133, 245, 0.16);
-
-  color: #8cb6ff;
-}
-
-.audio-icon-box svg {
-  width: 17px;
-  height: 17px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  border-left:
+    1px solid rgba(100, 116, 139, 0.15);
 }
 
 .audio-play-button {
-  width: 35px;
-  height: 35px;
+  flex:
+    0 0
+    40px;
 
-  flex-shrink: 0;
-
-  display: grid;
-  place-items: center;
+  width: 40px;
+  height: 40px;
 
   border: 0;
+
   border-radius: 50%;
 
-  background: #ffffff;
-  color: #101218;
+  background:
+    linear-gradient(
+      135deg,
+      var(--reader-blue),
+      var(--reader-purple)
+    );
+
+  color: #fff;
 
   cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.22);
+
+  transition:
+    transform 0.2s ease;
 }
 
-.audio-play-button svg {
-  width: 15px;
-  height: 15px;
-
-  fill: currentColor;
-}
-
-.audio-play-button .pause-icon {
-  display: none;
-}
-
-.audio-play-button.is-playing .play-icon {
-  display: none;
-}
-
-.audio-play-button.is-playing .pause-icon {
-  display: block;
+.audio-play-button:hover {
+  transform: scale(1.06);
 }
 
 .audio-progress-area {
-  min-width: 0;
   flex: 1;
+
+  min-width: 0;
 }
 
 .audio-top-line {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+
+  justify-content: space-between;
 
   margin-bottom: 2px;
-}
 
-.audio-top-line span {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--reader-muted);
 
   font-size: 9px;
-  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
-.audio-progress,
-.audio-volume {
-  appearance: none;
-  -webkit-appearance: none;
+.audio-progress {
+  display: block;
 
   width: 100%;
   height: 4px;
 
-  border-radius: 999px;
+  cursor: pointer;
 
-  background: rgba(255, 255, 255, 0.15);
+  accent-color: var(--reader-blue);
+}
+
+.audio-small-button {
+  flex:
+    0 0
+    34px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.55);
 
   cursor: pointer;
-}
-
-.audio-progress::-webkit-slider-thumb,
-.audio-volume::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-
-  width: 10px;
-  height: 10px;
-
-  border: 0;
-  border-radius: 50%;
-
-  background: #ffffff;
-}
-
-.audio-progress::-moz-range-thumb,
-.audio-volume::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-
-  border: 0;
-  border-radius: 50%;
-
-  background: #ffffff;
 }
 
 .audio-volume {
   width: 65px;
+
+  accent-color: var(--reader-blue);
 }
 
-.audio-small-button {
-  width: 34px;
-  height: 34px;
-
-  flex-shrink: 0;
-
-  display: grid;
-  place-items: center;
-
-  border: 0;
-  border-radius: 9px;
-
-  background: transparent;
-  color: rgba(255, 255, 255, 0.62);
-
-  cursor: pointer;
-}
-
-.audio-small-button:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
-}
-
-.audio-small-button svg {
-  width: 17px;
-  height: 17px;
-
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.audio-small-button.is-muted {
-  color: #ff6c7f;
-}
-
-/* =========================================================
-   BLACK THEME
-========================================================= */
-
-body.theme-black .chapter-page-body,
-body.theme-black {
-  --reader-bg: #090a0d;
-  --reader-surface: rgba(17, 19, 24, 0.86);
-  --reader-surface-solid: #111318;
-  --reader-text: #f5f7fa;
-  --reader-muted: #9ca3af;
-  --reader-border: rgba(255, 255, 255, 0.08);
-
-  --reader-paper: #111318;
-  --reader-paper-text: #eceff3;
-}
-
-body.theme-black .reader-background-overlay {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(9, 10, 13, 0.88),
-      rgba(9, 10, 13, 0.97)
-    );
-}
-
-body.theme-black .reader-header {
-  background: rgba(12, 13, 17, 0.78);
-}
-
-body.theme-black .reader-header-button {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-}
-
-body.theme-black .chapter-cover-area {
-  background: rgba(17, 19, 24, 0.82);
-}
-
-body.theme-black .reading-paper {
-  background: #111318;
-  color: #eceff3;
-}
-
-body.theme-black .chapter-text {
-  color: #eceff3;
-}
-
-body.theme-black .paper-top,
-body.theme-black .paper-end {
-  border-color: rgba(255, 255, 255, 0.07);
-}
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
-@media (max-width: 820px) {
-
-  .reader-header-inner {
-    width: min(
-      100% - 20px,
-      1180px
-    );
-
-    min-height: 60px;
-  }
-
-  .reader-nav {
-    position: absolute;
-
-    top: calc(100% + 1px);
-    left: 10px;
-    right: 10px;
-
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-
-    padding: 8px;
-
-    border: 1px solid var(--reader-border);
-    border-radius: 15px;
-
-    background:
-      rgba(255, 255, 255, 0.96);
-
-    box-shadow:
-      0 18px 45px rgba(20, 30, 50, 0.14);
-
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-  }
-
-  .reader-nav.mobile-open {
-    display: flex;
-  }
-
-  .reader-nav a {
-    padding: 12px;
-  }
-
-  .reader-menu-button {
-    display: grid;
-  }
+@media (max-width: 760px) {
 
   .reader-page {
-    width: min(
-      100% - 16px,
-      1180px
-    );
-
-    padding-top: 18px;
+    padding:
+      20px
+      13px
+      210px;
   }
 
-  .chapter-cover-area {
-    gap: 16px;
-    padding: 16px;
-    border-radius: 18px;
+  .reader-back {
+    margin-bottom: 25px;
   }
 
   .chapter-image-wrap {
-    width: 105px;
-    min-width: 105px;
+    width: min(100%, 390px);
   }
 
-  .chapter-heading h1 {
-    font-size: 25px;
+  .chapter-main-image {
+    max-height: 450px;
+  }
+
+  .reading-area {
+    margin-top: 45px;
+  }
+
+  .reading-paper {
+    padding:
+      55px
+      27px
+      65px;
+
+    border-radius: 5px;
+  }
+
+  .reading-paper::before {
+    left: 17px;
+  }
+
+  .paper-top {
+    margin-bottom: 40px;
   }
 
   .chapter-text {
-    padding: 30px 25px;
     font-size: 17px;
-    line-height: 1.82;
+    line-height: 1.9;
   }
 
-  .chapter-images {
-    padding-inline: 20px;
-  }
-
-  .manga-reader {
-    padding: 8px;
-    border-radius: 14px;
-  }
-
-  .manga-viewport {
-    min-height: 74vh;
-    border-radius: 10px;
-  }
-
-  .manga-page-stage {
-    height: 74vh;
-  }
-
-  .manga-arrow {
-    width: 40px;
-    height: 40px;
-  }
-
-  .manga-arrow-left {
-    left: 8px;
-  }
-
-  .manga-arrow-right {
-    right: 8px;
+  .chapter-text p {
+    margin-bottom: 24px;
   }
 
   .chapter-navigation {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .chapter-nav-btn {
+    width: 100%;
+    min-width: 0;
   }
 
   .chapter-nav-btn.next {
-    justify-content: flex-end;
+    margin-left: 0;
   }
 
   .reader-controls {
-    bottom: 10px;
-    width: calc(100% - 14px);
+    width: calc(100% - 18px);
+
+    bottom: 9px;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 8px;
+
+    border-radius: 22px;
   }
 
-  .reader-control-panel {
-    gap: 4px;
-    padding: 6px;
-    border-radius: 14px;
-  }
+  .floating-stats {
+    width: 100%;
 
-  .control-stats {
-    gap: 0;
+    justify-content: space-around;
   }
 
   .control-stat,
   .control-button {
-    min-width: 34px;
-    height: 35px;
+    flex: 1;
+
+    justify-content: center;
   }
 
-  .audio-icon-box {
-    display: none;
+  .floating-audio {
+    width: 100%;
+
+    padding:
+      7px
+      4px
+      2px;
+
+    border-left: 0;
+
+    border-top:
+      1px solid rgba(100, 116, 139, 0.12);
   }
 
   .audio-volume {
     display: none;
   }
 
-  .floating-audio {
-    gap: 5px;
-  }
-
-  .webtoon-reader {
-    border-radius: 10px;
+  .audio-small-button {
+    flex-shrink: 0;
   }
 }
 
-@media (max-width: 520px) {
 
-  .reader-logo-text {
-    display: none;
+/* =========================================================
+   PETITS ÉCRANS
+========================================================= */
+
+@media (max-width: 430px) {
+
+  .reader-page {
+    padding-left: 9px;
+    padding-right: 9px;
   }
 
-  .reader-logo-mark {
-    width: 36px;
-    height: 36px;
-  }
-
-  .chapter-cover-area {
-    align-items: flex-start;
-  }
-
-  .chapter-image-wrap {
-    width: 82px;
-    min-width: 82px;
-  }
-
-  .chapter-heading h1 {
-    font-size: 21px;
-  }
-
-  .chapter-number {
-    font-size: 11px;
+  #chapterTitle {
+    font-size: 31px;
   }
 
   .series-name {
-    font-size: 12px;
+    font-size: 14px;
+  }
+
+  .chapter-main-image {
+    border-radius: 20px;
+  }
+
+  .reading-paper {
+    padding:
+      48px
+      22px
+      55px;
+  }
+
+  .reading-paper::before {
+    left: 13px;
   }
 
   .chapter-text {
-    padding: 25px 18px;
     font-size: 16px;
+    line-height: 1.85;
   }
 
-  .paper-top {
-    padding: 17px 20px;
-  }
-
-  .chapter-images {
-    padding-inline: 12px;
-  }
-
-  .manga-viewport {
-    min-height: 68vh;
-  }
-
-  .manga-page-stage {
-    height: 68vh;
-  }
-
-  .manga-arrow {
-    opacity: 0.72;
-  }
-
-  .manga-bottom-controls {
-    padding-inline: 0;
-  }
-
-  .comic-control-button {
-    min-width: auto;
-    padding-inline: 8px;
-  }
-
-  .comic-control-button span {
+  .control-stat small,
+  .control-button small {
     display: none;
   }
 
-  .reader-controls.controls-hidden {
-    opacity: 0.08;
+  .control-icon,
+  .stat-icon {
+    font-size: 17px;
+  }
+   }
+
+/* =========================================================
+   CORRECTION — ÉLÉMENTS CACHÉS
+========================================================= */
+
+[hidden] {
+  display: none !important;
+}
+
+/* =========================================================
+   BSCompany — CONSOLE FLOTTANTE DU LECTEUR
+   ========================================================= */
+
+.reader-controls {
+  position: fixed;
+  z-index: 1000;
+
+  left: 50%;
+  bottom: 22px;
+
+  transform: translateX(-50%);
+
+  width: min(94vw, 420px);
+
+  pointer-events: none;
+}
+
+.reader-control-panel {
+  pointer-events: auto;
+
+  width: 100%;
+
+  padding: 10px 12px 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 28, 42, 0.96),
+      rgba(12, 15, 27, 0.96)
+    );
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.38),
+    0 4px 14px rgba(0, 0, 0, 0.22);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  color: #fff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   POIGNÉE
+   ========================================================= */
+
+.panel-handle {
+  width: 100%;
+
+  height: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 7px;
+}
+
+.panel-handle span {
+  display: block;
+
+  width: 34px;
+  height: 3px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.28);
+}
+
+
+/* =========================================================
+   STATISTIQUES
+   ========================================================= */
+
+.control-stats {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    0.8fr;
+
+  gap: 7px;
+
+  align-items: stretch;
+}
+
+
+.control-stat,
+.control-button,
+.like-button {
+  min-width: 0;
+
+  border: 0;
+
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.055);
+
+  color: inherit;
+
+  box-sizing: border-box;
+}
+
+
+.control-stat {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 9px 8px;
+}
+
+
+.control-button,
+.like-button {
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.control-button {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 9px 8px;
+
+  text-align: left;
+}
+
+
+.control-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+
+  transform: translateY(-1px);
+}
+
+
+.control-button:active,
+.like-button:active {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   ICÔNES SVG
+   ========================================================= */
+
+.control-svg {
+  width: 25px;
+  height: 25px;
+
+  flex: 0 0 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+.control-svg svg,
+.audio-icon-box svg,
+.audio-small-button svg,
+.audio-play-button svg {
+  width: 100%;
+  height: 100%;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+.control-info {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  line-height: 1.1;
+}
+
+
+.control-info strong {
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.control-info small {
+  margin-top: 3px;
+
+  font-size: 9px;
+
+  color: rgba(255, 255, 255, 0.52);
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   LIKE
+   ========================================================= */
+
+.like-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 8px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.like-svg {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+.like-svg svg {
+  width: 100%;
+  height: 100%;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+.heart-filled {
+  display: none;
+}
+
+
+.like-button.liked {
+  background: rgba(132, 91, 255, 0.18);
+
+  color: #a88aff;
+
+  border: 1px solid rgba(132, 91, 255, 0.22);
+}
+
+
+.like-button.liked .heart-outline {
+  display: none;
+}
+
+
+.like-button.liked .heart-filled {
+  display: block;
+
+  fill: currentColor;
+
+  stroke: currentColor;
+}
+
+
+/* =========================================================
+   AUDIO
+   ========================================================= */
+
+.floating-audio {
+  display: grid;
+
+  grid-template-columns:
+    34px
+    34px
+    minmax(0, 1fr)
+    28px
+    60px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 8px;
+
+  padding: 8px;
+
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.18);
+}
+
+
+.audio-icon-box {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255, 255, 255, 0.65);
+}
+
+
+.audio-icon-box svg {
+  width: 19px;
+  height: 19px;
+}
+
+
+/* =========================================================
+   PLAY / PAUSE
+   ========================================================= */
+
+.audio-play-button {
+  width: 32px;
+  height: 32px;
+
+  padding: 7px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  color: #fff;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.audio-play-button:hover {
+  background: rgba(255, 255, 255, 0.17);
+
+  transform: scale(1.05);
+}
+
+
+.audio-play-button:active {
+  transform: scale(0.93);
+}
+
+
+.audio-play-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+.pause-icon {
+  display: none;
+}
+
+
+/* =========================================================
+   PROGRESSION AUDIO
+   ========================================================= */
+
+.audio-progress-area {
+  min-width: 0;
+}
+
+
+.audio-top-line {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  margin-bottom: 4px;
+}
+
+
+.audio-top-line span {
+  font-size: 9px;
+
+  color: rgba(255, 255, 255, 0.52);
+}
+
+
+.audio-top-line span:last-child {
+  font-variant-numeric: tabular-nums;
+
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+.audio-progress,
+.audio-volume {
+  display: block;
+
+  width: 100%;
+
+  height: 3px;
+
+  margin: 0;
+
+  accent-color: #9b7cff;
+
+  cursor: pointer;
+}
+
+
+.audio-progress {
+  width: 100%;
+}
+
+
+.audio-volume {
+  width: 58px;
+}
+
+
+/* =========================================================
+   MUTE
+   ========================================================= */
+
+.audio-small-button {
+  width: 28px;
+  height: 28px;
+
+  padding: 5px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: rgba(255, 255, 255, 0.65);
+
+  cursor: pointer;
+}
+
+
+.audio-small-button:hover {
+  background: rgba(255, 255, 255, 0.07);
+
+  color: #fff;
+}
+
+
+.audio-small-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+/* =========================================================
+   FOCUS ACCESSIBLE
+   ========================================================= */
+
+.control-button:focus-visible,
+.like-button:focus-visible,
+.audio-play-button:focus-visible,
+.audio-small-button:focus-visible {
+  outline: 2px solid rgba(155, 124, 255, 0.8);
+
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .reader-controls {
+    width: calc(100vw - 24px);
+
+    bottom: 12px;
   }
 
   .reader-control-panel {
-    min-height: 50px;
+    padding: 8px 9px 9px;
+
+    border-radius: 17px;
   }
 
-  .control-stat span,
-  .control-button span {
-    font-size: 10px;
+  .control-stats {
+    gap: 5px;
   }
 
-  .audio-play-button {
-    width: 32px;
-    height: 32px;
+  .control-stat,
+  .control-button {
+    padding: 8px 6px;
+
+    gap: 6px;
   }
 
-  .audio-small-button {
-    width: 30px;
-    height: 30px;
-  }
-}
+  .control-svg {
+    width: 22px;
+    height: 22px;
 
-/* =========================================================
-   VERY SMALL
-========================================================= */
-
-@media (max-width: 370px) {
-
-  .chapter-cover-area {
-    padding: 12px;
+    flex-basis: 22px;
   }
 
-  .chapter-image-wrap {
-    width: 68px;
-    min-width: 68px;
+  .control-info strong {
+    font-size: 12px;
   }
 
-  .chapter-heading h1 {
-    font-size: 18px;
-  }
-
-  .chapter-type {
+  .control-info small {
     font-size: 8px;
   }
 
-  .manga-viewport {
-    min-height: 64vh;
+  .like-button {
+    padding: 7px;
+
+    font-size: 13px;
   }
 
-  .manga-page-stage {
-    height: 64vh;
+  .floating-audio {
+    grid-template-columns:
+      27px
+      32px
+      minmax(0, 1fr)
+      27px
+      45px;
+
+    gap: 5px;
+
+    padding: 7px;
+  }
+
+  .audio-icon-box {
+    width: 27px;
+    height: 27px;
+  }
+
+  .audio-volume {
+    width: 45px;
   }
 }
 
+
 /* =========================================================
-   REDUCED MOTION
+   TRÈS PETITS ÉCRANS
+   ========================================================= */
+
+@media (max-width: 350px) {
+
+  .reader-controls {
+    width: calc(100vw - 16px);
+
+    bottom: 8px;
+  }
+
+  .control-info small {
+    display: none;
+  }
+
+  .control-stat,
+  .control-button {
+    justify-content: center;
+  }
+
+  .floating-audio {
+    grid-template-columns:
+      25px
+      30px
+      minmax(0, 1fr)
+      25px;
+
+    gap: 4px;
+  }
+
+  .audio-volume {
+    display: none;
+  }
+
+   }
+
+/* =========================================================
+   THÈME BLACK — LECTEUR DE CHAPITRE
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
+[data-theme="black"] .chapter-page-body {
+  background: var(--bg);
+  color: var(--ink);
+}
 
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-     }
+[data-theme="black"] .reader-background {
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(124, 58, 237, 0.18),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(47, 111, 237, 0.16),
+      transparent 40%
+    ),
+    var(--bg);
+}
+
+[data-theme="black"] .reader-background-overlay {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 16, 0.58),
+      rgba(7, 10, 16, 0.86)
+    );
+}
+
+[data-theme="black"] .reader-header {
+  background: rgba(13, 17, 26, 0.78);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .reader-back {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(13, 17, 26, 0.62);
+  color: var(--ink);
+}
+
+[data-theme="black"] .reader-back:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .chapter-main-image {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(13, 17, 26, 0.5);
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="black"] #chapterTitle {
+  color: var(--ink);
+}
+
+[data-theme="black"] .reading-paper {
+  background:
+    linear-gradient(
+      180deg,
+      #151922 0%,
+      #11151D 100%
+    );
+
+  border-color: #252D3B;
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.42),
+    0 5px 15px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="black"] .reading-paper::before {
+  background: rgba(239, 68, 68, 0.10);
+}
+
+[data-theme="black"] .reading-paper::after {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(79, 140, 255, 0.10),
+      rgba(124, 58, 237, 0.10)
+    );
+}
+
+[data-theme="black"] .paper-shadow {
+  background: rgba(0, 0, 0, 0.40);
+}
+
+[data-theme="black"] .paper-top {
+  border-bottom-color: rgba(148, 163, 184, 0.14);
+  color: #7F899C;
+}
+
+[data-theme="black"] .paper-chapter {
+  color: #7F899C;
+}
+
+[data-theme="black"] .chapter-text {
+  color: #D9DEE8;
+}
+
+[data-theme="black"] .chapter-images img {
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.38);
+}
+
+[data-theme="black"] .paper-end {
+  border-top-color: rgba(148, 163, 184, 0.14);
+  color: #7F899C;
+}
+
+[data-theme="black"] .chapter-nav-btn {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(13, 17, 26, 0.72);
+  color: var(--ink);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="black"] .chapter-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="black"] .nav-content small {
+  color: var(--reader-muted);
+}
