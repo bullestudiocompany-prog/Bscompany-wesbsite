@@ -1390,20 +1390,167 @@
   transform-origin: top center;
 
   /*
-   * Le zoom est appliqué au contenu entier.
-   * La hauteur reste naturelle pour permettre
-   * le scroll vertical.
-   */
-  transform: scale(var(--webtoon-zoom));
+/* =========================================================
+   WEBTOON — LECTEUR VERTICAL
+   ========================================================= */
 
-  transition: transform 0.2s ease;
+.webcomic-webtoon-reader {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
 }
+
+
+/* =========================================================
+   CONTRÔLES WEBTOON
+   ========================================================= */
+
+.webcomic-webtoon-controls {
+  position: sticky;
+  top: 12px;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: fit-content;
+  margin: 0 auto 18px;
+
+  padding: 7px 9px;
+
+  background: rgba(13, 17, 26, 0.92);
+  border: 1px solid rgba(120, 130, 255, 0.25);
+  border-radius: 14px;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.webcomic-webtoon-control {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+
+  font-size: 21px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.webcomic-webtoon-control:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.webcomic-webtoon-control:active {
+  transform: scale(0.94);
+}
+
+.webcomic-webtoon-control:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.webcomic-webtoon-zoom-value {
+  min-width: 52px;
+
+  text-align: center;
+
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   ZONE DE LECTURE WEBTOON
+   ========================================================= */
+
+.webcomic-webtoon-stage {
+  width: 100%;
+  max-width: 1000px;
+
+  margin: 0 auto;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  -webkit-overflow-scrolling: touch;
+
+  background: var(--webcomic-page-bg);
+
+  border-radius: var(--webcomic-radius);
+
+  box-shadow: var(--webcomic-shadow);
+
+  /*
+   * Important :
+   * aucun transform ici.
+   * Le zoom est géré par la largeur réelle
+   * du contenu.
+   */
+}
+
+
+/* =========================================================
+   CONTENEUR DES IMAGES
+   ========================================================= */
+
+.webcomic-webtoon-images {
+  --webtoon-zoom: 1;
+
+  width: calc(100% * var(--webtoon-zoom));
+  min-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  margin: 0 auto;
+
+  transform: none;
+
+  transition:
+    width 0.2s ease;
+}
+
+
+/* =========================================================
+   MORCEAUX D'UNE LONGUE IMAGE WEBTOON
+   ========================================================= */
 
 .webcomic-webtoon-slice {
   width: 100%;
   max-width: 1000px;
 
+  flex: 0 0 auto;
+
   margin: 0 auto;
+  padding: 0;
 
   line-height: 0;
 
@@ -1412,25 +1559,62 @@
   background: transparent;
 }
 
+
+/* =========================================================
+   IMAGES WEBTOON
+   ========================================================= */
+
 .webcomic-webtoon-image {
   display: block;
 
   width: 100%;
   height: auto;
 
-  max-width: 100%;
+  max-width: none;
 
-  margin: 0 auto;
+  margin: 0;
+  padding: 0;
 
   object-fit: contain;
 
   user-select: none;
   -webkit-user-select: none;
 
+  -webkit-touch-callout: none;
   -webkit-user-drag: none;
 
   image-rendering: auto;
 }
+
+
+/* =========================================================
+   ANCIENNE CLASSE — COMPATIBILITÉ
+   ========================================================= */
+
+.webcomic-webtoon-page {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  object-fit: contain;
+
+  background: var(--webcomic-page-bg);
+
+  user-select: none;
+  -webkit-user-select: none;
+
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+
+
+/* =========================================================
+   IMAGE EN ERREUR
+   ========================================================= */
 
 .webcomic-webtoon-image-error {
   width: min(100%, 900px);
@@ -1444,10 +1628,12 @@
   border-radius: 14px;
 
   background: rgba(255, 70, 70, 0.08);
+
   border: 1px solid rgba(255, 70, 70, 0.2);
 
   color: #ff8585;
 }
+
 
 /* =========================================================
    WEBTOON — MOBILE
@@ -1477,34 +1663,53 @@
     font-size: 12px;
   }
 
+  .webcomic-webtoon-stage {
+    width: 100%;
+
+    max-width: none;
+
+    border-radius: 0;
+  }
+
+  .webcomic-webtoon-images {
+    width: calc(100% * var(--webtoon-zoom));
+
+    min-width: 100%;
+  }
+
   .webcomic-webtoon-slice {
     width: 100%;
-    max-width: 100%;
+    max-width: none;
   }
 
   .webcomic-webtoon-image {
     width: 100%;
-    max-width: 100%;
+    max-width: none;
   }
 }
+
 
 /* =========================================================
    WEBTOON — THÈME BLACK
    ========================================================= */
 
 [data-theme="black"] .webcomic-webtoon-controls {
-  background: rgba(13, 17, 26, 0.92);
-  border-color: rgba(120, 130, 255, 0.25);
+  background: rgba(13, 17, 26, 0.94);
+
+  border-color:
+    rgba(120, 130, 255, 0.25);
 }
 
 [data-theme="black"] .webcomic-webtoon-control {
   background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
+
+  color: #fff;
 }
 
 [data-theme="black"] .webcomic-webtoon-control:hover {
   background: rgba(255, 255, 255, 0.14);
-                   }
+}
+
 
 /* =========================================================
    FIN — BSCOMPANY WEBCOMIC READER
