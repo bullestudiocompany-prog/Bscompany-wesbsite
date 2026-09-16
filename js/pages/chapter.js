@@ -1340,6 +1340,12 @@ function createMangaArrow(
 
 /* =========================================================
    LECTEUR WEBTOON
+   ---------------------------------------------------------
+   MODIFIÉ :
+   - lecture verticale
+   - découpage automatique des bandes très longues
+   - zoom
+   - chargement progressif
 ========================================================= */
 
 function renderWebtoonChapter(chapter) {
@@ -1382,77 +1388,470 @@ function renderWebtoonChapter(chapter) {
   webtoonReader.className =
     "webcomic-webtoon-reader";
 
+  /* =======================================================
+     CONTRÔLES DE ZOOM
+  ======================================================= */
+
+  const controls =
+    document.createElement("div");
+
+  controls.className =
+    "webcomic-webtoon-controls";
+
+  const zoomOut =
+    document.createElement("button");
+
+  zoomOut.type = "button";
+
+  zoomOut.className =
+    "webcomic-webtoon-control";
+
+  zoomOut.setAttribute(
+    "aria-label",
+    "Réduire le zoom"
+  );
+
+  zoomOut.textContent = "−";
+
+  const zoomValue =
+    document.createElement("span");
+
+  zoomValue.className =
+    "webcomic-webtoon-zoom-value";
+
+  zoomValue.textContent =
+    "100%";
+
+  const zoomIn =
+    document.createElement("button");
+
+  zoomIn.type = "button";
+
+  zoomIn.className =
+    "webcomic-webtoon-control";
+
+  zoomIn.setAttribute(
+    "aria-label",
+    "Augmenter le zoom"
+  );
+
+  zoomIn.textContent = "+";
+
+  const zoomReset =
+    document.createElement("button");
+
+  zoomReset.type = "button";
+
+  zoomReset.className =
+    "webcomic-webtoon-control";
+
+  zoomReset.setAttribute(
+    "aria-label",
+    "Réinitialiser le zoom"
+  );
+
+  zoomReset.textContent =
+    "↺";
+
+  controls.appendChild(zoomOut);
+  controls.appendChild(zoomValue);
+  controls.appendChild(zoomIn);
+  controls.appendChild(zoomReset);
+
+  webtoonReader.appendChild(
+    controls
+  );
+
+  /* =======================================================
+     ZONE DE LECTURE
+  ======================================================= */
+
   const stage =
     document.createElement("div");
 
   stage.className =
     "webcomic-webtoon-stage";
 
-  /*
-   * Images chargées progressivement afin de ne pas
-   * demander toutes les images immédiatement.
-   */
+  const imageContainer =
+    document.createElement("div");
 
-  images.forEach(
-    (imageUrl, index) => {
-      const img =
-        document.createElement("img");
+  imageContainer.className =
+    "webcomic-webtoon-images";
 
-      img.className =
-        "webcomic-webtoon-page webcomic-image-loading";
+  stage.appendChild(
+    imageContainer
+  );
 
-      img.src = imageUrl;
+  webtoonReader.appendChild(
+    stage
+  );
 
-      img.alt =
-        `${chapter.title || "Chapitre"} — page ${index + 1}`;
+  /* =======================================================
+     ZOOM
+  ======================================================= */
 
-      img.loading =
-        index < 2
-          ? "eager"
-          : "lazy";
+  let zoom = 1;
 
-      img.decoding = "async";
-
-      img.draggable = false;
-
-      img.addEventListener(
-        "load",
-        () => {
-          img.classList.remove(
-            "webcomic-image-loading"
-          );
-
-          img.classList.add(
-            "webcomic-image-loaded"
-          );
-        },
-        { once: true }
+  function updateZoom() {
+    zoom =
+      Math.max(
+        0.75,
+        Math.min(
+          2.5,
+          zoom
+        )
       );
 
-      img.addEventListener(
-        "error",
-        () => {
-          img.classList.remove(
-            "webcomic-image-loading"
-          );
+    imageContainer.style.setProperty(
+      "--webtoon-zoom",
+      zoom.toFixed(2)
+    );
 
-          img.classList.add(
-            "webcomic-hidden"
-          );
-        },
-        { once: true }
-      );
+    zoomValue.textContent =
+      `${Math.round(zoom * 100)}%`;
 
-      stage.appendChild(img);
+    zoomOut.disabled =
+      zoom <= 0.75;
+
+    zoomIn.disabled =
+      zoom >= 2.5;
+  }
+
+  zoomOut.addEventListener(
+    "click",
+    () => {
+      zoom -= 0.25;
+      updateZoom();
     }
   );
 
-  webtoonReader.appendChild(stage);
+  zoomIn.addEventListener(
+    "click",
+    () => {
+      zoom += 0.25;
+      updateZoom();
+    }
+  );
+
+  zoomReset.addEventListener(
+    "click",
+    () => {
+      zoom = 1;
+      updateZoom();
+    }
+  );
+
+  /* =======================================================
+     CRÉATION D'UNE IMAGE WEBTOON
+  ======================================================= */
+
+  function createWebtoonImage(
+    imageUrl,
+    imageIndex,
+    partNumber
+  ) {
+    const wrapper =
+      document.createElement("div");
+
+    wrapper.className =
+      "webcomic-webtoon-page-wrapper";
+
+    const img =
+      document.createElement("img");
+
+    img.className =
+      "webcomic-webtoon-page webcomic-image-loading";
+
+    img.src =
+      imageUrl;
+
+    img.alt =
+      `${chapter.title || "Chapitre"} — partie ${imageIndex + 1}.${partNumber}`;
+
+    /*
+     * Les premières parties sont prioritaires.
+     */
+
+    img.loading =
+      imageIndex < 1 && partNumber <= 2
+        ? "eager"
+        : "lazy";
+
+    img.decoding =
+      "async";
+
+    img.draggable =
+      false;
+
+    img.addEventListener(
+      "load",
+      () => {
+        img.classList.remove(
+          "webcomic-image-loading"
+        );
+
+        img.classList.add(
+          "webcomic-image-loaded"
+        );
+      },
+      { once: true }
+    );
+
+    img.addEventListener(
+      "error",
+      () => {
+        img.classList.remove(
+          "webcomic-image-loading"
+        );
+
+        img.classList.add(
+          "webcomic-hidden"
+        );
+      },
+      { once: true }
+    );
+
+    wrapper.appendChild(img);
+
+    imageContainer.appendChild(
+      wrapper
+    );
+  }
+
+  /* =======================================================
+     DÉCOUPAGE DES BANDES WEBTOON
+  ======================================================= */
+
+  /*
+   * Au-delà de cette hauteur, une image est découpée.
+   *
+   * Le découpage est technique :
+   * il sépare une très longue image en plusieurs
+   * morceaux verticaux afin d'éviter d'avoir une
+   * seule image gigantesque dans le lecteur.
+   */
+
+  const MAX_SLICE_HEIGHT =
+    2200;
+
+  async function processWebtoonImage(
+    imageUrl,
+    imageIndex
+  ) {
+    return new Promise(resolve => {
+
+      const sourceImage =
+        new Image();
+
+      sourceImage.onload =
+        async () => {
+
+          try {
+
+            const width =
+              sourceImage.naturalWidth;
+
+            const height =
+              sourceImage.naturalHeight;
+
+            /*
+             * Image suffisamment courte :
+             * aucun découpage nécessaire.
+             */
+
+            if (
+              height <=
+              MAX_SLICE_HEIGHT
+            ) {
+
+              createWebtoonImage(
+                imageUrl,
+                imageIndex,
+                1
+              );
+
+              resolve();
+
+              return;
+            }
+
+            /*
+             * Image très longue :
+             * découpage vertical automatique.
+             */
+
+            let offsetY = 0;
+            let partNumber = 1;
+
+            while (
+              offsetY < height
+            ) {
+
+              const sliceHeight =
+                Math.min(
+                  MAX_SLICE_HEIGHT,
+                  height - offsetY
+                );
+
+              const canvas =
+                document.createElement(
+                  "canvas"
+                );
+
+              canvas.width =
+                width;
+
+              canvas.height =
+                sliceHeight;
+
+              const context =
+                canvas.getContext(
+                  "2d"
+                );
+
+              if (!context) {
+                throw new Error(
+                  "Canvas non disponible."
+                );
+              }
+
+              context.drawImage(
+                sourceImage,
+
+                0,
+                offsetY,
+                width,
+                sliceHeight,
+
+                0,
+                0,
+                width,
+                sliceHeight
+              );
+
+              /*
+               * Qualité élevée pour conserver
+               * le texte et les dessins nets.
+               */
+
+              const sliceUrl =
+                canvas.toDataURL(
+                  "image/jpeg",
+                  0.94
+                );
+
+              createWebtoonImage(
+                sliceUrl,
+                imageIndex,
+                partNumber
+              );
+
+              offsetY +=
+                sliceHeight;
+
+              partNumber++;
+
+              /*
+               * Petite pause pour éviter de bloquer
+               * complètement le navigateur sur téléphone.
+               */
+
+              await new Promise(
+                requestAnimationFrame
+              );
+            }
+
+            resolve();
+
+          } catch (error) {
+
+            console.error(
+              "Erreur découpage Webtoon :",
+              error
+            );
+
+            /*
+             * Si le découpage échoue,
+             * on conserve l'image originale.
+             */
+
+            createWebtoonImage(
+              imageUrl,
+              imageIndex,
+              1
+            );
+
+            resolve();
+          }
+        };
+
+      sourceImage.onerror =
+        () => {
+
+          console.error(
+            "Impossible de charger l'image Webtoon :",
+            imageUrl
+          );
+
+          const errorBlock =
+            document.createElement(
+              "div"
+            );
+
+          errorBlock.className =
+            "webcomic-webtoon-image-error";
+
+          errorBlock.textContent =
+            "Impossible de charger cette bande.";
+
+          imageContainer.appendChild(
+            errorBlock
+          );
+
+          resolve();
+        };
+
+      sourceImage.src =
+        imageUrl;
+    });
+  }
+
+  /* =======================================================
+     TRAITEMENT DES IMAGES
+  ======================================================= */
+
+  async function processAllImages() {
+
+    for (
+      let index = 0;
+      index < images.length;
+      index++
+    ) {
+
+      await processWebtoonImage(
+        images[index],
+        index
+      );
+    }
+  }
+
+  /*
+   * On lance le traitement sans bloquer
+   * le reste de la page.
+   */
+
+  processAllImages();
+
+  /* =======================================================
+     FIN DU CHAPITRE
+  ======================================================= */
 
   const end =
     createWebcomicChapterEnd();
 
-  webtoonReader.appendChild(end);
+  webtoonReader.appendChild(
+    end
+  );
 
   readingArea.appendChild(
     webtoonReader
@@ -1468,6 +1867,12 @@ function renderWebtoonChapter(chapter) {
   reader.appendChild(
     navigation
   );
+
+  /*
+   * Zoom initial.
+   */
+
+  updateZoom();
 }
 
 
