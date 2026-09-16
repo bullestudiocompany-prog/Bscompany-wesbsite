@@ -1,146 +1,82 @@
 import { supabase } from "../config/supabase.js";
 
 /* =========================================================
-   DOM
+   ÉLÉMENTS DOM
 ========================================================= */
 
 const loading = document.getElementById("chapterLoading");
 const errorBox = document.getElementById("chapterError");
-const errorMessage = document.getElementById("chapterErrorMessage");
-
 const reader = document.getElementById("chapterReader");
-const readerControls = document.getElementById("readerControls");
 
+const chapterTitle = document.getElementById("chapterTitle");
+const chapterNumber = document.getElementById("chapterNumber");
+const paperChapterNumber = document.getElementById("paperChapterNumber");
+const seriesTitle = document.getElementById("seriesTitle");
+const chapterType = document.getElementById("chapterType");
+const chapterViews = document.getElementById("chapterViews");
+
+const chapterImage = document.getElementById("chapterImage");
 const chapterBackground = document.getElementById("chapterBackground");
 
 const backToSeries = document.getElementById("backToSeries");
 
-const chapterImageWrap = document.getElementById("chapterImageWrap");
-const chapterImage = document.getElementById("chapterImage");
-
-const chapterType = document.getElementById("chapterType");
-const seriesTitle = document.getElementById("seriesTitle");
-const chapterNumber = document.getElementById("chapterNumber");
-const chapterTitle = document.getElementById("chapterTitle");
-
-const readingArea = document.getElementById("readingArea");
-const readingPaper = document.getElementById("readingPaper");
-
-const paperChapterNumber = document.getElementById("paperChapterNumber");
 const chapterText = document.getElementById("chapterText");
 const chapterImages = document.getElementById("chapterImages");
 
-const mangaReader = document.getElementById("mangaReader");
-const mangaViewport = document.getElementById("mangaViewport");
-const mangaPageStage = document.getElementById("mangaPageStage");
-const mangaPageImage = document.getElementById("mangaPageImage");
-const mangaPageLoading = document.getElementById("mangaPageLoading");
+const previousChapter = document.getElementById("previousChapter");
+const nextChapter = document.getElementById("nextChapter");
 
-const mangaPrevious = document.getElementById("mangaPrevious");
-const mangaNext = document.getElementById("mangaNext");
+const readerControls = document.getElementById("readerControls");
 
-const mangaBottomPrevious =
-  document.getElementById("mangaBottomPrevious");
+/* Likes */
+const likeButton = document.getElementById("likeButton");
+const likeIcon = document.getElementById("likeIcon");
+const likeCount = document.getElementById("likeCount");
 
-const mangaBottomNext =
-  document.getElementById("mangaBottomNext");
+/* Comments */
+const commentButton = document.getElementById("commentButton");
+const commentCount = document.getElementById("commentCount");
 
-const mangaPageCounter =
-  document.getElementById("mangaPageCounter");
+/* Audio */
+const audioSection = document.getElementById("audioSection");
+const audio = document.getElementById("chapterAudio");
+const playButton = document.getElementById("audioPlay");
+const progress = document.getElementById("audioProgress");
+const muteButton = document.getElementById("audioMute");
+const volume = document.getElementById("audioVolume");
+const audioTime = document.getElementById("audioTime");
 
-const mangaBottomCounter =
-  document.getElementById("mangaBottomCounter");
-
-const mangaFullscreen =
-  document.getElementById("mangaFullscreen");
-
-const webtoonReader = document.getElementById("webtoonReader");
-const webtoonPages = document.getElementById("webtoonPages");
-const webtoonPageCount = document.getElementById("webtoonPageCount");
-
-const webtoonFullscreen =
-  document.getElementById("webtoonFullscreen");
-
-const previousChapter =
-  document.getElementById("previousChapter");
-
-const nextChapter =
-  document.getElementById("nextChapter");
-
-const chapterViews =
-  document.getElementById("chapterViews");
-
-const commentButton =
-  document.getElementById("commentButton");
-
-const commentCount =
-  document.getElementById("commentCount");
-
-const likeButton =
-  document.getElementById("likeButton");
-
-const likeIcon =
-  document.getElementById("likeIcon");
-
-const likeCount =
-  document.getElementById("likeCount");
-
-const audioSection =
-  document.getElementById("audioSection");
-
-const chapterAudio =
-  document.getElementById("chapterAudio");
-
-const audioPlay =
-  document.getElementById("audioPlay");
-
-const audioProgress =
-  document.getElementById("audioProgress");
-
-const audioTime =
-  document.getElementById("audioTime");
-
-const audioMute =
-  document.getElementById("audioMute");
-
-const audioVolume =
-  document.getElementById("audioVolume");
-
-const mobileMenuButton =
-  document.getElementById("mobileMenuButton");
-
-const navLinks =
-  document.getElementById("navLinks");
 
 /* =========================================================
-   STATE
+   PARAMÈTRES
 ========================================================= */
 
 const params = new URLSearchParams(window.location.search);
 const chapterId = params.get("id");
 
-let currentChapter = null;
-let currentPages = [];
-
-let mangaCurrentPage = 0;
-
-let mangaTouchStartX = 0;
-let mangaTouchStartY = 0;
-
-let controlsHideTimer = null;
 
 /* =========================================================
-   HELPERS
+   ÉTAT
+========================================================= */
+
+let currentChapter = null;
+let currentPages = [];
+let mangaPageIndex = 0;
+
+let mangaTouchStartX = null;
+let mangaTouchStartY = null;
+
+
+/* =========================================================
+   OUTILS
 ========================================================= */
 
 function cleanText(value) {
-  if (!value) return "";
-
-  return String(value)
-    .replace(/<[^>]*>/g, " ")
+  return String(value || "")
     .replace(/\s+/g, " ")
     .trim();
 }
+
 
 function truncateText(value, maxLength = 160) {
   const text = cleanText(value);
@@ -149,205 +85,171 @@ function truncateText(value, maxLength = 160) {
     return text;
   }
 
-  return `${text.slice(0, maxLength - 1).trim()}…`;
+  return `${text.slice(0, maxLength).trim()}…`;
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
-function linkifyText(text) {
-  const escaped = escapeHtml(text);
+function setMetaName(name, content) {
+  if (!content) return;
 
-  return escaped.replace(
-    /(https?:\/\/[^\s]+)/g,
-    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-}
+  let meta = document.querySelector(`meta[name="${name}"]`);
 
-function getChapterNumberLabel(chapter) {
-  if (chapter?.chapter_label) {
-    return chapter.chapter_label;
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", name);
+    document.head.appendChild(meta);
   }
 
-  if (
-    chapter?.chapter_number !== null &&
-    chapter?.chapter_number !== undefined
-  ) {
-    const number = Number(chapter.chapter_number);
+  meta.setAttribute("content", content);
+}
 
-    if (Number.isFinite(number)) {
-      return Number.isInteger(number)
-        ? String(number)
-        : String(number);
-    }
 
-    return String(chapter.chapter_number);
+function setMetaProperty(property, content) {
+  if (!content) return;
+
+  let meta = document.querySelector(`meta[property="${property}"]`);
+
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("property", property);
+    document.head.appendChild(meta);
   }
 
-  if (chapter?.numero !== null && chapter?.numero !== undefined) {
-    return String(chapter.numero);
+  meta.setAttribute("content", content);
+}
+
+
+function setCanonical(url) {
+  if (!url) return;
+
+  let canonical = document.querySelector('link[rel="canonical"]');
+
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.setAttribute("rel", "canonical");
+    document.head.appendChild(canonical);
   }
 
-  return "";
+  canonical.setAttribute("href", url);
 }
 
-function getSeriesType(chapter) {
-  return chapter?.series?.type || "novel";
-}
-
-function getSeriesFormat(chapter) {
-  return chapter?.series?.format || null;
-}
-
-function isWebcomic(chapter) {
-  return getSeriesType(chapter) === "webcomic";
-}
-
-function isManga(chapter) {
-  return (
-    isWebcomic(chapter) &&
-    getSeriesFormat(chapter) === "manga"
-  );
-}
-
-function isWebtoon(chapter) {
-  return (
-    isWebcomic(chapter) &&
-    getSeriesFormat(chapter) === "webtoon"
-  );
-}
 
 /* =========================================================
    SEO
 ========================================================= */
 
-function setMetaName(name, content) {
-  const element = document.querySelector(
-    `meta[name="${name}"]`
-  );
+function setChapterSEO(chapter) {
+  const series = chapter?.series || {};
 
-  if (element) {
-    element.setAttribute("content", content || "");
-  }
-}
-
-function setMetaProperty(property, content) {
-  const element = document.querySelector(
-    `meta[property="${property}"]`
-  );
-
-  if (element) {
-    element.setAttribute("content", content || "");
-  }
-}
-
-function setCanonical(url) {
-  const element =
-    document.getElementById("canonicalUrl");
-
-  if (element) {
-    element.href = url;
-  }
-}
-
-function setChapterSEO(chapter, pages = []) {
-  const series = chapter.series || {};
-
-  const seriesName =
-    series.title ||
-    series.titre ||
-    "BSCompany";
+  const seriesName = cleanText(series.title);
+  const currentTitle = cleanText(chapter.title);
 
   const number =
-    getChapterNumberLabel(chapter);
-
-  const title =
-    chapter.title ||
-    chapter.titre ||
+    chapter.chapter_label ??
+    chapter.chapter_number ??
     "";
 
-  const chapterLabel = number
-    ? `Chapitre ${number}`
-    : title;
+  const label = cleanText(number);
 
-  const pageTitle = [
+  const fullTitle = [
     seriesName,
-    chapterLabel,
-    title
+    label ? `Chapitre ${label}` : "",
+    currentTitle
   ]
     .filter(Boolean)
     .join(" — ");
 
-  const description =
-    truncateText(chapter.content) ||
-    truncateText(series.description) ||
-    `Lisez ${chapterLabel || "ce chapitre"} sur BSCompany.`;
+  let description = cleanText(chapter.content);
 
-  let image =
+  if (!description) {
+    description = cleanText(series.description);
+  }
+
+  if (!description) {
+    description = `Découvrez ${fullTitle} sur BSCompany.`;
+  }
+
+  description = truncateText(description, 160);
+
+  const image =
     chapter.chapter_image_url ||
-    null;
+    (Array.isArray(chapter.image_urls) && chapter.image_urls.length
+      ? chapter.image_urls[0]
+      : "") ||
+    series.cover_url ||
+    "";
 
-  if (!image && pages.length > 0) {
-    image = pages[0].image_url;
-  }
+  const canonical = window.location.href;
 
-  if (!image && Array.isArray(chapter.image_urls)) {
-    image = chapter.image_urls[0];
-  }
-
-  if (!image) {
-    image = series.cover_url || "";
-  }
-
-  document.title =
-    pageTitle || "Lecture — BSCompany";
+  document.title = fullTitle
+    ? `${fullTitle} | BSCompany`
+    : "BSCompany";
 
   setMetaName("description", description);
 
-  setMetaProperty(
-    "og:title",
-    pageTitle || "Lecture — BSCompany"
-  );
+  setMetaProperty("og:title", fullTitle || "BSCompany");
+  setMetaProperty("og:description", description);
+  setMetaProperty("og:type", "article");
+  setMetaProperty("og:url", canonical);
 
-  setMetaProperty(
-    "og:description",
-    description
-  );
+  if (image) {
+    setMetaProperty("og:image", image);
+  }
 
-  setMetaProperty(
-    "og:image",
-    image
-  );
+  setMetaName("twitter:card", image ? "summary_large_image" : "summary");
+  setMetaName("twitter:title", fullTitle || "BSCompany");
+  setMetaName("twitter:description", description);
 
-  setMetaName(
-    "twitter:title",
-    pageTitle || "Lecture — BSCompany"
-  );
-
-  setMetaName(
-    "twitter:description",
-    description
-  );
-
-  setMetaName(
-    "twitter:image",
-    image
-  );
-
-  const canonical =
-    `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(chapter.id)}`;
+  if (image) {
+    setMetaName("twitter:image", image);
+  }
 
   setCanonical(canonical);
 }
 
+
 /* =========================================================
-   CHAPTER PAGES
+   UTILITAIRES WEBCOMIC
+========================================================= */
+
+function isWebcomic(chapter = currentChapter) {
+  return chapter?.series?.type === "webcomic";
+}
+
+
+function isManga(chapter = currentChapter) {
+  return (
+    isWebcomic(chapter) &&
+    chapter?.series?.format === "manga"
+  );
+}
+
+
+function isWebtoon(chapter = currentChapter) {
+  return (
+    isWebcomic(chapter) &&
+    chapter?.series?.format === "webtoon"
+  );
+}
+
+
+function getLegacyImages(chapter) {
+  if (!Array.isArray(chapter?.image_urls)) {
+    return [];
+  }
+
+  return chapter.image_urls
+    .filter(Boolean)
+    .map((url, index) => ({
+      id: `legacy-${index + 1}`,
+      page_number: index + 1,
+      image_url: url
+    }));
+}
+
+
+/* =========================================================
+   CHARGEMENT DES PAGES WEB-COMIC
 ========================================================= */
 
 async function loadChapterPages(chapter) {
@@ -357,938 +259,575 @@ async function loadChapterPages(chapter) {
 
   const { data, error } = await supabase
     .from("chapter_pages")
-    .select(`
-      id,
-      chapter_id,
-      page_number,
-      image_url
-    `)
+    .select("id, page_number, image_url")
     .eq("chapter_id", chapter.id)
-    .order("page_number", {
-      ascending: true
-    });
+    .order("page_number", { ascending: true });
 
   if (error) {
     console.warn(
-      "Impossible de charger chapter_pages:",
+      "Impossible de charger chapter_pages. Utilisation de image_urls.",
       error
     );
 
-    return [];
+    return getLegacyImages(chapter);
   }
 
   if (Array.isArray(data) && data.length > 0) {
-    return data;
+    return data.filter(page => page?.image_url);
   }
 
-  /*
-    Compatibilité avec les anciens chapitres.
-    On utilise image_urls uniquement si chapter_pages
-    ne contient aucune page.
-  */
-
-  if (Array.isArray(chapter.image_urls)) {
-    return chapter.image_urls
-      .filter(Boolean)
-      .map((url, index) => ({
-        id: `legacy-${chapter.id}-${index + 1}`,
-        chapter_id: chapter.id,
-        page_number: index + 1,
-        image_url: url
-      }));
-  }
-
-  return [];
+  return getLegacyImages(chapter);
 }
 
+
 /* =========================================================
-   LOAD CHAPTER
+   IMAGE PRINCIPALE
 ========================================================= */
 
-async function loadChapter() {
-  if (!chapterId) {
-    showError(
-      "Aucun chapitre n’a été indiqué."
-    );
-    return;
-  }
+function getHeroImage(chapter) {
+  const pages = currentPages || [];
 
-  try {
-    const { data, error } = await supabase
-      .from("chapters")
-      .select(`
-        *,
-        series (
-          id,
-          title,
-          type,
-          format,
-          cover_url,
-          description
-        )
-      `)
-      .eq("id", chapterId)
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    if (!data) {
-      throw new Error(
-        "Chapitre introuvable."
-      );
-    }
-
-    currentChapter = data;
-
-    currentPages =
-      await loadChapterPages(data);
-
-    setChapterSEO(
-      data,
-      currentPages
-    );
-
-    renderChapter(data);
-
-    await loadChapterNavigation(data);
-
-    setupAudio(data);
-
-    loading.hidden = true;
-    reader.hidden = false;
-    readerControls.hidden = false;
-
-    registerView(data);
-
-  } catch (error) {
-    console.error(
-      "Erreur chargement chapitre:",
-      error
-    );
-
-    showError(
-      "Ce chapitre est introuvable ou n’a pas pu être chargé."
-    );
-  }
+  return (
+    chapter?.chapter_image_url ||
+    pages[0]?.image_url ||
+    (Array.isArray(chapter?.image_urls)
+      ? chapter.image_urls[0]
+      : "") ||
+    chapter?.series?.cover_url ||
+    ""
+  );
 }
 
+
 /* =========================================================
-   RENDER CHAPTER
+   RENDU DU CHAPITRE
 ========================================================= */
 
 function renderChapter(chapter) {
   const series = chapter.series || {};
 
-  const type =
-    series.type || "novel";
+  const label =
+    chapter.chapter_label ??
+    chapter.chapter_number ??
+    "";
 
-  const format =
-    series.format || null;
+  const heroImage = getHeroImage(chapter);
 
-  const seriesName =
-    series.title ||
-    series.titre ||
-    "Œuvre";
+  /* ---------------------------------------------------------
+     Informations générales
+  --------------------------------------------------------- */
 
-  const number =
-    getChapterNumberLabel(chapter);
+  chapterTitle.textContent = chapter.title || "Sans titre";
 
-  const title =
-    chapter.title ||
-    chapter.titre ||
-    "Chapitre sans titre";
-
-  /* ---------------------------------------------
-     HEADER
-  --------------------------------------------- */
-
-  seriesTitle.textContent =
-    seriesName;
-
-  chapterTitle.textContent =
-    title;
-
-  chapterNumber.textContent =
-    number
-      ? `Chapitre ${number}`
-      : "Chapitre";
+  chapterNumber.textContent = label !== ""
+    ? `Chapitre ${label}`
+    : "";
 
   paperChapterNumber.textContent =
-    number
-      ? `Chapitre ${number}`
-      : "Chapitre";
+    label !== ""
+      ? `Chapitre ${label}`
+      : "";
 
-  if (type === "novel") {
-    chapterType.textContent = "ROMAN";
-  } else if (format === "manga") {
-    chapterType.textContent = "MANGA";
-  } else if (format === "webtoon") {
-    chapterType.textContent = "WEBTOON";
+  seriesTitle.textContent = series.title || "";
+
+  if (series.type === "novel") {
+    chapterType.textContent = "Roman";
+  } else if (series.type === "webcomic") {
+    chapterType.textContent = "Webcomic";
   } else {
-    chapterType.textContent = "WEBCOMIC";
+    chapterType.textContent = "";
   }
+
+
+  /* ---------------------------------------------------------
+     Retour vers l'œuvre
+  --------------------------------------------------------- */
 
   if (series.id) {
-    const seriesUrl =
-      `./serie.html?id=${encodeURIComponent(series.id)}`;
-
-    backToSeries.href = seriesUrl;
-    seriesTitle.href = seriesUrl;
+    backToSeries.href = `./serie.html?id=${encodeURIComponent(series.id)}`;
   }
 
-  /* ---------------------------------------------
-     HERO IMAGE
-  --------------------------------------------- */
 
-  let heroImage =
-    chapter.chapter_image_url ||
-    null;
-
-  if (!heroImage && currentPages.length) {
-    heroImage =
-      currentPages[0].image_url;
-  }
-
-  if (
-    !heroImage &&
-    Array.isArray(chapter.image_urls)
-  ) {
-    heroImage =
-      chapter.image_urls[0];
-  }
-
-  if (!heroImage) {
-    heroImage =
-      series.cover_url || "";
-  }
+  /* ---------------------------------------------------------
+     Image principale / couverture du chapitre
+  --------------------------------------------------------- */
 
   if (heroImage) {
     chapterImage.src = heroImage;
-    chapterImage.alt =
-      `${seriesName} — ${title}`;
+    chapterImage.alt = chapter.title
+      ? `Illustration de ${chapter.title}`
+      : "Illustration du chapitre";
 
-    chapterImageWrap.hidden = false;
+    chapterImage.hidden = false;
 
-    const backgroundImage =
-      chapterBackground.querySelector(
-        ".reader-background-image"
-      );
-
-    if (backgroundImage) {
-      backgroundImage.style.backgroundImage =
-        `url("${heroImage}")`;
-    }
+    chapterBackground.src = heroImage;
+    chapterBackground.alt = "";
   } else {
-    chapterImageWrap.hidden = true;
+    chapterImage.removeAttribute("src");
+    chapterImage.alt = "";
+    chapterImage.hidden = true;
+
+    chapterBackground.removeAttribute("src");
   }
 
-  /* ---------------------------------------------
-     READER BRANCH
-  --------------------------------------------- */
 
-  readingPaper.hidden = true;
-  mangaReader.hidden = true;
-  webtoonReader.hidden = true;
+  /* ---------------------------------------------------------
+     ROMAN
+  --------------------------------------------------------- */
 
-  readingArea.classList.remove(
-    "reader-mode-novel",
-    "reader-mode-manga",
-    "reader-mode-webtoon"
-  );
-
-  if (type === "novel") {
-    renderNovelReader(chapter);
-
-    readingPaper.hidden = false;
-
-    readingArea.classList.add(
-      "reader-mode-novel"
-    );
-
+  if (series.type === "novel") {
+    renderNovelChapter(chapter);
     return;
   }
 
-  if (format === "manga") {
-    renderMangaReader(chapter);
 
-    mangaReader.hidden = false;
+  /* ---------------------------------------------------------
+     WEBCOMIC
+  --------------------------------------------------------- */
 
-    readingArea.classList.add(
-      "reader-mode-manga"
-    );
-
+  if (series.type === "webcomic") {
+    renderWebcomicChapter(chapter);
     return;
   }
 
-  if (format === "webtoon") {
-    renderWebtoonReader(chapter);
 
-    webtoonReader.hidden = false;
+  /* ---------------------------------------------------------
+     TYPE INCONNU
+  --------------------------------------------------------- */
 
-    readingArea.classList.add(
-      "reader-mode-webtoon"
-    );
+  chapterText.hidden = false;
+  chapterImages.hidden = true;
 
-    return;
-  }
-
-  /*
-    Si un ancien webcomic n'a pas encore
-    de format défini, on garde un fallback
-    visuel simple.
-  */
-
-  renderLegacyWebcomic(chapter);
-
-  readingPaper.hidden = false;
-
-  readingArea.classList.add(
-    "reader-mode-novel"
-  );
+  chapterText.innerHTML = `
+    <p>Ce chapitre ne peut pas être affiché.</p>
+  `;
 }
 
+
 /* =========================================================
-   ROMAN
+   RENDU ROMAN
 ========================================================= */
 
-function renderNovelReader(chapter) {
-  const content =
-    chapter.content ||
-    chapter.contenu ||
-    "";
+function renderNovelChapter(chapter) {
+  chapterText.hidden = false;
+  chapterImages.hidden = true;
 
   chapterText.innerHTML = "";
 
-  if (content.trim()) {
-    const paragraphs =
-      content
-        .split(/\n\s*\n|\r?\n/)
-        .map(item => item.trim())
-        .filter(Boolean);
+  const content = String(chapter.content || "").trim();
 
-    chapterText.innerHTML =
-      paragraphs
-        .map(
-          paragraph =>
-            `<p>${linkifyText(paragraph)}</p>`
-        )
-        .join("");
-  } else {
-    chapterText.innerHTML =
-      `<p class="empty-reading-message">
-        Aucun texte n’est disponible pour ce chapitre.
-      </p>`;
+  if (!content) {
+    chapterText.innerHTML = `
+      <p>Ce chapitre ne contient pas encore de texte.</p>
+    `;
+
+    return;
   }
 
-  renderLegacyImages(chapter);
+  const paragraphs = content
+    .split(/\n\s*\n/)
+    .map(paragraph => paragraph.trim())
+    .filter(Boolean);
+
+  paragraphs.forEach(paragraph => {
+    const p = document.createElement("p");
+
+    const parts = paragraph.split(
+      /(https?:\/\/[^\s]+)/gi
+    );
+
+    parts.forEach(part => {
+      if (/^https?:\/\//i.test(part)) {
+        const link = document.createElement("a");
+
+        link.href = part;
+        link.textContent = part;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        p.appendChild(link);
+      } else {
+        p.appendChild(
+          document.createTextNode(part)
+        );
+      }
+    });
+
+    chapterText.appendChild(p);
+  });
+
+  chapterImages.innerHTML = "";
 }
 
-function renderLegacyImages(chapter) {
+
+/* =========================================================
+   RENDU WEBCOMIC
+========================================================= */
+
+function renderWebcomicChapter(chapter) {
+  chapterText.hidden = true;
+  chapterImages.hidden = false;
+
+  chapterText.innerHTML = "";
   chapterImages.innerHTML = "";
 
+  if (!currentPages.length) {
+    chapterImages.innerHTML = `
+      <p>Les pages de ce chapitre ne sont pas encore disponibles.</p>
+    `;
+
+    return;
+  }
+
+  mangaPageIndex = 0;
+
+  if (isManga(chapter)) {
+    renderMangaPage();
+    return;
+  }
+
+  if (isWebtoon(chapter)) {
+    renderWebtoonPages();
+    return;
+  }
+
+  /*
+   * Si un ancien webcomic n'a pas encore de format,
+   * on garde un comportement vertical par défaut.
+   */
+  renderWebtoonPages();
+}
+
+
+/* =========================================================
+   LECTEUR MANGA
+   Une seule page affichée à la fois
+========================================================= */
+
+function renderMangaPage() {
+  if (!currentPages.length) {
+    return;
+  }
+
   if (
-    !Array.isArray(chapter.image_urls) ||
-    chapter.image_urls.length === 0
+    mangaPageIndex < 0 ||
+    mangaPageIndex >= currentPages.length
   ) {
     return;
   }
 
-  const mainImage =
-    chapter.chapter_image_url;
+  chapterImages.innerHTML = "";
 
-  const images =
-    chapter.image_urls.filter(
-      url => url && url !== mainImage
-    );
+  const page = currentPages[mangaPageIndex];
 
-  images.forEach((url, index) => {
-    const figure =
-      document.createElement("figure");
-
-    figure.className =
-      "chapter-inline-image";
-
-    const image =
-      document.createElement("img");
-
-    image.src = url;
-
-    image.alt =
-      `Illustration ${index + 1}`;
-
-    image.loading = "lazy";
-
-    figure.appendChild(image);
-
-    chapterImages.appendChild(
-      figure
-    );
-  });
-}
-
-/* =========================================================
-   FALLBACK WEBCOMIC
-========================================================= */
-
-function renderLegacyWebcomic(chapter) {
-  const content =
-    chapter.content ||
-    chapter.contenu ||
-    "";
-
-  chapterText.innerHTML = "";
-
-  if (content.trim()) {
-    chapterText.innerHTML =
-      content
-        .split(/\n\s*\n|\r?\n/)
-        .map(item => item.trim())
-        .filter(Boolean)
-        .map(
-          paragraph =>
-            `<p>${linkifyText(paragraph)}</p>`
-        )
-        .join("");
-  }
-
-  renderLegacyImages(chapter);
-}
-
-/* =========================================================
-   MANGA
-========================================================= */
-
-function renderMangaReader(chapter) {
-  if (!currentPages.length) {
-    mangaPageStage.innerHTML = `
-      <div class="comic-empty-state">
-        <div class="comic-empty-icon">◫</div>
-        <h2>Pages indisponibles</h2>
-        <p>
-          Les pages de ce chapitre n’ont pas encore été publiées.
-        </p>
-      </div>
-    `;
-
-    mangaPageCounter.textContent = "0 / 0";
-    mangaBottomCounter.textContent = "0 / 0";
-
-    mangaPrevious.disabled = true;
-    mangaNext.disabled = true;
-    mangaBottomPrevious.disabled = true;
-    mangaBottomNext.disabled = true;
-
-    return;
-  }
-
-  /*
-    On remet l'image dans le stage si un état vide
-    avait précédemment été affiché.
-  */
-
-  mangaPageStage.innerHTML = `
-    <img
-      id="mangaPageImage"
-      class="manga-page-image"
-      src=""
-      alt=""
-      draggable="false"
-    >
-
-    <div
-      id="mangaPageLoading"
-      class="manga-page-loading"
-      hidden
-    >
-      <div class="chapter-loader"></div>
-    </div>
-  `;
-
-  /*
-    Les références DOM ont été remplacées,
-    on les récupère à nouveau.
-  */
-
-  window.__bsMangaPageImage =
-    mangaPageStage.querySelector(
-      "#mangaPageImage"
-    );
-
-  window.__bsMangaPageLoading =
-    mangaPageStage.querySelector(
-      "#mangaPageLoading"
-    );
-
-  mangaCurrentPage = 0;
-
-  updateMangaPage(
-    mangaCurrentPage,
-    false
-  );
-}
-
-function updateMangaPage(index, animate = true) {
-  if (!currentPages.length) {
-    return;
-  }
-
-  const total =
-    currentPages.length;
-
-  mangaCurrentPage =
-    Math.max(
-      0,
-      Math.min(index, total - 1)
-    );
-
-  const page =
-    currentPages[mangaCurrentPage];
-
-  const image =
-    window.__bsMangaPageImage ||
-    document.getElementById(
-      "mangaPageImage"
-    );
-
-  const loader =
-    window.__bsMangaPageLoading ||
-    document.getElementById(
-      "mangaPageLoading"
-    );
-
-  if (!image || !page) {
-    return;
-  }
-
-  const pageNumber =
-    Number(page.page_number) ||
-    mangaCurrentPage + 1;
-
-  mangaPageCounter.textContent =
-    `${pageNumber} / ${total}`;
-
-  mangaBottomCounter.textContent =
-    `${pageNumber} / ${total}`;
-
-  mangaPrevious.disabled =
-    mangaCurrentPage === 0;
-
-  mangaBottomPrevious.disabled =
-    mangaCurrentPage === 0;
-
-  mangaNext.disabled =
-    mangaCurrentPage === total - 1;
-
-  mangaBottomNext.disabled =
-    mangaCurrentPage === total - 1;
-
-  if (animate) {
-    mangaPageStage.classList.remove(
-      "page-changing"
-    );
-
-    void mangaPageStage.offsetWidth;
-
-    mangaPageStage.classList.add(
-      "page-changing"
-    );
-  }
-
-  if (loader) {
-    loader.hidden = false;
-  }
-
-  image.onload = () => {
-    if (loader) {
-      loader.hidden = true;
-    }
-  };
-
-  image.onerror = () => {
-    if (loader) {
-      loader.hidden = true;
-    }
-
-    image.alt =
-      "Impossible de charger cette page";
-  };
+  const image = document.createElement("img");
 
   image.src = page.image_url;
+  image.alt = `Page ${page.page_number}`;
+  image.loading = "eager";
+  image.decoding = "async";
+  image.draggable = false;
 
-  image.alt =
-    `Page ${pageNumber} du chapitre`;
-
-  mangaViewport.focus({
-    preventScroll: true
-  });
-
-  updateMangaChapterButtons();
+  chapterImages.appendChild(image);
 }
 
-function updateMangaChapterButtons() {
-  const isFirst =
-    mangaCurrentPage === 0;
-
-  const isLast =
-    mangaCurrentPage === currentPages.length - 1;
-
-  mangaPrevious.setAttribute(
-    "aria-disabled",
-    String(isFirst)
-  );
-
-  mangaNext.setAttribute(
-    "aria-disabled",
-    String(isLast)
-  );
-}
-
-function mangaGoPrevious() {
-  if (mangaCurrentPage > 0) {
-    updateMangaPage(
-      mangaCurrentPage - 1
-    );
-    return;
-  }
-
-  /*
-    Au début du manga, on laisse la navigation
-    chapitre précédente gérer le reste.
-  */
-
-  if (
-    previousChapter &&
-    previousChapter.getAttribute("href") !== "#"
-  ) {
-    window.location.href =
-      previousChapter.href;
-  }
-}
-
-function mangaGoNext() {
-  if (
-    mangaCurrentPage <
-    currentPages.length - 1
-  ) {
-    updateMangaPage(
-      mangaCurrentPage + 1
-    );
-    return;
-  }
-
-  /*
-    Dernière page :
-    le bouton chapitre suivant prend le relais.
-  */
-
-  if (
-    nextChapter &&
-    nextChapter.getAttribute("href") !== "#"
-  ) {
-    window.location.href =
-      nextChapter.href;
-  }
-}
 
 /* =========================================================
-   MANGA SWIPE
+   NAVIGATION ENTRE PAGES MANGA
 ========================================================= */
 
-function setupMangaSwipe() {
-  if (!mangaViewport) {
+function nextMangaPage() {
+  if (!isManga()) {
     return;
   }
 
-  mangaViewport.addEventListener(
+  if (
+    mangaPageIndex >= currentPages.length - 1
+  ) {
+    return;
+  }
+
+  mangaPageIndex += 1;
+
+  renderMangaPage();
+
+  updateMangaPageAccessibility();
+}
+
+
+function previousMangaPage() {
+  if (!isManga()) {
+    return;
+  }
+
+  if (mangaPageIndex <= 0) {
+    return;
+  }
+
+  mangaPageIndex -= 1;
+
+  renderMangaPage();
+
+  updateMangaPageAccessibility();
+}
+
+
+function updateMangaPageAccessibility() {
+  if (!isManga()) {
+    return;
+  }
+
+  const total = currentPages.length;
+
+  if (!total) {
+    return;
+  }
+
+  chapterImages.setAttribute(
+    "aria-label",
+    `Page ${mangaPageIndex + 1} sur ${total}`
+  );
+}
+
+
+/* =========================================================
+   TOUCH MANGA
+========================================================= */
+
+function setupMangaTouchNavigation() {
+  chapterImages.addEventListener(
     "touchstart",
     event => {
-      if (!event.touches.length) {
+      if (!isManga()) {
         return;
       }
 
-      mangaTouchStartX =
-        event.touches[0].clientX;
+      const touch = event.changedTouches[0];
 
-      mangaTouchStartY =
-        event.touches[0].clientY;
+      mangaTouchStartX = touch.clientX;
+      mangaTouchStartY = touch.clientY;
     },
-    {
-      passive: true
-    }
+    { passive: true }
   );
 
-  mangaViewport.addEventListener(
+
+  chapterImages.addEventListener(
     "touchend",
     event => {
-      if (!event.changedTouches.length) {
+      if (!isManga()) {
         return;
       }
 
-      const endX =
-        event.changedTouches[0].clientX;
+      if (mangaTouchStartX === null) {
+        return;
+      }
 
-      const endY =
-        event.changedTouches[0].clientY;
+      const touch = event.changedTouches[0];
 
       const deltaX =
-        endX - mangaTouchStartX;
+        touch.clientX - mangaTouchStartX;
 
       const deltaY =
-        endY - mangaTouchStartY;
+        touch.clientY - mangaTouchStartY;
+
+      mangaTouchStartX = null;
+      mangaTouchStartY = null;
 
       /*
-        On considère uniquement les vrais gestes
-        horizontaux.
-      */
-
-      if (
-        Math.abs(deltaX) < 45 ||
-        Math.abs(deltaX) < Math.abs(deltaY)
-      ) {
+       * On ignore les mouvements essentiellement verticaux.
+       */
+      if (Math.abs(deltaX) < Math.abs(deltaY)) {
         return;
       }
 
+      /*
+       * Seuil minimum pour éviter les changements
+       * accidentels.
+       */
+      if (Math.abs(deltaX) < 50) {
+        return;
+      }
+
+      /*
+       * Swipe gauche = page suivante
+       * Swipe droite = page précédente
+       */
       if (deltaX < 0) {
-        mangaGoNext();
+        nextMangaPage();
       } else {
-        mangaGoPrevious();
+        previousMangaPage();
       }
     },
-    {
-      passive: true
-    }
+    { passive: true }
   );
 }
 
+
 /* =========================================================
-   WEBTOON
+   CLAVIER MANGA
 ========================================================= */
 
-function renderWebtoonReader(chapter) {
-  webtoonPages.innerHTML = "";
+function setupMangaKeyboardNavigation() {
+  document.addEventListener("keydown", event => {
+    if (!isManga()) {
+      return;
+    }
 
-  if (!currentPages.length) {
-    webtoonPages.innerHTML = `
-      <div class="comic-empty-state">
-        <div class="comic-empty-icon">▤</div>
+    /*
+     * On évite de perturber les champs de formulaire
+     * s'il y en avait sur la page.
+     */
+    const target = event.target;
 
-        <h2>Images indisponibles</h2>
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    ) {
+      return;
+    }
 
-        <p>
-          Les images de ce chapitre n’ont pas encore été publiées.
-        </p>
-      </div>
-    `;
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      nextMangaPage();
+    }
 
-    webtoonPageCount.textContent =
-      "0 images";
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      previousMangaPage();
+    }
+  });
+}
 
+
+/* =========================================================
+   LECTEUR WEBTOON
+   Toutes les pages verticalement
+========================================================= */
+
+function renderWebtoonPages() {
+  chapterImages.innerHTML = "";
+
+  currentPages.forEach((page, index) => {
+    if (!page?.image_url) {
+      return;
+    }
+
+    const image = document.createElement("img");
+
+    image.src = page.image_url;
+    image.alt = `Page ${page.page_number || index + 1}`;
+    image.loading = index === 0 ? "eager" : "lazy";
+    image.decoding = "async";
+    image.draggable = false;
+
+    chapterImages.appendChild(image);
+  });
+}
+
+
+/* =========================================================
+   NAVIGATION ENTRE CHAPITRES
+========================================================= */
+
+async function loadChapterNavigation() {
+  if (!currentChapter?.series_id) {
     return;
   }
 
-  webtoonPageCount.textContent =
-    `${currentPages.length} ${
-      currentPages.length > 1
-        ? "images"
-        : "image"
-    }`;
-
-  currentPages.forEach(
-    (page, index) => {
-      const figure =
-        document.createElement("figure");
-
-      figure.className =
-        "webtoon-page";
-
-      figure.dataset.page =
-        String(
-          Number(page.page_number) ||
-          index + 1
-        );
-
-      const image =
-        document.createElement("img");
-
-      image.src =
-        page.image_url;
-
-      image.alt =
-        `Image ${
-          Number(page.page_number) ||
-          index + 1
-        } du chapitre`;
-
-      image.loading =
-        index < 2
-          ? "eager"
-          : "lazy";
-
-      image.decoding =
-        "async";
-
-      figure.appendChild(image);
-
-      webtoonPages.appendChild(
-        figure
-      );
-    }
-  );
-}
-
-/* =========================================================
-   FULLSCREEN
-========================================================= */
-
-async function toggleFullscreen(element) {
-  try {
-    if (!document.fullscreenElement) {
-      await element.requestFullscreen?.();
-    } else {
-      await document.exitFullscreen?.();
-    }
-  } catch (error) {
-    console.warn(
-      "Plein écran indisponible:",
-      error
-    );
-  }
-}
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-async function loadChapterNavigation(chapter) {
-  const seriesId =
-    chapter.series_id ||
-    chapter.series?.id;
-
-  if (!seriesId) {
-    return;
-  }
-
-  const { data, error } =
-    await supabase
-      .from("chapters")
-      .select(`
-        id,
-        chapter_number,
-        chapter_label,
-        title,
-        published_at
-      `)
-      .eq("series_id", seriesId)
-      .order("chapter_number", {
-        ascending: true
-      });
+  const { data, error } = await supabase
+    .from("chapters")
+    .select(`
+      id,
+      series_id,
+      chapter_number,
+      chapter_label,
+      title
+    `)
+    .eq("series_id", currentChapter.series_id)
+    .order("chapter_number", {
+      ascending: true
+    });
 
   if (error) {
-    console.warn(
-      "Erreur navigation chapitres:",
+    console.error(
+      "Erreur navigation chapitres :",
       error
     );
 
     return;
   }
 
-  if (!Array.isArray(data)) {
-    return;
-  }
+  const chapters = Array.isArray(data)
+    ? data
+    : [];
 
-  const currentIndex =
-    data.findIndex(
-      item => item.id === chapter.id
-    );
-
-  if (currentIndex === -1) {
-    return;
-  }
-
-  const previous =
-    data[currentIndex - 1] || null;
-
-  const next =
-    data[currentIndex + 1] || null;
-
-  configureChapterNav(
-    previousChapter,
-    previous,
-    "Chapitre précédent"
+  const currentIndex = chapters.findIndex(
+    chapter => chapter.id === currentChapter.id
   );
 
-  configureChapterNav(
-    nextChapter,
-    next,
-    "Chapitre suivant"
-  );
+
+  /* ---------------------------------------------------------
+     Chapitre précédent
+  --------------------------------------------------------- */
+
+  if (
+    currentIndex > 0 &&
+    chapters[currentIndex - 1]
+  ) {
+    const previous = chapters[currentIndex - 1];
+
+    previousChapter.href =
+      `./chapter.html?id=${encodeURIComponent(previous.id)}`;
+
+    previousChapter.hidden = false;
+  } else {
+    previousChapter.hidden = true;
+  }
+
+
+  /* ---------------------------------------------------------
+     Chapitre suivant
+  --------------------------------------------------------- */
+
+  if (
+    currentIndex !== -1 &&
+    currentIndex < chapters.length - 1 &&
+    chapters[currentIndex + 1]
+  ) {
+    const next = chapters[currentIndex + 1];
+
+    nextChapter.href =
+      `./chapter.html?id=${encodeURIComponent(next.id)}`;
+
+    nextChapter.hidden = false;
+  } else {
+    nextChapter.hidden = true;
+  }
 }
 
-function configureChapterNav(
-  element,
-  chapter,
-  fallback
-) {
-  if (!element) {
-    return;
-  }
-
-  if (!chapter) {
-    element.classList.add("disabled");
-    element.setAttribute(
-      "aria-disabled",
-      "true"
-    );
-    element.href = "#";
-
-    const strong =
-      element.querySelector("strong");
-
-    if (strong) {
-      strong.textContent =
-        fallback === "Chapitre précédent"
-          ? "Premier chapitre"
-          : "Dernier chapitre";
-    }
-
-    return;
-  }
-
-  element.classList.remove("disabled");
-  element.removeAttribute(
-    "aria-disabled"
-  );
-
-  element.href =
-    `./chapter.html?id=${encodeURIComponent(chapter.id)}`;
-
-  const number =
-    getChapterNumberLabel(chapter);
-
-  const title =
-    chapter.title ||
-    chapter.titre ||
-    "";
-
-  const strong =
-    element.querySelector("strong");
-
-  if (strong) {
-    strong.textContent =
-      number
-        ? `Chapitre ${number}${title ? ` — ${title}` : ""}`
-        : title || fallback;
-  }
-}
 
 /* =========================================================
    AUDIO
 ========================================================= */
 
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) {
+    return "0:00";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds =
+    Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
+
+  return `${minutes}:${remainingSeconds}`;
+}
+
+
 function setupAudio(chapter) {
-  if (!audioSection || !chapterAudio) {
+  if (!audio || !audioSection) {
     return;
   }
 
@@ -1299,191 +838,178 @@ function setupAudio(chapter) {
 
   if (!soundUrl) {
     audioSection.hidden = true;
+
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+
     return;
   }
 
   audioSection.hidden = false;
 
-  chapterAudio.src =
-    soundUrl;
+  audio.src = soundUrl;
+  audio.loop = true;
+  audio.preload = "metadata";
 
-  chapterAudio.loop = true;
-  chapterAudio.volume = 1;
+  if (volume) {
+    audio.volume = Number(volume.value || 1);
+  }
 
-  audioVolume.value = "1";
+  audio.load();
 
-  updateAudioButton();
 
-  audioPlay.onclick = () => {
-    if (chapterAudio.paused) {
-      chapterAudio
-        .play()
-        .catch(() => {
-          /*
-            Le navigateur peut bloquer
-            l'autoplay. L'utilisateur pourra
-            alors lancer la lecture manuellement.
-          */
-        });
-    } else {
-      chapterAudio.pause();
+  /* ---------------------------------------------------------
+     Lecture / pause
+  --------------------------------------------------------- */
+
+  if (playButton) {
+    playButton.onclick = async () => {
+      try {
+        if (audio.paused) {
+          await audio.play();
+        } else {
+          audio.pause();
+        }
+      } catch (error) {
+        console.warn(
+          "Lecture audio impossible :",
+          error
+        );
+      }
+    };
+  }
+
+
+  /* ---------------------------------------------------------
+     Icône lecture / pause
+  --------------------------------------------------------- */
+
+  audio.onplay = () => {
+    playButton?.classList.add("playing");
+  };
+
+  audio.onpause = () => {
+    playButton?.classList.remove("playing");
+  };
+
+
+  /* ---------------------------------------------------------
+     Autoplay lorsque le navigateur l'autorise
+  --------------------------------------------------------- */
+
+  audio.oncanplay = async () => {
+    try {
+      await audio.play();
+    } catch {
+      /*
+       * Les navigateurs peuvent bloquer l'autoplay.
+       * Rien à faire dans ce cas : l'utilisateur peut
+       * lancer la lecture manuellement.
+       */
     }
   };
 
-  chapterAudio.addEventListener(
-    "play",
-    updateAudioButton
-  );
 
-  chapterAudio.addEventListener(
-    "pause",
-    updateAudioButton
-  );
+  /* ---------------------------------------------------------
+     Progression
+  --------------------------------------------------------- */
 
-  chapterAudio.addEventListener(
-    "timeupdate",
-    updateAudioProgress
-  );
+  audio.ontimeupdate = () => {
+    if (!progress) {
+      return;
+    }
 
-  chapterAudio.addEventListener(
-    "loadedmetadata",
-    updateAudioProgress
-  );
+    if (audio.duration) {
+      progress.value =
+        (audio.currentTime / audio.duration) * 100;
+    }
 
-  audioProgress.addEventListener(
-    "input",
-    () => {
-      if (!chapterAudio.duration) {
+    if (audioTime) {
+      audioTime.textContent =
+        `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+    }
+  };
+
+
+  /* ---------------------------------------------------------
+     Barre de progression
+  --------------------------------------------------------- */
+
+  if (progress) {
+    progress.oninput = () => {
+      if (!audio.duration) {
         return;
       }
 
-      const percentage =
-        Number(audioProgress.value);
+      audio.currentTime =
+        (Number(progress.value) / 100) *
+        audio.duration;
+    };
+  }
 
-      chapterAudio.currentTime =
-        chapterAudio.duration *
-        (percentage / 100);
+
+  /* ---------------------------------------------------------
+     Muet
+  --------------------------------------------------------- */
+
+  if (muteButton) {
+    muteButton.onclick = () => {
+      audio.muted = !audio.muted;
+
+      muteButton.classList.toggle(
+        "muted",
+        audio.muted
+      );
+    };
+  }
+
+
+  /* ---------------------------------------------------------
+     Volume
+  --------------------------------------------------------- */
+
+  if (volume) {
+    volume.oninput = () => {
+      audio.volume = Number(volume.value);
+      audio.muted = audio.volume === 0;
+
+      muteButton?.classList.toggle(
+        "muted",
+        audio.muted
+      );
+    };
+  }
+
+
+  /* ---------------------------------------------------------
+     Durée
+  --------------------------------------------------------- */
+
+  audio.onloadedmetadata = () => {
+    if (audioTime) {
+      audioTime.textContent =
+        `0:00 / ${formatTime(audio.duration)}`;
     }
-  );
-
-  audioMute.onclick = () => {
-    chapterAudio.muted =
-      !chapterAudio.muted;
-
-    updateMuteButton();
   };
-
-  audioVolume.addEventListener(
-    "input",
-    () => {
-      chapterAudio.volume =
-        Number(audioVolume.value);
-
-      chapterAudio.muted =
-        chapterAudio.volume === 0;
-
-      updateMuteButton();
-    }
-  );
 }
 
-function updateAudioButton() {
-  if (!audioPlay || !chapterAudio) {
-    return;
-  }
-
-  const playing =
-    !chapterAudio.paused;
-
-  audioPlay.classList.toggle(
-    "is-playing",
-    playing
-  );
-
-  audioPlay.setAttribute(
-    "aria-label",
-    playing
-      ? "Mettre en pause"
-      : "Lire"
-  );
-}
-
-function updateAudioProgress() {
-  if (
-    !chapterAudio ||
-    !audioProgress
-  ) {
-    return;
-  }
-
-  const duration =
-    chapterAudio.duration;
-
-  if (!duration || !Number.isFinite(duration)) {
-    audioProgress.value = "0";
-    audioTime.textContent = "0:00";
-    return;
-  }
-
-  const percentage =
-    (chapterAudio.currentTime /
-      duration) *
-    100;
-
-  audioProgress.value =
-    String(percentage);
-
-  audioTime.textContent =
-    formatTime(
-      chapterAudio.currentTime
-    );
-}
-
-function updateMuteButton() {
-  if (!audioMute || !chapterAudio) {
-    return;
-  }
-
-  audioMute.classList.toggle(
-    "is-muted",
-    chapterAudio.muted ||
-      chapterAudio.volume === 0
-  );
-}
-
-function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) {
-    return "0:00";
-  }
-
-  const minutes =
-    Math.floor(seconds / 60);
-
-  const remaining =
-    Math.floor(seconds % 60);
-
-  return `${minutes}:${String(
-    remaining
-  ).padStart(2, "0")}`;
-}
 
 /* =========================================================
-   VIEWS
+   VISITES
 ========================================================= */
 
 function getVisitorId() {
-  const key =
-    "bscompany_visitor_id";
-
   let visitorId =
-    localStorage.getItem(key);
+    localStorage.getItem(
+      "bscompany_visitor_id"
+    );
 
   if (!visitorId) {
-    visitorId =
-      crypto.randomUUID();
+    visitorId = crypto.randomUUID();
 
     localStorage.setItem(
-      key,
+      "bscompany_visitor_id",
       visitorId
     );
   }
@@ -1491,547 +1017,60 @@ function getVisitorId() {
   return visitorId;
 }
 
-async function registerView(chapter) {
-  try {
-    const visitorId =
-      getVisitorId();
 
-    await supabase
+async function registerView() {
+  if (!currentChapter?.id) {
+    return;
+  }
+
+  try {
+    const visitorId = getVisitorId();
+
+    const { error } = await supabase
       .from("chapter_views")
       .upsert(
         {
-          chapter_id: chapter.id,
+          chapter_id: currentChapter.id,
           visitor_id: visitorId
         },
         {
-          onConflict:
-            "chapter_id,visitor_id",
-          ignoreDuplicates: true
+          onConflict: "chapter_id,visitor_id"
         }
       );
 
-    const { count, error } =
+    if (error) {
+      console.error(
+        "Erreur enregistrement vue :",
+        error
+      );
+    }
+
+    const { count, error: countError } =
       await supabase
         .from("chapter_views")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true
-          }
-        )
+        .select("*", {
+          count: "exact",
+          head: true
+        })
         .eq(
           "chapter_id",
-          chapter.id
+          currentChapter.id
         );
 
-    if (!error) {
+    if (!countError && chapterViews) {
       chapterViews.textContent =
         String(count || 0);
     }
+
   } catch (error) {
-    console.warn(
-      "Erreur compteur de vues:",
+    console.error(
+      "Erreur views :",
       error
     );
   }
 }
+
 
 /* =========================================================
    LIKES
-========================================================= */
-
-async function setupLikeButton(chapter) {
-  if (!likeButton) {
-    return;
-  }
-
-  const visitorId =
-    getVisitorId();
-
-  try {
-    const { count, error } =
-      await supabase
-        .from("likes")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true
-          }
-        )
-        .eq(
-          "chapter_id",
-          chapter.id
-        );
-
-    if (!error) {
-      likeCount.textContent =
-        String(count || 0);
-    }
-
-    const { data: existingLike } =
-      await supabase
-        .from("likes")
-        .select("id")
-        .eq(
-          "chapter_id",
-          chapter.id
-        )
-        .eq(
-          "visitor_id",
-          visitorId
-        )
-        .maybeSingle();
-
-    setLikeState(
-      Boolean(existingLike)
-    );
-
-    likeButton.onclick =
-      async () => {
-        likeButton.disabled =
-          true;
-
-        try {
-          if (existingLikeState()) {
-            await supabase
-              .from("likes")
-              .delete()
-              .eq(
-                "chapter_id",
-                chapter.id
-              )
-              .eq(
-                "visitor_id",
-                visitorId
-              );
-          } else {
-            await supabase
-              .from("likes")
-              .insert({
-                user_id: null,
-                visitor_id: visitorId,
-                chapter_id: chapter.id,
-                profil_id: null,
-                series_id:
-                  chapter.series_id ||
-                  chapter.series?.id ||
-                  null
-              });
-          }
-
-          const { count: newCount } =
-            await supabase
-              .from("likes")
-              .select(
-                "id",
-                {
-                  count: "exact",
-                  head: true
-                }
-              )
-              .eq(
-                "chapter_id",
-                chapter.id
-              );
-
-          likeCount.textContent =
-            String(newCount || 0);
-
-          setLikeState(
-            !existingLikeState()
-          );
-
-        } catch (error) {
-          console.error(
-            "Erreur like:",
-            error
-          );
-        } finally {
-          likeButton.disabled =
-            false;
-        }
-      };
-
-  } catch (error) {
-    console.warn(
-      "Erreur initialisation like:",
-      error
-    );
-  }
-}
-
-function existingLikeState() {
-  return (
-    likeButton.getAttribute(
-      "aria-pressed"
-    ) === "true"
-  );
-}
-
-function setLikeState(liked) {
-  likeButton.setAttribute(
-    "aria-pressed",
-    String(liked)
-  );
-
-  likeButton.classList.toggle(
-    "liked",
-    liked
-  );
-
-  if (likeIcon) {
-    likeIcon.classList.toggle(
-      "heart-filled",
-      liked
-    );
-  }
-}
-
-/* =========================================================
-   COMMENTS
-========================================================= */
-
-function setupComments() {
-  if (!commentButton) {
-    return;
-  }
-
-  commentButton.addEventListener(
-    "click",
-    () => {
-      const comments =
-        document.getElementById(
-          "commentsSection"
-        );
-
-      if (comments) {
-        comments.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }
-    }
-  );
-
-  /*
-    Le système de commentaires n'est pas
-    actif dans la v0.1.
-  */
-
-  if (commentCount) {
-    commentCount.textContent = "0";
-  }
-}
-
-/* =========================================================
-   READER CONTROLS
-========================================================= */
-
-function setupReaderControls() {
-  if (!readerControls) {
-    return;
-  }
-
-  const showControls = () => {
-    readerControls.classList.remove(
-      "controls-hidden"
-    );
-
-    clearTimeout(
-      controlsHideTimer
-    );
-
-    controlsHideTimer =
-      setTimeout(
-        () => {
-          /*
-            On évite de cacher les contrôles
-            pendant qu'un utilisateur interagit
-            avec l'audio.
-          */
-
-          if (
-            document.activeElement ===
-              audioProgress ||
-            document.activeElement ===
-              audioVolume
-          ) {
-            return;
-          }
-
-          readerControls.classList.add(
-            "controls-hidden"
-          );
-        },
-        4500
-      );
-  };
-
-  document.addEventListener(
-    "mousemove",
-    showControls,
-    {
-      passive: true
-    }
-  );
-
-  document.addEventListener(
-    "touchstart",
-    showControls,
-    {
-      passive: true
-    }
-  );
-
-  document.addEventListener(
-    "keydown",
-    showControls
-  );
-
-  readerControls.addEventListener(
-    "mouseenter",
-    () => {
-      clearTimeout(
-        controlsHideTimer
-      );
-
-      readerControls.classList.remove(
-        "controls-hidden"
-      );
-    }
-  );
-
-  readerControls.addEventListener(
-    "mouseleave",
-    showControls
-  );
-
-  showControls();
-}
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-function setupMobileMenu() {
-  if (
-    !mobileMenuButton ||
-    !navLinks
-  ) {
-    return;
-  }
-
-  mobileMenuButton.addEventListener(
-    "click",
-    () => {
-      const opened =
-        navLinks.classList.toggle(
-          "mobile-open"
-        );
-
-      mobileMenuButton.setAttribute(
-        "aria-expanded",
-        String(opened)
-      );
-    }
-  );
-
-  navLinks
-    .querySelectorAll("a")
-    .forEach(link => {
-      link.addEventListener(
-        "click",
-        () => {
-          navLinks.classList.remove(
-            "mobile-open"
-          );
-
-          mobileMenuButton.setAttribute(
-            "aria-expanded",
-            "false"
-          );
-        }
-      );
-    });
-}
-
-/* =========================================================
-   KEYBOARD
-========================================================= */
-
-function setupKeyboardNavigation() {
-  document.addEventListener(
-    "keydown",
-    event => {
-      if (
-        !currentChapter ||
-        !isManga(currentChapter)
-      ) {
-        return;
-      }
-
-      if (
-        event.target instanceof
-          HTMLInputElement ||
-        event.target instanceof
-          HTMLTextAreaElement ||
-        event.target instanceof
-          HTMLButtonElement
-      ) {
-        /*
-          Les boutons manga sont gérés
-          directement.
-        */
-      }
-
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        mangaGoPrevious();
-      }
-
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        mangaGoNext();
-      }
-
-      if (event.key === " ") {
-        /*
-          Sur la zone Manga uniquement,
-          espace peut afficher/cacher
-          les contrôles.
-        */
-
-        if (
-          document.activeElement ===
-          mangaViewport
-        ) {
-          event.preventDefault();
-
-          readerControls.classList.toggle(
-            "controls-hidden"
-          );
-        }
-      }
-    }
-  );
-}
-
-/* =========================================================
-   CLICK MANGA PAGE
-========================================================= */
-
-function setupMangaPageInteraction() {
-  if (!mangaPageStage) {
-    return;
-  }
-
-  mangaPageStage.addEventListener(
-    "click",
-    () => {
-      if (!isManga(currentChapter)) {
-        return;
-      }
-
-      readerControls.classList.toggle(
-        "controls-hidden"
-      );
-    }
-  );
-}
-
-/* =========================================================
-   FULLSCREEN BUTTONS
-========================================================= */
-
-function setupFullscreenButtons() {
-  if (mangaFullscreen) {
-    mangaFullscreen.addEventListener(
-      "click",
-      () => {
-        toggleFullscreen(
-          mangaReader
-        );
-      }
-    );
-  }
-
-  if (webtoonFullscreen) {
-    webtoonFullscreen.addEventListener(
-      "click",
-      () => {
-        toggleFullscreen(
-          webtoonReader
-        );
-      }
-    );
-  }
-}
-
-/* =========================================================
-   BUTTON EVENTS
-========================================================= */
-
-function setupMangaButtons() {
-  mangaPrevious.addEventListener(
-    "click",
-    mangaGoPrevious
-  );
-
-  mangaBottomPrevious.addEventListener(
-    "click",
-    mangaGoPrevious
-  );
-
-  mangaNext.addEventListener(
-    "click",
-    mangaGoNext
-  );
-
-  mangaBottomNext.addEventListener(
-    "click",
-    mangaGoNext
-  );
-}
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-function showError(message) {
-  loading.hidden = true;
-  reader.hidden = true;
-  readerControls.hidden = true;
-
-  errorBox.hidden = false;
-
-  errorMessage.textContent =
-    message ||
-    "Une erreur est survenue.";
-}
-
-/* =========================================================
-   START
-========================================================= */
-
-async function startReader() {
-  setupMobileMenu();
-  setupMangaButtons();
-  setupMangaSwipe();
-  setupMangaPageInteraction();
-  setupFullscreenButtons();
-  setupKeyboardNavigation();
-  setupReaderControls();
-  setupComments();
-
-  await loadChapter();
-
-  if (currentChapter) {
-    await setupLikeButton(
-      currentChapter
-    );
-  }
-}
-
-startReader();
+================================================
