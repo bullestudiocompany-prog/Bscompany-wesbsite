@@ -147,7 +147,7 @@ function parseImageUrls(value) {
           .filter(Boolean);
       }
     } catch {
-      // La valeur n'est probablement pas du JSON.
+      // Valeur non JSON.
     }
 
     return trimmed
@@ -163,11 +163,6 @@ function parseImageUrls(value) {
 function getChapterImages(chapter) {
   const result = [];
 
-  /*
-   * Pour les Webcomics/Mangas, les pages officielles
-   * sont stockées dans chapter_pages.
-   */
-
   if (Array.isArray(chapter?.chapterPages)) {
     for (const page of chapter.chapterPages) {
       const imageUrl =
@@ -182,10 +177,6 @@ function getChapterImages(chapter) {
     }
   }
 
-  /*
-   * Compatibilité avec l'ancien système image_urls.
-   */
-
   const images =
     parseImageUrls(chapter?.image_urls);
 
@@ -197,11 +188,6 @@ function getChapterImages(chapter) {
       result.push(image);
     }
   }
-
-  /*
-   * Compatibilité avec chapter_image_url.
-   * Cette image correspond normalement à la première page.
-   */
 
   const mainImage =
     chapter?.chapter_image_url
@@ -363,10 +349,7 @@ function setChapterSEO(chapter) {
   setMetaProperty("og:url", canonical);
 
   if (image) {
-    setMetaProperty(
-      "og:image",
-      image
-    );
+    setMetaProperty("og:image", image);
   }
 }
 
@@ -412,11 +395,6 @@ async function loadChapter() {
       return;
     }
 
-    /*
-     * Les pages Manga/Webcomic sont stockées dans
-     * chapter_pages et non dans chapters.image_urls.
-     */
-
     const { data: pageRows, error: pagesError } =
       await supabase
         .from("chapter_pages")
@@ -439,12 +417,20 @@ async function loadChapter() {
         "Erreur chargement pages Webcomic :",
         pagesError
       );
+
+      data.chapterPages = [];
     } else {
-      data.chapterPages =
-        pageRows || [];
+      data.chapterPages = pageRows || [];
     }
 
     currentChapter = data;
+
+    console.log(
+      "BSCompany lecteur :",
+      getContentType(data),
+      "— pages :",
+      getChapterImages(data).length
+    );
 
     setChapterSEO(data);
 
@@ -484,7 +470,8 @@ async function loadChapter() {
 ========================================================= */
 
 function renderChapter(chapter) {
-  const contentType = getContentType(chapter);
+  const contentType =
+    getContentType(chapter);
 
   if (contentType === "novel") {
     renderNovelChapter(chapter);
@@ -504,12 +491,11 @@ function renderChapter(chapter) {
 
 /* =========================================================
    LECTEUR ROMAN
-   ---------------------------------------------------------
-   Cette partie conserve le fonctionnement existant.
 ========================================================= */
 
 function renderNovelChapter(chapter) {
-  const number = chapter.chapter_number ?? "";
+  const number =
+    chapter.chapter_number ?? "";
 
   if (chapterTitle) {
     chapterTitle.textContent =
@@ -591,10 +577,12 @@ function renderNovelText(chapter) {
 
   chapterText.innerHTML = "";
 
-  const content = cleanText(chapter.content);
+  const content =
+    cleanText(chapter.content);
 
   if (!content) {
-    const empty = document.createElement("p");
+    const empty =
+      document.createElement("p");
 
     empty.textContent =
       "Ce chapitre ne contient pas encore de texte.";
@@ -604,24 +592,24 @@ function renderNovelText(chapter) {
     return;
   }
 
-  const paragraphs = String(chapter.content)
-    .replace(/\r\n/g, "\n")
-    .split(/\n\s*\n/);
+  const paragraphs =
+    String(chapter.content)
+      .replace(/\r\n/g, "\n")
+      .split(/\n\s*\n/);
 
   paragraphs.forEach(paragraph => {
-    const cleaned = paragraph.trim();
+    const cleaned =
+      paragraph.trim();
 
     if (!cleaned) {
       return;
     }
 
-    const p = document.createElement("p");
+    const p =
+      document.createElement("p");
 
-    /*
-     * On conserve les retours simples à la ligne.
-     */
-
-    const lines = cleaned.split("\n");
+    const lines =
+      cleaned.split("\n");
 
     lines.forEach((line, index) => {
       if (index > 0) {
@@ -641,7 +629,10 @@ function renderNovelText(chapter) {
 }
 
 
-function appendTextWithLinks(container, text) {
+function appendTextWithLinks(
+  container,
+  text
+) {
   const urlRegex =
     /(https?:\/\/[^\s]+)/g;
 
@@ -704,7 +695,9 @@ function renderNovelImages(chapter) {
     chapter.chapter_image_url || "";
 
   images
-    .filter(image => image !== mainImage)
+    .filter(
+      image => image !== mainImage
+    )
     .forEach((image, index) => {
 
       const img =
@@ -741,7 +734,8 @@ function ensureWebcomicStyles() {
     document.createElement("link");
 
   link.rel = "stylesheet";
-  link.href = "./css/webcomic.css";
+  link.href =
+    "./css/webcomic.css";
 
   document.head.appendChild(link);
 }
@@ -751,15 +745,17 @@ function ensureWebcomicStyles() {
    STRUCTURE COMMUNE WEBCOMIC
 ========================================================= */
 
-function createWebcomicHeader(chapter, typeLabel) {
+function createWebcomicHeader(
+  chapter,
+  typeLabel
+) {
   const number =
     formatChapterNumber(
       chapter.chapter_number
     );
 
   const seriesName =
-    chapter.series?.title ||
-    "";
+    chapter.series?.title || "";
 
   const title =
     chapter.title ||
@@ -845,11 +841,6 @@ function renderMangaChapter(chapter) {
   const images =
     getChapterImages(chapter);
 
-  /*
-   * Pour un Manga sans image, on affiche une erreur
-   * spécifique plutôt que de laisser un lecteur vide.
-   */
-
   if (!images.length) {
     renderWebcomicEmptyState(
       chapter,
@@ -860,20 +851,14 @@ function renderMangaChapter(chapter) {
     return;
   }
 
-  /*
-   * Le lecteur Roman est remplacé uniquement ici.
-   * readerControls reste en dehors de #chapterReader.
-   */
-
   reader.innerHTML = "";
 
-  const header =
+  reader.appendChild(
     createWebcomicHeader(
       chapter,
       "Manga"
-    );
-
-  reader.appendChild(header);
+    )
+  );
 
   const readingArea =
     document.createElement("section");
@@ -912,11 +897,6 @@ function renderMangaChapter(chapter) {
 
   page.appendChild(image);
 
-  /*
-   * Clic/tap sur l'image :
-   * ouvre ou ferme le plein écran.
-   */
-
   let isDragging = false;
 
   async function toggleMangaFullscreen() {
@@ -941,11 +921,6 @@ function renderMangaChapter(chapter) {
   image.addEventListener(
     "click",
     () => {
-      /*
-       * Un swipe ne doit pas déclencher
-       * l'ouverture du plein écran.
-       */
-
       if (isDragging) {
         isDragging = false;
         return;
@@ -1064,19 +1039,21 @@ function renderMangaChapter(chapter) {
 
   mangaReader.appendChild(help);
 
-  const end =
-    createWebcomicChapterEnd();
+  mangaReader.appendChild(
+    createWebcomicChapterEnd()
+  );
 
-  mangaReader.appendChild(end);
+  readingArea.appendChild(
+    mangaReader
+  );
 
-  readingArea.appendChild(mangaReader);
+  reader.appendChild(
+    readingArea
+  );
 
-  reader.appendChild(readingArea);
-
-  const navigation =
-    createWebcomicNavigation();
-
-  reader.appendChild(navigation);
+  reader.appendChild(
+    createWebcomicNavigation()
+  );
 
   let currentPageIndex = 0;
 
@@ -1101,10 +1078,6 @@ function renderMangaChapter(chapter) {
       "page-enter-next",
       "page-enter-prev"
     );
-
-    /*
-     * Force le navigateur à recalculer l'animation.
-     */
 
     void image.offsetWidth;
 
@@ -1150,7 +1123,6 @@ function renderMangaChapter(chapter) {
     }
 
     currentPageIndex += 1;
-
     updatePage(1);
   }
 
@@ -1160,7 +1132,6 @@ function renderMangaChapter(chapter) {
     }
 
     currentPageIndex -= 1;
-
     updatePage(-1);
   }
 
@@ -1173,10 +1144,6 @@ function renderMangaChapter(chapter) {
     "click",
     goNext
   );
-
-  /*
-   * Navigation clavier.
-   */
 
   function handleKeyboard(event) {
     if (
@@ -1202,10 +1169,6 @@ function renderMangaChapter(chapter) {
     "keydown",
     handleKeyboard
   );
-
-  /*
-   * Navigation tactile simple.
-   */
 
   let touchStartX = null;
   let touchStartY = null;
@@ -1251,22 +1214,12 @@ function renderMangaChapter(chapter) {
       touchStartX = null;
       touchStartY = null;
 
-      /*
-       * Marque le mouvement comme un déplacement
-       * afin d'empêcher le clic de déclencher
-       * le plein écran après un swipe.
-       */
-
       if (
         Math.abs(deltaX) >= 20 ||
         Math.abs(deltaY) >= 20
       ) {
         isDragging = true;
       }
-
-      /*
-       * On ignore les mouvements principalement verticaux.
-       */
 
       if (
         Math.abs(deltaX) < 45 ||
@@ -1284,16 +1237,7 @@ function renderMangaChapter(chapter) {
     { passive: true }
   );
 
-  /*
-   * Première page.
-   */
-
   updatePage();
-
-  /*
-   * Empêche les images de rester dans un état
-   * visuel incorrect après leur chargement.
-   */
 
   image.addEventListener(
     "load",
@@ -1341,11 +1285,13 @@ function createMangaArrow(
 /* =========================================================
    LECTEUR WEBTOON
    ---------------------------------------------------------
-   MODIFIÉ :
+   NOUVELLE VERSION
    - lecture verticale
-   - découpage automatique des bandes très longues
+   - découpage visuel automatique
+   - aucun Canvas
+   - compatible images Supabase/CORS
    - zoom
-   - chargement progressif
+   - fonctionnement mobile
 ========================================================= */
 
 function renderWebtoonChapter(chapter) {
@@ -1368,13 +1314,12 @@ function renderWebtoonChapter(chapter) {
 
   reader.innerHTML = "";
 
-  const header =
+  reader.appendChild(
     createWebcomicHeader(
       chapter,
       "Webtoon"
-    );
-
-  reader.appendChild(header);
+    )
+  );
 
   const readingArea =
     document.createElement("section");
@@ -1389,7 +1334,7 @@ function renderWebtoonChapter(chapter) {
     "webcomic-webtoon-reader";
 
   /* =======================================================
-     CONTRÔLES DE ZOOM
+     CONTRÔLES
   ======================================================= */
 
   const controls =
@@ -1402,15 +1347,12 @@ function renderWebtoonChapter(chapter) {
     document.createElement("button");
 
   zoomOut.type = "button";
-
   zoomOut.className =
     "webcomic-webtoon-control";
-
   zoomOut.setAttribute(
     "aria-label",
     "Réduire le zoom"
   );
-
   zoomOut.textContent = "−";
 
   const zoomValue =
@@ -1419,39 +1361,29 @@ function renderWebtoonChapter(chapter) {
   zoomValue.className =
     "webcomic-webtoon-zoom-value";
 
-  zoomValue.textContent =
-    "100%";
-
   const zoomIn =
     document.createElement("button");
 
   zoomIn.type = "button";
-
   zoomIn.className =
     "webcomic-webtoon-control";
-
   zoomIn.setAttribute(
     "aria-label",
     "Augmenter le zoom"
   );
-
   zoomIn.textContent = "+";
 
   const zoomReset =
     document.createElement("button");
 
   zoomReset.type = "button";
-
   zoomReset.className =
     "webcomic-webtoon-control";
-
   zoomReset.setAttribute(
     "aria-label",
     "Réinitialiser le zoom"
   );
-
-  zoomReset.textContent =
-    "↺";
+  zoomReset.textContent = "↺";
 
   controls.appendChild(zoomOut);
   controls.appendChild(zoomValue);
@@ -1472,11 +1404,31 @@ function renderWebtoonChapter(chapter) {
   stage.className =
     "webcomic-webtoon-stage";
 
+  /*
+   * Inline styles ici pour garantir le comportement
+   * même si une ancienne règle CSS traîne encore.
+   */
+
+  stage.style.overflowX = "auto";
+  stage.style.overflowY = "visible";
+  stage.style.width = "100%";
+
   const imageContainer =
     document.createElement("div");
 
   imageContainer.className =
     "webcomic-webtoon-images";
+
+  imageContainer.style.setProperty(
+    "--webtoon-zoom",
+    "1"
+  );
+
+  imageContainer.style.width =
+    "100%";
+
+  imageContainer.style.margin =
+    "0 auto";
 
   stage.appendChild(
     imageContainer
@@ -1502,10 +1454,11 @@ function renderWebtoonChapter(chapter) {
         )
       );
 
-    imageContainer.style.setProperty(
-      "--webtoon-zoom",
-      zoom.toFixed(2)
-    );
+    imageContainer.style.width =
+      `${zoom * 100}%`;
+
+    imageContainer.style.maxWidth =
+      "none";
 
     zoomValue.textContent =
       `${Math.round(zoom * 100)}%`;
@@ -1542,13 +1495,19 @@ function renderWebtoonChapter(chapter) {
   );
 
   /* =======================================================
-     CRÉATION D'UNE IMAGE WEBTOON
+     CONSTANTES DE DÉCOUPAGE
   ======================================================= */
 
-  function createWebtoonImage(
+  const MAX_SLICE_HEIGHT =
+    1800;
+
+  /*
+   * Cette fonction crée une image Webtoon normale.
+   */
+
+  function createNormalWebtoonImage(
     imageUrl,
-    imageIndex,
-    partNumber
+    imageIndex
   ) {
     const wrapper =
       document.createElement("div");
@@ -1556,56 +1515,52 @@ function renderWebtoonChapter(chapter) {
     wrapper.className =
       "webcomic-webtoon-page-wrapper";
 
+    wrapper.style.width =
+      "100%";
+
+    wrapper.style.overflow =
+      "hidden";
+
     const img =
       document.createElement("img");
 
     img.className =
-      "webcomic-webtoon-page webcomic-image-loading";
+      "webcomic-webtoon-page";
 
     img.src =
       imageUrl;
 
     img.alt =
-      `${chapter.title || "Chapitre"} — partie ${imageIndex + 1}.${partNumber}`;
-
-    /*
-     * Les premières parties sont prioritaires.
-     */
-
-    img.loading =
-      imageIndex < 1 && partNumber <= 2
-        ? "eager"
-        : "lazy";
-
-    img.decoding =
-      "async";
+      `${chapter.title || "Chapitre"} — partie ${imageIndex + 1}`;
 
     img.draggable =
       false;
 
+    img.decoding =
+      "async";
+
+    img.loading =
+      imageIndex === 0
+        ? "eager"
+        : "lazy";
+
+    img.style.display =
+      "block";
+
+    img.style.width =
+      "100%";
+
+    img.style.maxWidth =
+      "none";
+
+    img.style.height =
+      "auto";
+
     img.addEventListener(
       "load",
       () => {
-        img.classList.remove(
-          "webcomic-image-loading"
-        );
-
         img.classList.add(
           "webcomic-image-loaded"
-        );
-      },
-      { once: true }
-    );
-
-    img.addEventListener(
-      "error",
-      () => {
-        img.classList.remove(
-          "webcomic-image-loading"
-        );
-
-        img.classList.add(
-          "webcomic-hidden"
         );
       },
       { once: true }
@@ -1616,176 +1571,296 @@ function renderWebtoonChapter(chapter) {
     imageContainer.appendChild(
       wrapper
     );
+
+    return wrapper;
   }
 
+
   /* =======================================================
-     DÉCOUPAGE DES BANDES WEBTOON
+     DÉCOUPAGE VISUEL SANS CANVAS
   ======================================================= */
 
-  /*
-   * Au-delà de cette hauteur, une image est découpée.
-   *
-   * Le découpage est technique :
-   * il sépare une très longue image en plusieurs
-   * morceaux verticaux afin d'éviter d'avoir une
-   * seule image gigantesque dans le lecteur.
-   */
+  function createVisualSlices(
+    imageUrl,
+    imageIndex,
+    naturalWidth,
+    naturalHeight
+  ) {
+    /*
+     * Largeur d'affichage initiale.
+     *
+     * On utilise la largeur réelle du conteneur.
+     * Si elle n'est pas encore disponible,
+     * on utilise la largeur de la fenêtre.
+     */
 
-  const MAX_SLICE_HEIGHT =
-    2200;
+    const containerWidth =
+      imageContainer.clientWidth ||
+      stage.clientWidth ||
+      window.innerWidth;
 
-  async function processWebtoonImage(
+    if (
+      !containerWidth ||
+      !naturalWidth ||
+      !naturalHeight
+    ) {
+      createNormalWebtoonImage(
+        imageUrl,
+        imageIndex
+      );
+
+      return;
+    }
+
+    /*
+     * Rapport entre largeur affichée
+     * et largeur originale.
+     */
+
+    const scale =
+      containerWidth /
+      naturalWidth;
+
+    const displayedHeight =
+      naturalHeight *
+      scale;
+
+    /*
+     * Si l'image n'est pas suffisamment longue,
+     * on la laisse normale.
+     */
+
+    if (
+      displayedHeight <=
+      MAX_SLICE_HEIGHT
+    ) {
+      createNormalWebtoonImage(
+        imageUrl,
+        imageIndex
+      );
+
+      return;
+    }
+
+    /*
+     * Nombre de morceaux nécessaires.
+     */
+
+    const sliceCount =
+      Math.ceil(
+        displayedHeight /
+        MAX_SLICE_HEIGHT
+      );
+
+    for (
+      let sliceIndex = 0;
+      sliceIndex < sliceCount;
+      sliceIndex++
+    ) {
+
+      const displayedTop =
+        sliceIndex *
+        MAX_SLICE_HEIGHT;
+
+      const displayedSliceHeight =
+        Math.min(
+          MAX_SLICE_HEIGHT,
+          displayedHeight -
+            displayedTop
+        );
+
+      /*
+       * Conversion de la position affichée
+       * vers les coordonnées originales.
+       */
+
+      const originalTop =
+        displayedTop /
+        scale;
+
+      const originalSliceHeight =
+        displayedSliceHeight /
+        scale;
+
+      const wrapper =
+        document.createElement("div");
+
+      wrapper.className =
+        "webcomic-webtoon-slice";
+
+      /*
+       * Styles inline volontairement :
+       * cela rend le découpage indépendant
+       * des anciennes règles CSS.
+       */
+
+      wrapper.style.position =
+        "relative";
+
+      wrapper.style.width =
+        "100%";
+
+      wrapper.style.height =
+        `${displayedSliceHeight}px`;
+
+      wrapper.style.overflow =
+        "hidden";
+
+      wrapper.style.margin =
+        "0";
+
+      wrapper.style.padding =
+        "0";
+
+      wrapper.style.background =
+        "transparent";
+
+      const img =
+        document.createElement("img");
+
+      img.className =
+        "webcomic-webtoon-slice-image";
+
+      img.src =
+        imageUrl;
+
+      img.alt =
+        `${chapter.title || "Chapitre"} — partie ${imageIndex + 1}.${sliceIndex + 1}`;
+
+      img.draggable =
+        false;
+
+      img.decoding =
+        "async";
+
+      /*
+       * L'image entière est positionnée dans
+       * chaque fenêtre de découpage.
+       *
+       * Aucun Canvas.
+       * Aucun toDataURL.
+       * Aucun problème de CORS.
+       */
+
+      img.style.position =
+        "absolute";
+
+      img.style.left =
+        "0";
+
+      img.style.top =
+        `${-displayedTop}px`;
+
+      img.style.width =
+        "100%";
+
+      img.style.maxWidth =
+        "none";
+
+      img.style.height =
+        `${displayedHeight}px`;
+
+      img.style.objectFit =
+        "fill";
+
+      img.style.display =
+        "block";
+
+      /*
+       * Empêche le navigateur de redimensionner
+       * l'image différemment entre les morceaux.
+       */
+
+      img.style.transform =
+        "none";
+
+      if (sliceIndex === 0) {
+        img.loading =
+          imageIndex === 0
+            ? "eager"
+            : "lazy";
+      } else {
+        img.loading =
+          "lazy";
+      }
+
+      wrapper.appendChild(img);
+
+      imageContainer.appendChild(
+        wrapper
+      );
+
+      /*
+       * Petite information technique conservée
+       * sur le morceau.
+       */
+
+      wrapper.dataset.originalTop =
+        String(originalTop);
+
+      wrapper.dataset.originalHeight =
+        String(originalSliceHeight);
+
+      wrapper.dataset.slice =
+        `${sliceIndex + 1}/${sliceCount}`;
+    }
+  }
+
+
+  /* =======================================================
+     CHARGEMENT + TRAITEMENT D'UNE IMAGE
+  ======================================================= */
+
+  function processWebtoonImage(
     imageUrl,
     imageIndex
   ) {
     return new Promise(resolve => {
 
-      const sourceImage =
+      const source =
         new Image();
 
-      sourceImage.onload =
-        async () => {
+      source.onload =
+        () => {
 
-          try {
+          const naturalWidth =
+            source.naturalWidth;
 
-            const width =
-              sourceImage.naturalWidth;
+          const naturalHeight =
+            source.naturalHeight;
 
-            const height =
-              sourceImage.naturalHeight;
-
-            /*
-             * Image suffisamment courte :
-             * aucun découpage nécessaire.
-             */
-
-            if (
-              height <=
-              MAX_SLICE_HEIGHT
-            ) {
-
-              createWebtoonImage(
-                imageUrl,
-                imageIndex,
-                1
-              );
-
-              resolve();
-
-              return;
-            }
-
-            /*
-             * Image très longue :
-             * découpage vertical automatique.
-             */
-
-            let offsetY = 0;
-            let partNumber = 1;
-
-            while (
-              offsetY < height
-            ) {
-
-              const sliceHeight =
-                Math.min(
-                  MAX_SLICE_HEIGHT,
-                  height - offsetY
-                );
-
-              const canvas =
-                document.createElement(
-                  "canvas"
-                );
-
-              canvas.width =
-                width;
-
-              canvas.height =
-                sliceHeight;
-
-              const context =
-                canvas.getContext(
-                  "2d"
-                );
-
-              if (!context) {
-                throw new Error(
-                  "Canvas non disponible."
-                );
-              }
-
-              context.drawImage(
-                sourceImage,
-
-                0,
-                offsetY,
-                width,
-                sliceHeight,
-
-                0,
-                0,
-                width,
-                sliceHeight
-              );
-
-              /*
-               * Qualité élevée pour conserver
-               * le texte et les dessins nets.
-               */
-
-              const sliceUrl =
-                canvas.toDataURL(
-                  "image/jpeg",
-                  0.94
-                );
-
-              createWebtoonImage(
-                sliceUrl,
-                imageIndex,
-                partNumber
-              );
-
-              offsetY +=
-                sliceHeight;
-
-              partNumber++;
-
-              /*
-               * Petite pause pour éviter de bloquer
-               * complètement le navigateur sur téléphone.
-               */
-
-              await new Promise(
-                requestAnimationFrame
-              );
-            }
-
-            resolve();
-
-          } catch (error) {
-
-            console.error(
-              "Erreur découpage Webtoon :",
-              error
-            );
-
-            /*
-             * Si le découpage échoue,
-             * on conserve l'image originale.
-             */
-
-            createWebtoonImage(
+          if (
+            !naturalWidth ||
+            !naturalHeight
+          ) {
+            createNormalWebtoonImage(
               imageUrl,
-              imageIndex,
-              1
+              imageIndex
             );
 
             resolve();
+
+            return;
           }
+
+          console.log(
+            `Webtoon image ${imageIndex + 1}:`,
+            naturalWidth,
+            "x",
+            naturalHeight
+          );
+
+          createVisualSlices(
+            imageUrl,
+            imageIndex,
+            naturalWidth,
+            naturalHeight
+          );
+
+          resolve();
         };
 
-      sourceImage.onerror =
+      source.onerror =
         () => {
 
           console.error(
@@ -1794,15 +1869,13 @@ function renderWebtoonChapter(chapter) {
           );
 
           const errorBlock =
-            document.createElement(
-              "div"
-            );
+            document.createElement("div");
 
           errorBlock.className =
             "webcomic-webtoon-image-error";
 
           errorBlock.textContent =
-            "Impossible de charger cette bande.";
+            "Impossible de charger cette image.";
 
           imageContainer.appendChild(
             errorBlock
@@ -1811,13 +1884,22 @@ function renderWebtoonChapter(chapter) {
           resolve();
         };
 
-      sourceImage.src =
+      /*
+       * IMPORTANT :
+       * aucun crossOrigin ici.
+       *
+       * Nous ne dessinons plus l'image dans
+       * un Canvas, donc nous n'en avons pas besoin.
+       */
+
+      source.src =
         imageUrl;
     });
   }
 
+
   /* =======================================================
-     TRAITEMENT DES IMAGES
+     TRAITEMENT SÉQUENTIEL
   ======================================================= */
 
   async function processAllImages() {
@@ -1832,25 +1914,29 @@ function renderWebtoonChapter(chapter) {
         images[index],
         index
       );
+
+      /*
+       * Laisse le navigateur respirer
+       * entre deux images sur mobile.
+       */
+
+      await new Promise(
+        resolve =>
+          requestAnimationFrame(resolve)
+      );
     }
   }
 
-  /*
-   * On lance le traitement sans bloquer
-   * le reste de la page.
-   */
 
   processAllImages();
+
 
   /* =======================================================
      FIN DU CHAPITRE
   ======================================================= */
 
-  const end =
-    createWebcomicChapterEnd();
-
   webtoonReader.appendChild(
-    end
+    createWebcomicChapterEnd()
   );
 
   readingArea.appendChild(
@@ -1861,16 +1947,9 @@ function renderWebtoonChapter(chapter) {
     readingArea
   );
 
-  const navigation =
-    createWebcomicNavigation();
-
   reader.appendChild(
-    navigation
+    createWebcomicNavigation()
   );
-
-  /*
-   * Zoom initial.
-   */
 
   updateZoom();
 }
@@ -1894,7 +1973,9 @@ function renderWebcomicEmptyState(
   reader.appendChild(
     createWebcomicHeader(
       chapter,
-      isWebtoonType(chapter.series?.type)
+      isWebtoonType(
+        chapter.series?.type
+      )
         ? "Webtoon"
         : "Manga"
     )
@@ -2037,13 +2118,6 @@ function createWebcomicNavigation() {
   nav.appendChild(previous);
   nav.appendChild(next);
 
-  /*
-   * La navigation est initialement générée avant que
-   * loadChapterNavigation() ait rempli les liens.
-   *
-   * On la synchronise ensuite.
-   */
-
   setTimeout(
     () => syncWebcomicNavigation(nav),
     0
@@ -2117,11 +2191,6 @@ function syncWebcomicNavigation(nav) {
       );
     }
   }
-
-  /*
-   * Si un seul côté existe, le CSS garde néanmoins
-   * une structure propre.
-   */
 }
 
 
@@ -2229,11 +2298,6 @@ async function loadChapterNavigation(chapter) {
       nextChapter,
       next
     );
-
-    /*
-     * Si nous sommes en mode Webcomic,
-     * synchroniser la navigation spécifique.
-     */
 
     if (
       currentChapter &&
@@ -2457,12 +2521,7 @@ function attemptAutoplay() {
 
   audio
     .play()
-    .catch(() => {
-      /*
-       * Les navigateurs peuvent bloquer
-       * l'autoplay. Ce n'est pas une erreur.
-       */
-    });
+    .catch(() => {});
 }
 
 
@@ -2584,7 +2643,7 @@ function updateAudioProgress() {
 
   if (audioTime) {
     audioTime.textContent =
-      `${formatTime(audio.currentTime)}`;
+      formatTime(audio.currentTime);
   }
 }
 
@@ -2922,11 +2981,6 @@ function updateLikeButton(isLiked) {
       : "Aimer ce chapitre"
   );
 
-  /*
-   * Le HTML contient déjà les deux SVG.
-   * On ne remplace donc pas le contenu par un emoji.
-   */
-
   const outline =
     likeIcon.querySelector(
       ".heart-outline"
@@ -2951,9 +3005,6 @@ function updateLikeButton(isLiked) {
 
 /* =========================================================
    COMMENTAIRES
-   ---------------------------------------------------------
-   Les commentaires restent hors du périmètre v0.1.
-   On conserve seulement la compatibilité avec l'ancien HTML.
 ========================================================= */
 
 function setupComments() {
