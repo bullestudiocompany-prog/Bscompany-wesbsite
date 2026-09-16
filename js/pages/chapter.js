@@ -161,29 +161,58 @@ function parseImageUrls(value) {
 
 
 function getChapterImages(chapter) {
-  const images = parseImageUrls(chapter?.image_urls);
-
-  const mainImage = chapter?.chapter_image_url
-    ? String(chapter.chapter_image_url).trim()
-    : "";
-
-  /*
-   * Pour un Webcomic, chapter_image_url peut être la première
-   * page et image_urls peut contenir toutes les pages.
-   *
-   * On évite donc les doublons.
-   */
-
   const result = [];
 
-  if (mainImage) {
-    result.push(mainImage);
+  /*
+   * Pour les Webcomics/Mangas, les pages officielles
+   * sont stockées dans chapter_pages.
+   */
+
+  if (Array.isArray(chapter?.chapterPages)) {
+    for (const page of chapter.chapterPages) {
+      const imageUrl =
+        String(page?.image_url || "").trim();
+
+      if (
+        imageUrl &&
+        !result.includes(imageUrl)
+      ) {
+        result.push(imageUrl);
+      }
+    }
   }
 
+  /*
+   * Compatibilité avec l'ancien système image_urls.
+   */
+
+  const images =
+    parseImageUrls(chapter?.image_urls);
+
   for (const image of images) {
-    if (!result.includes(image)) {
+    if (
+      image &&
+      !result.includes(image)
+    ) {
       result.push(image);
     }
+  }
+
+  /*
+   * Compatibilité avec chapter_image_url.
+   * Cette image correspond normalement à la première page.
+   */
+
+  const mainImage =
+    chapter?.chapter_image_url
+      ? String(chapter.chapter_image_url).trim()
+      : "";
+
+  if (
+    mainImage &&
+    !result.includes(mainImage)
+  ) {
+    result.unshift(mainImage);
   }
 
   return result;
@@ -381,6 +410,38 @@ async function loadChapter() {
     if (!data) {
       showError();
       return;
+    }
+
+    /*
+     * Les pages Manga/Webcomic sont stockées dans
+     * chapter_pages et non dans chapters.image_urls.
+     */
+
+    const { data: pageRows, error: pagesError } =
+      await supabase
+        .from("chapter_pages")
+        .select(`
+          id,
+          chapter_id,
+          page_number,
+          image_url
+        `)
+        .eq("chapter_id", data.id)
+        .order(
+          "page_number",
+          {
+            ascending: true
+          }
+        );
+
+    if (pagesError) {
+      console.error(
+        "Erreur chargement pages Webcomic :",
+        pagesError
+      );
+    } else {
+      data.chapterPages =
+        pageRows || [];
     }
 
     currentChapter = data;
@@ -851,6 +912,67 @@ function renderMangaChapter(chapter) {
 
   page.appendChild(image);
 
+  /*
+   * Clic/tap sur l'image :
+   * ouvre ou ferme le plein écran.
+   */
+
+  let isDragging = false;
+
+  async function toggleMangaFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (page.requestFullscreen) {
+        await page.requestFullscreen();
+      }
+
+    } catch (error) {
+      console.warn(
+        "Le plein écran n'est pas disponible :",
+        error
+      );
+    }
+  }
+
+  image.addEventListener(
+    "click",
+    () => {
+      /*
+       * Un swipe ne doit pas déclencher
+       * l'ouverture du plein écran.
+       */
+
+      if (isDragging) {
+        isDragging = false;
+        return;
+      }
+
+      toggleMangaFullscreen();
+    }
+  );
+
+  document.addEventListener(
+    "fullscreenchange",
+    () => {
+      const fullscreen =
+        document.fullscreenElement === page;
+
+      page.classList.toggle(
+        "webcomic-manga-page-fullscreen",
+        fullscreen
+      );
+
+      image.classList.toggle(
+        "webcomic-manga-image-fullscreen",
+        fullscreen
+      );
+    }
+  );
+
   const previousButton =
     createMangaArrow(
       "previous",
@@ -1099,6 +1221,8 @@ function renderMangaChapter(chapter) {
 
       touchStartY =
         touch.clientY;
+
+      isDragging = false;
     },
     { passive: true }
   );
@@ -1126,6 +1250,19 @@ function renderMangaChapter(chapter) {
 
       touchStartX = null;
       touchStartY = null;
+
+      /*
+       * Marque le mouvement comme un déplacement
+       * afin d'empêcher le clic de déclencher
+       * le plein écran après un swipe.
+       */
+
+      if (
+        Math.abs(deltaX) >= 20 ||
+        Math.abs(deltaY) >= 20
+      ) {
+        isDragging = true;
+      }
 
       /*
        * On ignore les mouvements principalement verticaux.
