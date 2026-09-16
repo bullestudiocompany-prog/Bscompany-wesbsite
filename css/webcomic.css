@@ -1282,6 +1282,229 @@
   }
 }
 
+/* =========================================================
+   WEBTOON — LECTEUR VERTICAL
+   ========================================================= */
+
+.webcomic-webtoon-reader {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.webcomic-webtoon-controls {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: fit-content;
+  margin: 0 auto 18px;
+
+  padding: 7px 9px;
+
+  background: rgba(13, 17, 26, 0.88);
+  border: 1px solid rgba(120, 130, 255, 0.25);
+  border-radius: 14px;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+}
+
+.webcomic-webtoon-control {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+
+  font-size: 21px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.webcomic-webtoon-control:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.webcomic-webtoon-control:active {
+  transform: scale(0.94);
+}
+
+.webcomic-webtoon-control:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.webcomic-webtoon-zoom-value {
+  min-width: 52px;
+
+  text-align: center;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.webcomic-webtoon-stage {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.webcomic-webtoon-images {
+  --webtoon-zoom: 1;
+
+  width: 100%;
+  min-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  transform-origin: top center;
+
+  /*
+   * Le zoom est appliqué au contenu entier.
+   * La hauteur reste naturelle pour permettre
+   * le scroll vertical.
+   */
+  transform: scale(var(--webtoon-zoom));
+
+  transition: transform 0.2s ease;
+}
+
+.webcomic-webtoon-slice {
+  width: 100%;
+  max-width: 1000px;
+
+  margin: 0 auto;
+
+  line-height: 0;
+
+  overflow: hidden;
+
+  background: transparent;
+}
+
+.webcomic-webtoon-image {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  max-width: 100%;
+
+  margin: 0 auto;
+
+  object-fit: contain;
+
+  user-select: none;
+  -webkit-user-select: none;
+
+  -webkit-user-drag: none;
+
+  image-rendering: auto;
+}
+
+.webcomic-webtoon-image-error {
+  width: min(100%, 900px);
+
+  margin: 20px auto;
+
+  padding: 30px;
+
+  text-align: center;
+
+  border-radius: 14px;
+
+  background: rgba(255, 70, 70, 0.08);
+  border: 1px solid rgba(255, 70, 70, 0.2);
+
+  color: #ff8585;
+}
+
+/* =========================================================
+   WEBTOON — MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .webcomic-webtoon-controls {
+    top: 8px;
+
+    padding: 6px 7px;
+
+    margin-bottom: 12px;
+
+    border-radius: 12px;
+  }
+
+  .webcomic-webtoon-control {
+    width: 35px;
+    height: 35px;
+
+    font-size: 19px;
+  }
+
+  .webcomic-webtoon-zoom-value {
+    min-width: 48px;
+    font-size: 12px;
+  }
+
+  .webcomic-webtoon-slice {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .webcomic-webtoon-image {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* =========================================================
+   WEBTOON — THÈME BLACK
+   ========================================================= */
+
+[data-theme="black"] .webcomic-webtoon-controls {
+  background: rgba(13, 17, 26, 0.92);
+  border-color: rgba(120, 130, 255, 0.25);
+}
+
+[data-theme="black"] .webcomic-webtoon-control {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+[data-theme="black"] .webcomic-webtoon-control:hover {
+  background: rgba(255, 255, 255, 0.14);
+                   }
 
 /* =========================================================
    FIN — BSCOMPANY WEBCOMIC READER
