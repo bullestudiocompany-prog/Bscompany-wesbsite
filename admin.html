@@ -377,7 +377,99 @@ font-size: 17px;
 }
 
 /* =========================
-SOUNDS
+FORMAT WEB-COMIC
+========================= */
+
+.format-group {
+display: none;
+}
+
+.format-help {
+color: #7d899a;
+font-size: 12px;
+line-height: 1.5;
+margin-top: -8px;
+margin-bottom: 10px;
+}
+
+/* =========================
+PAGES WEB-COMIC
+========================= */
+
+.webcomic-pages {
+display: none;
+}
+
+.webcomic-pages-intro {
+color: #8b98aa;
+font-size: 13px;
+line-height: 1.5;
+margin-bottom: 15px;
+}
+
+.webcomic-page-list {
+display: grid;
+gap: 12px;
+margin-bottom: 15px;
+}
+
+.webcomic-page-item {
+background: #0d121c;
+border: 1px solid #293548;
+border-radius: 12px;
+padding: 14px;
+}
+
+.webcomic-page-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+margin-bottom: 10px;
+}
+
+.webcomic-page-number {
+font-weight: bold;
+color: #dbe5f5;
+}
+
+.webcomic-page-actions {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+}
+
+.webcomic-page-actions button {
+padding: 8px 11px;
+font-size: 12px;
+}
+
+.webcomic-page-preview {
+display: none;
+width: 100%;
+max-width: 180px;
+max-height: 240px;
+object-fit: contain;
+border-radius: 8px;
+background: #080b12;
+border: 1px solid #202a3a;
+margin-bottom: 10px;
+}
+
+.webcomic-page-preview.visible {
+display: block;
+}
+
+.webcomic-add-page {
+background: #202a3a;
+}
+
+.webcomic-add-page:hover {
+background: #293548;
+}
+
+/* =========================
+SONS
 ========================= */
 
 .sound-row {
@@ -474,6 +566,11 @@ height: 78px;
 
 .page-header h1 {
 font-size: 23px;
+}
+
+.webcomic-page-header {
+align-items: flex-start;
+flex-direction: column;
 }
 
 }
@@ -750,6 +847,37 @@ Novel
 </div>
 
 
+<!-- FORMAT WEB-COMIC -->
+
+<div id="seriesFormatGroup" class="format-group">
+
+<label for="seriesFormat">
+Format
+</label>
+
+<select id="seriesFormat">
+
+<option value="">
+— Aucun —
+</option>
+
+<option value="manga">
+Manga
+</option>
+
+<option value="webtoon">
+Webtoon
+</option>
+
+</select>
+
+<p class="format-help">
+Le format est utilisé uniquement pour les œuvres de type Webcomic.
+</p>
+
+</div>
+
+
 <div>
 
 <label for="seriesGenre">
@@ -892,6 +1020,37 @@ Novel
 </option>
 
 </select>
+
+</div>
+
+
+<!-- FORMAT WEB-COMIC -->
+
+<div id="editSeriesFormatGroup" class="format-group">
+
+<label for="editSeriesFormat">
+Format
+</label>
+
+<select id="editSeriesFormat">
+
+<option value="">
+— Aucun —
+</option>
+
+<option value="manga">
+Manga
+</option>
+
+<option value="webtoon">
+Webtoon
+</option>
+
+</select>
+
+<p class="format-help">
+Le format est utilisé uniquement pour les œuvres de type Webcomic.
+</p>
 
 </div>
 
@@ -1130,7 +1289,14 @@ required
 </div>
 
 
-<div class="full">
+<!-- =========================
+ROMAN : CONTENU
+========================= -->
+
+<div
+id="chapterContentGroup"
+class="full"
+>
 
 <label for="chapterContent">
 Contenu *
@@ -1145,7 +1311,14 @@ required
 </div>
 
 
-<div class="full">
+<!-- =========================
+ROMAN : IMAGE PRINCIPALE
+========================= -->
+
+<div
+id="chapterImageGroup"
+class="full"
+>
 
 <label for="chapterImage">
 Image du chapitre *
@@ -1160,6 +1333,44 @@ required
 
 </div>
 
+
+<!-- =========================
+WEBCOMIC : PAGES
+========================= -->
+
+<div
+id="webcomicPagesGroup"
+class="full webcomic-pages"
+>
+
+<label>
+Pages du Webcomic *
+</label>
+
+<p class="webcomic-pages-intro">
+Ajoute les pages du chapitre dans l'ordre. Pour un Manga, chaque page correspond à une page de lecture. Pour un Webtoon, chaque image sera affichée à la suite.
+</p>
+
+<div
+id="webcomicPageList"
+class="webcomic-page-list"
+>
+</div>
+
+<button
+id="addWebcomicPageBtn"
+type="button"
+class="webcomic-add-page"
+>
+➕ Ajouter une page
+</button>
+
+</div>
+
+
+<!-- =========================
+SON
+========================= -->
 
 <div class="full">
 
@@ -1477,4 +1688,4 @@ src="./js/admin.js"
 ></script>
 
 </body>
-  </html>
+</html>
