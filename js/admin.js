@@ -74,6 +74,9 @@ const addSeriesForm = $("addSeriesForm");
 const seriesSubmitBtn = $("seriesSubmitBtn");
 const seriesStatusMsg = $("seriesStatusMsg");
 
+const seriesFormat = $("seriesFormat");
+const seriesFormatGroup = $("seriesFormatGroup");
+
 /* =========================
 ELEMENTS MODIFICATION OEUVRE
 ========================= */
@@ -89,6 +92,9 @@ const editSeriesSubmitBtn = $("editSeriesSubmitBtn");
 const cancelEditSeriesBtn = $("cancelEditSeriesBtn");
 const editSeriesStatusMsg = $("editSeriesStatusMsg");
 
+const editSeriesFormat = $("editSeriesFormat");
+const editSeriesFormatGroup = $("editSeriesFormatGroup");
+
 /* =========================
 ELEMENTS CHAPITRES
 ========================= */
@@ -101,6 +107,16 @@ const addChapterForm = $("addChapterForm");
 const chapterSubmitBtn = $("chapterSubmitBtn");
 const chapterStatusMsg = $("chapterStatusMsg");
 const chapterSound = $("chapterSound");
+
+const chapterContent = $("chapterContent");
+const chapterContentGroup = $("chapterContentGroup");
+
+const chapterImage = $("chapterImage");
+const chapterImageGroup = $("chapterImageGroup");
+
+const webcomicPagesGroup = $("webcomicPagesGroup");
+const webcomicPageList = $("webcomicPageList");
+const addWebcomicPageBtn = $("addWebcomicPageBtn");
 
 /* =========================
 ELEMENTS SONS
@@ -136,37 +152,361 @@ let currentUser = null;
 
 let selectedSeries = null;
 
-/*
-Etat de modification d'une œuvre.
-
-null = aucune modification
-id = œuvre actuellement modifiée
-*/
 let editingSeriesId = null;
-
-/*
-Couverture actuellement utilisée par l'œuvre.
-
-Si aucune nouvelle couverture n'est choisie
-pendant la modification, celle-ci est conservée.
-*/
 let editingSeriesCoverUrl = null;
 
-/*
-Etat de modification d'un chapitre.
-
-null = création normale
-id = modification d'un chapitre existant
-*/
 let editingChapterId = null;
+let editingChapterImageUrl = null;
 
 /*
-Image actuellement utilisée par le chapitre.
+IDs des pages déjà présentes au moment
+où l'édition d'un WebComic est ouverte.
 
-Si aucune nouvelle image n'est sélectionnée
-pendant la modification, elle sera conservée.
+Cela permet de détecter les pages
+supprimées pendant l'édition.
 */
-let editingChapterImageUrl = null;
+let editingWebcomicPageIds = [];
+
+/* =========================
+FORMAT OEUVRE
+========================= */
+
+function isWebcomicSeries(series) {
+  return (
+    series &&
+    series.type === "webcomic"
+  );
+}
+
+function isMangaSeries(series) {
+  return (
+    isWebcomicSeries(series) &&
+    series.format === "manga"
+  );
+}
+
+function isWebtoonSeries(series) {
+  return (
+    isWebcomicSeries(series) &&
+    series.format === "webtoon"
+  );
+}
+
+/*
+Affiche ou masque le choix du format
+dans les formulaires d'œuvre.
+*/
+function updateSeriesFormatVisibility(
+  type,
+  format = ""
+) {
+  const isWebcomic =
+    type === "webcomic";
+
+  if (seriesFormatGroup) {
+    seriesFormatGroup.style.display =
+      isWebcomic ? "" : "none";
+  }
+
+  if (editSeriesFormatGroup) {
+    editSeriesFormatGroup.style.display =
+      isWebcomic ? "" : "none";
+  }
+
+  if (seriesFormat && !isWebcomic) {
+    seriesFormat.value = "";
+  }
+
+  if (
+    editSeriesFormat &&
+    !isWebcomic
+  ) {
+    editSeriesFormat.value = "";
+  }
+
+  if (
+    seriesFormat &&
+    isWebcomic &&
+    format
+  ) {
+    seriesFormat.value = format;
+  }
+
+  if (
+    editSeriesFormat &&
+    isWebcomic &&
+    format
+  ) {
+    editSeriesFormat.value =
+      format;
+  }
+}
+
+/* =========================
+INTERFACE CHAPITRE
+========================= */
+
+function updateChapterEditorUI() {
+  if (!selectedSeries) {
+    return;
+  }
+
+  const isWebcomic =
+    isWebcomicSeries(
+      selectedSeries
+    );
+
+  if (chapterContentGroup) {
+    chapterContentGroup.style.display =
+      isWebcomic ? "none" : "";
+  }
+
+  if (chapterImageGroup) {
+    chapterImageGroup.style.display =
+      isWebcomic ? "none" : "";
+  }
+
+  if (webcomicPagesGroup) {
+    webcomicPagesGroup.style.display =
+      isWebcomic ? "" : "none";
+  }
+
+  if (chapterContent) {
+    chapterContent.required =
+      !isWebcomic;
+  }
+
+  if (chapterImage) {
+    chapterImage.required =
+      !isWebcomic &&
+      !editingChapterId;
+  }
+}
+
+/* =========================
+GESTION DES PAGES WEBCOMIC
+========================= */
+
+function resetWebcomicPages() {
+  editingWebcomicPageIds = [];
+
+  if (webcomicPageList) {
+    webcomicPageList.innerHTML = "";
+  }
+}
+
+/*
+Crée un élément de page.
+
+existingPage :
+{
+  id,
+  page_number,
+  image_url
+}
+
+Pour une nouvelle page :
+existingPage = null
+*/
+function createWebcomicPageItem(
+  existingPage = null
+) {
+  if (!webcomicPageList) {
+    return null;
+  }
+
+  const item =
+    document.createElement("div");
+
+  item.className =
+    "webcomic-page-item";
+
+  if (existingPage) {
+    item.dataset.pageId =
+      existingPage.id;
+
+    item.dataset.pageNumber =
+      existingPage.page_number;
+  }
+
+  const currentPageNumber =
+    existingPage
+      ? existingPage.page_number
+      : webcomicPageList.children.length + 1;
+
+  item.innerHTML = `
+    <strong>
+      Page ${escapeHTML(
+        currentPageNumber
+      )}
+    </strong>
+
+    ${
+      existingPage &&
+      existingPage.image_url
+        ? `
+          <div
+            style="
+              margin-bottom:10px;
+            "
+          >
+            <img
+              src="${escapeAttribute(
+                existingPage.image_url
+              )}"
+              alt="Page ${escapeAttribute(
+                currentPageNumber
+              )}"
+              style="
+                display:block;
+                width:100%;
+                max-height:260px;
+                object-fit:contain;
+                border-radius:8px;
+                background:#05080d;
+              "
+            >
+          </div>
+        `
+        : ""
+    }
+
+    <input
+      type="file"
+      class="webcomic-page-file"
+      accept="image/jpeg,image/png,image/webp"
+    >
+
+    ${
+      existingPage
+        ? `
+          <button
+            type="button"
+            class="danger webcomic-remove-page"
+          >
+            🗑️ Supprimer cette page
+          </button>
+        `
+        : `
+          <button
+            type="button"
+            class="secondary webcomic-remove-page"
+          >
+            Retirer
+          </button>
+        `
+    }
+  `;
+
+  webcomicPageList.appendChild(item);
+
+  return item;
+}
+
+function addNewWebcomicPage() {
+  createWebcomicPageItem(null);
+}
+
+function getWebcomicPageItems() {
+  if (!webcomicPageList) {
+    return [];
+  }
+
+  return Array.from(
+    webcomicPageList.querySelectorAll(
+      ".webcomic-page-item"
+    )
+  );
+}
+
+function getWebcomicPageFiles() {
+  return getWebcomicPageItems().map(
+    (item, index) => {
+      const input =
+        item.querySelector(
+          ".webcomic-page-file"
+        );
+
+      return {
+        item,
+        index,
+        pageId:
+          item.dataset.pageId ||
+          null,
+        pageNumber:
+          Number(
+            item.dataset.pageNumber
+          ) ||
+          index + 1,
+        file:
+          input?.files?.[0] ||
+          null
+      };
+    }
+  );
+}
+
+function validateWebcomicFile(
+  file
+) {
+  if (!file) {
+    return null;
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (
+    !allowedTypes.includes(
+      file.type
+    )
+  ) {
+    return "Format d'image non autorisé.";
+  }
+
+  if (
+    file.size >
+    10 * 1024 * 1024
+  ) {
+    return "Une image ne doit pas dépasser 10 Mo.";
+  }
+
+  return null;
+}
+
+async function uploadChapterImage(
+  file,
+  path
+) {
+  const {
+    error: uploadError
+  } = await supabase.storage
+    .from("chapter-images")
+    .upload(
+      path,
+      file,
+      {
+        upsert: false
+      }
+    );
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const {
+    data: publicUrlData
+  } = supabase.storage
+    .from("chapter-images")
+    .getPublicUrl(
+      path
+    );
+
+  return publicUrlData.publicUrl;
+}
 
 /* =========================
 NAVIGATION
@@ -176,13 +516,18 @@ function showPage(pageName) {
   document
     .querySelectorAll(".page")
     .forEach((page) => {
-      page.classList.remove("active");
+      page.classList.remove(
+        "active"
+      );
     });
 
-  const target = $(`page-${pageName}`);
+  const target =
+    $(`page-${pageName}`);
 
   if (target) {
-    target.classList.add("active");
+    target.classList.add(
+      "active"
+    );
   }
 
   document
@@ -190,7 +535,8 @@ function showPage(pageName) {
     .forEach((button) => {
       button.classList.toggle(
         "active",
-        button.dataset.page === pageName
+        button.dataset.page ===
+          pageName
       );
     });
 
@@ -200,10 +546,10 @@ function showPage(pageName) {
   });
 }
 
-/*
-Réinitialise complètement le formulaire
-de création d'une œuvre.
-*/
+/* =========================
+RESET CREATION OEUVRE
+========================= */
+
 function resetSeriesCreateForm() {
   editingSeriesId = null;
   editingSeriesCoverUrl = null;
@@ -212,27 +558,41 @@ function resetSeriesCreateForm() {
     addSeriesForm.reset();
   }
 
-  const coverInput = $("seriesCover");
+  const coverInput =
+    $("seriesCover");
 
   if (coverInput) {
     coverInput.required = true;
   }
 
+  updateSeriesFormatVisibility(
+    $("seriesType")?.value ||
+      "webcomic",
+    $("seriesFormat")?.value ||
+      ""
+  );
+
   if (seriesSubmitBtn) {
-    seriesSubmitBtn.textContent = "Publier l'œuvre";
-    seriesSubmitBtn.disabled = false;
+    seriesSubmitBtn.textContent =
+      "Publier l'œuvre";
+
+    seriesSubmitBtn.disabled =
+      false;
   }
 
   if (seriesStatusMsg) {
-    seriesStatusMsg.className = "status";
-    seriesStatusMsg.textContent = "";
+    seriesStatusMsg.className =
+      "status";
+
+    seriesStatusMsg.textContent =
+      "";
   }
 }
 
-/*
-Réinitialise le formulaire de modification
-d'une œuvre.
-*/
+/* =========================
+RESET MODIFICATION OEUVRE
+========================= */
+
 function resetSeriesEdit() {
   editingSeriesId = null;
   editingSeriesCoverUrl = null;
@@ -241,37 +601,48 @@ function resetSeriesEdit() {
     editSeriesForm.reset();
   }
 
+  updateSeriesFormatVisibility(
+    $("editSeriesType")?.value ||
+      "webcomic",
+    ""
+  );
+
   if (editSeriesSubmitBtn) {
     editSeriesSubmitBtn.textContent =
       "Enregistrer les modifications";
 
-    editSeriesSubmitBtn.disabled = false;
+    editSeriesSubmitBtn.disabled =
+      false;
   }
 
   if (editSeriesStatusMsg) {
-    editSeriesStatusMsg.className = "status";
-    editSeriesStatusMsg.textContent = "";
+    editSeriesStatusMsg.className =
+      "status";
+
+    editSeriesStatusMsg.textContent =
+      "";
   }
 }
 
-/*
-Navigation générale.
-*/
+/* =========================
+NAVIGATION GENERALE
+========================= */
+
 document.addEventListener(
   "click",
   async (event) => {
-    const button = event.target.closest("[data-page]");
+    const button =
+      event.target.closest(
+        "[data-page]"
+      );
 
     if (!button) {
       return;
     }
 
-    const page = button.dataset.page;
+    const page =
+      button.dataset.page;
 
-    /*
-    Si on revient vers Nouvelle œuvre,
-    on quitte complètement le mode modification.
-    */
     if (page === "new-series") {
       resetSeriesCreateForm();
     }
@@ -293,14 +664,51 @@ document.addEventListener(
 );
 
 /* =========================
+CHANGEMENT TYPE OEUVRE
+========================= */
+
+const seriesTypeInput =
+  $("seriesType");
+
+if (seriesTypeInput) {
+  seriesTypeInput.addEventListener(
+    "change",
+    () => {
+      updateSeriesFormatVisibility(
+        seriesTypeInput.value,
+        seriesFormat?.value || ""
+      );
+    }
+  );
+}
+
+if (editSeriesType) {
+  editSeriesType.addEventListener(
+    "change",
+    () => {
+      updateSeriesFormatVisibility(
+        editSeriesType.value,
+        editSeriesFormat?.value ||
+          ""
+      );
+    }
+  );
+}
+
+/* =========================
 AUTH
 ========================= */
 
 function showAdmin(user) {
   currentUser = user;
 
-  loginSection.classList.add("hidden");
-  adminSection.classList.remove("hidden");
+  loginSection.classList.add(
+    "hidden"
+  );
+
+  adminSection.classList.remove(
+    "hidden"
+  );
 
   console.log(
     "Connecté :",
@@ -324,8 +732,15 @@ function showLogin() {
   editingChapterId = null;
   editingChapterImageUrl = null;
 
-  loginSection.classList.remove("hidden");
-  adminSection.classList.add("hidden");
+  editingWebcomicPageIds = [];
+
+  loginSection.classList.remove(
+    "hidden"
+  );
+
+  adminSection.classList.add(
+    "hidden"
+  );
 }
 
 async function checkSession() {
@@ -346,7 +761,9 @@ async function checkSession() {
   }
 
   if (data.session) {
-    showAdmin(data.session.user);
+    showAdmin(
+      data.session.user
+    );
   } else {
     showLogin();
   }
@@ -357,18 +774,25 @@ loginForm.addEventListener(
   async (event) => {
     event.preventDefault();
 
-    loginError.className = "info";
+    loginError.className =
+      "info";
+
     loginError.textContent =
       "⏳ Connexion...";
 
     const email =
-      $("loginEmail").value.trim();
+      $("loginEmail")
+        .value
+        .trim();
 
     const password =
-      $("loginPassword").value;
+      $("loginPassword")
+        .value;
 
     if (!email || !password) {
-      loginError.className = "error";
+      loginError.className =
+        "error";
+
       loginError.textContent =
         "❌ Remplis tous les champs.";
 
@@ -378,22 +802,30 @@ loginForm.addEventListener(
     const {
       data,
       error
-    } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    } =
+      await supabase.auth.signInWithPassword(
+        {
+          email,
+          password
+        }
+      );
 
     if (error) {
       console.error(error);
 
-      loginError.className = "error";
+      loginError.className =
+        "error";
+
       loginError.textContent =
-        "❌ " + error.message;
+        "❌ " +
+        error.message;
 
       return;
     }
 
-    loginError.className = "success";
+    loginError.className =
+      "success";
+
     loginError.textContent =
       "✅ Connexion réussie !";
 
@@ -413,6 +845,8 @@ logoutBtn.addEventListener(
 
     editingChapterId = null;
     editingChapterImageUrl = null;
+
+    editingWebcomicPageIds = [];
 
     showLogin();
   }
@@ -462,10 +896,12 @@ async function loadDashboard() {
 
     if (soundsCount) {
       if (soundsResult.error) {
-        soundsCount.textContent = "0";
+        soundsCount.textContent =
+          "0";
       } else {
         soundsCount.textContent =
-          soundsResult.data?.length ?? 0;
+          soundsResult.data?.length ??
+          0;
       }
     }
   } catch (error) {
@@ -498,6 +934,7 @@ async function loadSeries() {
       title,
       slug,
       type,
+      format,
       genre,
       description,
       cover_url,
@@ -518,7 +955,10 @@ async function loadSeries() {
     seriesList.innerHTML = `
       <div class="item">
         <p class="error">
-          Erreur : ${escapeHTML(error.message)}
+          Erreur :
+          ${escapeHTML(
+            error.message
+          )}
         </p>
       </div>
     `;
@@ -526,7 +966,10 @@ async function loadSeries() {
     return;
   }
 
-  if (!data || data.length === 0) {
+  if (
+    !data ||
+    data.length === 0
+  ) {
     seriesList.innerHTML = `
       <div class="item">
         Aucune œuvre pour le moment.
@@ -536,107 +979,129 @@ async function loadSeries() {
     return;
   }
 
-  seriesList.innerHTML = data
-    .map((series) => {
-      return `
-        <div class="item">
+  seriesList.innerHTML =
+    data
+      .map((series) => {
+        return `
+          <div class="item">
 
-          <div class="item-main">
+            <div class="item-main">
 
-            ${
-              series.cover_url
-                ? `
-                  <img
-                    class="cover"
-                    src="${escapeAttribute(
-                      series.cover_url
-                    )}"
-                    alt="${escapeAttribute(
-                      series.title
-                    )}"
-                  >
-                `
-                : `
-                  <div class="cover"></div>
-                `
-            }
+              ${
+                series.cover_url
+                  ? `
+                    <img
+                      class="cover"
+                      src="${escapeAttribute(
+                        series.cover_url
+                      )}"
+                      alt="${escapeAttribute(
+                        series.title
+                      )}"
+                    >
+                  `
+                  : `
+                    <div class="cover"></div>
+                  `
+              }
 
-            <div class="item-info">
+              <div class="item-info">
 
-              <div class="item-title">
-                ${escapeHTML(
-                  series.title
-                )}
-              </div>
+                <div class="item-title">
+                  ${escapeHTML(
+                    series.title
+                  )}
+                </div>
 
-              <div class="item-meta">
+                <div class="item-meta">
 
-                Type :
-                ${escapeHTML(
-                  series.type || "—"
-                )}
-                <br>
+                  Type :
+                  ${escapeHTML(
+                    series.type ||
+                      "—"
+                  )}
 
-                Genre :
-                ${escapeHTML(
-                  series.genre || "—"
-                )}
-                <br>
+                  ${
+                    series.type ===
+                      "webcomic" &&
+                    series.format
+                      ? `
+                        <br>
+                        Format :
+                        ${escapeHTML(
+                          series.format
+                        )}
+                      `
+                      : ""
+                  }
 
-                Statut :
-                ${escapeHTML(
-                  series.status || "—"
-                )}
-                <br>
+                  <br>
 
-                Slug :
-                ${escapeHTML(
-                  series.slug || "—"
-                )}
+                  Genre :
+                  ${escapeHTML(
+                    series.genre ||
+                      "—"
+                  )}
+
+                  <br>
+
+                  Statut :
+                  ${escapeHTML(
+                    series.status ||
+                      "—"
+                  )}
+
+                  <br>
+
+                  Slug :
+                  ${escapeHTML(
+                    series.slug ||
+                      "—"
+                  )}
+
+                </div>
 
               </div>
 
             </div>
 
+            <div class="item-actions">
+
+              <button
+                type="button"
+                data-open-series="${escapeAttribute(
+                  series.id
+                )}"
+              >
+                📖 Chapitres
+              </button>
+
+              <button
+                type="button"
+                class="secondary"
+                data-edit-series="${escapeAttribute(
+                  series.id
+                )}"
+              >
+                ✏️ Modifier
+              </button>
+
+              <button
+                type="button"
+                class="danger"
+                data-delete-series="${escapeAttribute(
+                  series.id
+                )}"
+              >
+                🗑️ Supprimer
+              </button>
+
+            </div>
+
           </div>
-
-          <div class="item-actions">
-
-            <button
-              type="button"
-              data-open-series="${escapeAttribute(
-                series.id
-              )}"
-            >
-              📖 Chapitres
-            </button>
-
-            <button
-              type="button"
-              class="secondary"
-              data-edit-series="${escapeAttribute(
-                series.id
-              )}"
-            >
-              ✏️ Modifier
-            </button>
-
-            <button
-              type="button"
-              class="danger"
-              data-delete-series="${escapeAttribute(
-                series.id
-              )}"
-            >
-              🗑️ Supprimer
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
 }
 
 /* =========================
@@ -650,7 +1115,10 @@ async function openSeries(seriesId) {
   } = await supabase
     .from("series")
     .select("*")
-    .eq("id", seriesId)
+    .eq(
+      "id",
+      seriesId
+    )
     .single();
 
   if (error) {
@@ -658,7 +1126,7 @@ async function openSeries(seriesId) {
 
     alert(
       "Impossible de charger l'œuvre : " +
-      error.message
+        error.message
     );
 
     return;
@@ -685,6 +1153,8 @@ async function openSeries(seriesId) {
     newChapterSeriesTitle.textContent =
       data.title || "—";
   }
+
+  updateChapterEditorUI();
 
   showPage("chapters");
 
@@ -750,13 +1220,17 @@ document.addEventListener(
         title,
         slug,
         type,
+        format,
         genre,
         description,
         cover_url,
         status,
         author_id
       `)
-      .eq("id", seriesId)
+      .eq(
+        "id",
+        seriesId
+      )
       .single();
 
     if (error) {
@@ -774,38 +1248,46 @@ document.addEventListener(
       return;
     }
 
-    /*
-    IMPORTANT :
-
-    On conserve l'ID de l'œuvre.
-    On ne touche pas aux chapitres.
-    */
-    editingSeriesId = series.id;
+    editingSeriesId =
+      series.id;
 
     editingSeriesCoverUrl =
-      series.cover_url || null;
+      series.cover_url ||
+      null;
 
     editSeriesTitle.value =
       series.title || "";
 
     editSeriesType.value =
-      series.type || "webcomic";
+      series.type ||
+      "webcomic";
 
     editSeriesGenre.value =
       series.genre || "";
 
     editSeriesStatus.value =
-      series.status || "ongoing";
+      series.status ||
+      "ongoing";
 
     editSeriesDescription.value =
       series.description || "";
 
-    /*
-    Le champ fichier reste vide.
-    L'ancienne couverture sera conservée
-    si aucune nouvelle image n'est choisie.
-    */
-    editSeriesCover.value = "";
+    if (editSeriesFormat) {
+      editSeriesFormat.value =
+        series.type ===
+        "webcomic"
+          ? series.format ||
+            ""
+          : "";
+    }
+
+    updateSeriesFormatVisibility(
+      series.type,
+      series.format || ""
+    );
+
+    editSeriesCover.value =
+      "";
 
     editSeriesSubmitBtn.textContent =
       "Enregistrer les modifications";
@@ -857,6 +1339,12 @@ if (editSeriesForm) {
       const type =
         editSeriesType.value;
 
+      const format =
+        type === "webcomic"
+          ? editSeriesFormat?.value ||
+            null
+          : null;
+
       const genre =
         editSeriesGenre.value.trim();
 
@@ -868,10 +1356,6 @@ if (editSeriesForm) {
 
       const coverFile =
         editSeriesCover.files[0];
-
-      /* =========================
-      VALIDATION
-      ========================= */
 
       if (!title) {
         editSeriesStatusMsg.className =
@@ -889,6 +1373,21 @@ if (editSeriesForm) {
 
         editSeriesStatusMsg.textContent =
           "❌ La description est obligatoire.";
+
+        return;
+      }
+
+      if (
+        type === "webcomic" &&
+        !["manga", "webtoon"].includes(
+          format
+        )
+      ) {
+        editSeriesStatusMsg.className =
+          "status error";
+
+        editSeriesStatusMsg.textContent =
+          "❌ Choisis un format : Manga ou Webtoon.";
 
         return;
       }
@@ -938,17 +1437,9 @@ if (editSeriesForm) {
         "⏳ Enregistrement...";
 
       try {
-        /*
-        On garde la couverture actuelle
-        par défaut.
-        */
         let coverUrl =
           editingSeriesCoverUrl;
 
-        /*
-        Si une nouvelle couverture
-        est sélectionnée, on l'upload.
-        */
         if (coverFile) {
           const extension =
             coverFile.name
@@ -982,40 +1473,25 @@ if (editSeriesForm) {
 
           const {
             data: publicUrlData
-          } = supabase.storage
-            .from("Cover series")
-            .getPublicUrl(
-              filePath
-            );
+          } =
+            supabase.storage
+              .from(
+                "Cover series"
+              )
+              .getPublicUrl(
+                filePath
+              );
 
           coverUrl =
             publicUrlData.publicUrl;
         }
 
-        /*
-        Nouveau slug basé sur le titre.
-        */
         const slug =
           createSlug(title);
 
         editSeriesStatusMsg.textContent =
           "⏳ Mise à jour de l'œuvre...";
 
-        /*
-        IMPORTANT :
-
-        On modifie UNIQUEMENT la ligne
-        de l'œuvre.
-
-        On ne modifie PAS :
-        - id
-        - author_id
-        - chapters
-        - chapters.series_id
-
-        Les chapitres restent donc
-        attachés à cette œuvre.
-        */
         const {
           data: updatedSeries,
           error: updateError
@@ -1025,9 +1501,11 @@ if (editSeriesForm) {
             title,
             slug,
             type,
+            format,
             genre,
             description,
-            cover_url: coverUrl,
+            cover_url:
+              coverUrl,
             status
           })
           .eq(
@@ -1042,18 +1520,14 @@ if (editSeriesForm) {
 
         if (
           !updatedSeries ||
-          updatedSeries.length === 0
+          updatedSeries.length ===
+            0
         ) {
           throw new Error(
             "L'œuvre n'a pas été modifiée. Supabase n'a modifié aucune ligne."
           );
         }
 
-        /*
-        Si l'œuvre actuellement sélectionnée
-        est celle qu'on vient de modifier,
-        on recharge ses informations.
-        */
         if (
           selectedSeries &&
           selectedSeries.id ===
@@ -1064,9 +1538,11 @@ if (editSeriesForm) {
             title,
             slug,
             type,
+            format,
             genre,
             description,
-            cover_url: coverUrl,
+            cover_url:
+              coverUrl,
             status
           };
 
@@ -1076,7 +1552,9 @@ if (editSeriesForm) {
           }
 
           const descriptionElement =
-            $("chapterSeriesDescription");
+            $(
+              "chapterSeriesDescription"
+            );
 
           if (descriptionElement) {
             descriptionElement.textContent =
@@ -1084,12 +1562,18 @@ if (editSeriesForm) {
           }
 
           const newChapterSeriesTitle =
-            $("newChapterSeriesTitle");
+            $(
+              "newChapterSeriesTitle"
+            );
 
-          if (newChapterSeriesTitle) {
+          if (
+            newChapterSeriesTitle
+          ) {
             newChapterSeriesTitle.textContent =
               title;
           }
+
+          updateChapterEditorUI();
         }
 
         editSeriesStatusMsg.className =
@@ -1098,12 +1582,9 @@ if (editSeriesForm) {
         editSeriesStatusMsg.textContent =
           "✅ Œuvre modifiée avec succès !";
 
-        /*
-        On réinitialise l'état
-        de modification.
-        */
         editingSeriesId = null;
-        editingSeriesCoverUrl = null;
+        editingSeriesCoverUrl =
+          null;
 
         editSeriesForm.reset();
 
@@ -1113,9 +1594,6 @@ if (editSeriesForm) {
         await loadSeries();
         await loadDashboard();
 
-        /*
-        Retour à la liste des œuvres.
-        */
         showPage("series");
       } catch (error) {
         console.error(error);
@@ -1183,14 +1661,17 @@ document.addEventListener(
     } = await supabase
       .from("series")
       .delete()
-      .eq("id", id);
+      .eq(
+        "id",
+        id
+      );
 
     if (error) {
       console.error(error);
 
       alert(
         "Erreur : " +
-        error.message
+          error.message
       );
 
       return;
@@ -1226,16 +1707,27 @@ addSeriesForm.addEventListener(
     }
 
     const title =
-      $("seriesTitle").value.trim();
+      $("seriesTitle")
+        .value
+        .trim();
 
     const type =
       $("seriesType").value;
 
+    const format =
+      type === "webcomic"
+        ? $("seriesFormat")?.value ||
+          null
+        : null;
+
     const genre =
-      $("seriesGenre").value.trim();
+      $("seriesGenre")
+        .value
+        .trim();
 
     const status =
-      $("seriesStatus").value;
+      $("seriesStatus")
+        .value;
 
     const description =
       $("seriesDescription")
@@ -1243,7 +1735,8 @@ addSeriesForm.addEventListener(
         .trim();
 
     const coverFile =
-      $("seriesCover").files[0];
+      $("seriesCover")
+        .files[0];
 
     if (
       !title ||
@@ -1255,6 +1748,21 @@ addSeriesForm.addEventListener(
 
       seriesStatusMsg.textContent =
         "❌ Remplis tous les champs obligatoires.";
+
+      return;
+    }
+
+    if (
+      type === "webcomic" &&
+      !["manga", "webtoon"].includes(
+        format
+      )
+    ) {
+      seriesStatusMsg.className =
+        "status error";
+
+      seriesStatusMsg.textContent =
+        "❌ Choisis un format : Manga ou Webtoon.";
 
       return;
     }
@@ -1298,11 +1806,12 @@ addSeriesForm.addEventListener(
 
       const {
         data: publicUrlData
-      } = supabase.storage
-        .from("Cover series")
-        .getPublicUrl(
-          filePath
-        );
+      } =
+        supabase.storage
+          .from("Cover series")
+          .getPublicUrl(
+            filePath
+          );
 
       const coverUrl =
         publicUrlData.publicUrl;
@@ -1318,8 +1827,10 @@ addSeriesForm.addEventListener(
           title,
           slug,
           type,
+          format,
           description,
-          cover_url: coverUrl,
+          cover_url:
+            coverUrl,
           status,
           author_id:
             currentUser.id,
@@ -1337,6 +1848,12 @@ addSeriesForm.addEventListener(
         "✅ Œuvre publiée avec succès !";
 
       addSeriesForm.reset();
+
+      updateSeriesFormatVisibility(
+        $("seriesType")?.value ||
+          "webcomic",
+        ""
+      );
 
       await loadSeries();
       await loadDashboard();
@@ -1433,123 +1950,142 @@ async function loadChapters() {
     return;
   }
 
-  chaptersList.innerHTML = data
-    .map((chapter) => {
-      const displayLabel =
-        formatChapterLabel(
-          chapter.chapter_label ??
-          chapter.chapter_number
-        );
+  chaptersList.innerHTML =
+    data
+      .map((chapter) => {
+        const displayLabel =
+          formatChapterLabel(
+            chapter.chapter_label ??
+              chapter.chapter_number
+          );
 
-      const published =
-        chapter.published_at
-          ? new Date(
-              chapter.published_at
-            ).toLocaleString(
-              "fr-FR"
-            )
-          : "Non publié";
+        const published =
+          chapter.published_at
+            ? new Date(
+                chapter.published_at
+              ).toLocaleString(
+                "fr-FR"
+              )
+            : "Non publié";
 
-      return `
-        <div class="item">
+        return `
+          <div class="item">
 
-          <div class="item-main">
+            <div class="item-main">
 
-            ${
-              chapter.chapter_image_url
-                ? `
-                  <img
-                    class="cover"
-                    src="${escapeAttribute(
-                      chapter.chapter_image_url
-                    )}"
-                    alt="${escapeAttribute(
-                      chapter.title ||
-                      displayLabel
-                    )}"
-                  >
-                `
-                : `
-                  <div class="cover"></div>
-                `
-            }
+              ${
+                chapter.chapter_image_url
+                  ? `
+                    <img
+                      class="cover"
+                      src="${escapeAttribute(
+                        chapter.chapter_image_url
+                      )}"
+                      alt="${escapeAttribute(
+                        chapter.title ||
+                          displayLabel
+                      )}"
+                    >
+                  `
+                  : `
+                    <div class="cover"></div>
+                  `
+              }
 
-            <div class="item-info">
+              <div class="item-info">
 
-              <div class="item-title">
-                ${escapeHTML(
-                  displayLabel
-                )}
+                <div class="item-title">
+                  ${escapeHTML(
+                    displayLabel
+                  )}
 
-                ${
-                  chapter.title
-                    ? ` — ${escapeHTML(
-                        chapter.title
-                      )}`
-                    : ""
-                }
-              </div>
+                  ${
+                    chapter.title
+                      ? ` — ${escapeHTML(
+                          chapter.title
+                        )}`
+                      : ""
+                  }
+                </div>
 
-              <div class="item-meta">
+                <div class="item-meta">
 
-                Numéro interne :
-                ${escapeHTML(
-                  chapter.chapter_number
-                )}
-                <br>
+                  Numéro interne :
+                  ${escapeHTML(
+                    chapter.chapter_number
+                  )}
 
-                Publication :
-                ${escapeHTML(
-                  published
-                )}
-                <br>
+                  <br>
 
-                Vues :
-                ${escapeHTML(
-                  chapter.views ?? 0
-                )}
-                <br>
+                  Publication :
+                  ${escapeHTML(
+                    published
+                  )}
 
-                ${
-                  chapter.sound_url
-                    ? "🎵 Son associé"
-                    : "🔇 Aucun son"
-                }
+                  <br>
+
+                  Vues :
+                  ${escapeHTML(
+                    chapter.views ??
+                      0
+                  )}
+
+                  <br>
+
+                  ${
+                    chapter.sound_url
+                      ? "🎵 Son associé"
+                      : "🔇 Aucun son"
+                  }
+
+                  ${
+                    selectedSeries.type ===
+                      "webcomic"
+                      ? `
+                        <br>
+                        Format :
+                        ${escapeHTML(
+                          selectedSeries.format ||
+                            "—"
+                        )}
+                      `
+                      : ""
+                  }
+
+                </div>
 
               </div>
 
             </div>
 
+            <div class="item-actions">
+
+              <button
+                type="button"
+                class="secondary"
+                data-edit-chapter="${escapeAttribute(
+                  chapter.id
+                )}"
+              >
+                ✏️ Modifier
+              </button>
+
+              <button
+                type="button"
+                class="danger"
+                data-delete-chapter="${escapeAttribute(
+                  chapter.id
+                )}"
+              >
+                🗑️ Supprimer
+              </button>
+
+            </div>
+
           </div>
-
-          <div class="item-actions">
-
-            <button
-              type="button"
-              class="secondary"
-              data-edit-chapter="${escapeAttribute(
-                chapter.id
-              )}"
-            >
-              ✏️ Modifier
-            </button>
-
-            <button
-              type="button"
-              class="danger"
-              data-delete-chapter="${escapeAttribute(
-                chapter.id
-              )}"
-            >
-              🗑️ Supprimer
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
 }
 
 /* =========================
@@ -1559,18 +2095,22 @@ NOUVEAU CHAPITRE
 newChapterBtn.addEventListener(
   "click",
   async () => {
-    /*
-    Si une modification est en cours,
-    le bouton sert à annuler.
-    */
     if (editingChapterId) {
       editingChapterId = null;
-      editingChapterImageUrl = null;
+      editingChapterImageUrl =
+        null;
+
+      editingWebcomicPageIds = [];
 
       addChapterForm.reset();
 
-      $("chapterImage").required =
-        true;
+      resetWebcomicPages();
+
+      if (selectedSeries) {
+        $("newChapterSeriesTitle")
+          .textContent =
+          selectedSeries.title;
+      }
 
       chapterSubmitBtn.textContent =
         "Publier le chapitre";
@@ -1584,10 +2124,10 @@ newChapterBtn.addEventListener(
       chapterStatusMsg.textContent =
         "";
 
+      updateChapterEditorUI();
+
       if (selectedSeries) {
-        $("newChapterSeriesTitle")
-          .textContent =
-          selectedSeries.title;
+        await loadSoundOptions();
       }
 
       showPage("chapters");
@@ -1604,12 +2144,14 @@ newChapterBtn.addEventListener(
     }
 
     editingChapterId = null;
-    editingChapterImageUrl = null;
+    editingChapterImageUrl =
+      null;
+
+    editingWebcomicPageIds = [];
 
     addChapterForm.reset();
 
-    $("chapterImage").required =
-      true;
+    resetWebcomicPages();
 
     chapterSubmitBtn.textContent =
       "Publier le chapitre";
@@ -1627,9 +2169,70 @@ newChapterBtn.addEventListener(
       .textContent =
       selectedSeries.title;
 
+    updateChapterEditorUI();
+
+    if (
+      isWebcomicSeries(
+        selectedSeries
+      )
+    ) {
+      addNewWebcomicPage();
+    }
+
     await loadSoundOptions();
 
     showPage("new-chapter");
+  }
+);
+
+/* =========================
+AJOUT PAGE WEBCOMIC
+========================= */
+
+if (addWebcomicPageBtn) {
+  addWebcomicPageBtn.addEventListener(
+    "click",
+    () => {
+      if (
+        !selectedSeries ||
+        !isWebcomicSeries(
+          selectedSeries
+        )
+      ) {
+        return;
+      }
+
+      addNewWebcomicPage();
+    }
+  );
+}
+
+/* =========================
+SUPPRIMER / RETIRER PAGE
+========================= */
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const button =
+      event.target.closest(
+        ".webcomic-remove-page"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    const item =
+      button.closest(
+        ".webcomic-page-item"
+      );
+
+    if (!item) {
+      return;
+    }
+
+    item.remove();
   }
 );
 
@@ -1683,7 +2286,10 @@ document.addEventListener(
         published_at,
         views
       `)
-      .eq("id", chapterId)
+      .eq(
+        "id",
+        chapterId
+      )
       .single();
 
     if (error) {
@@ -1691,7 +2297,7 @@ document.addEventListener(
 
       alert(
         "Impossible de charger le chapitre : " +
-        error.message
+          error.message
       );
 
       return;
@@ -1718,13 +2324,84 @@ document.addEventListener(
     $("chapterContent").value =
       chapter.content ?? "";
 
+    resetWebcomicPages();
+
     await loadSoundOptions();
 
     $("chapterSound").value =
       chapter.sound_url || "";
 
-    $("chapterImage").required =
-      false;
+    if (
+      isWebcomicSeries(
+        selectedSeries
+      )
+    ) {
+      chapterImage.required =
+        false;
+
+      chapterContent.required =
+        false;
+
+      const {
+        data: pages,
+        error: pagesError
+      } = await supabase
+        .from("chapter_pages")
+        .select(`
+          id,
+          chapter_id,
+          page_number,
+          image_url,
+          created_at
+        `)
+        .eq(
+          "chapter_id",
+          chapter.id
+        )
+        .order(
+          "page_number",
+          {
+            ascending: true
+          }
+        );
+
+      if (pagesError) {
+        console.error(
+          pagesError
+        );
+
+        chapterStatusMsg.className =
+          "status error";
+
+        chapterStatusMsg.textContent =
+          "❌ Impossible de charger les pages : " +
+          pagesError.message;
+
+        return;
+      }
+
+      editingWebcomicPageIds =
+        (pages || []).map(
+          (page) => page.id
+        );
+
+      (pages || []).forEach(
+        (page) => {
+          createWebcomicPageItem(
+            page
+          );
+        }
+      );
+
+      if (
+        !pages ||
+        pages.length === 0
+      ) {
+        addNewWebcomicPage();
+      }
+    }
+
+    updateChapterEditorUI();
 
     chapterSubmitBtn.textContent =
       "Enregistrer les modifications";
@@ -1792,8 +2469,13 @@ addChapterForm.addEventListener(
     const soundUrl =
       $("chapterSound").value;
 
+    const isWebcomic =
+      isWebcomicSeries(
+        selectedSeries
+      );
+
     /* =========================
-    VALIDATION
+    VALIDATION GENERALE
     ========================= */
 
     if (
@@ -1829,7 +2511,15 @@ addChapterForm.addEventListener(
       return;
     }
 
-    if (!content) {
+    /*
+    =========================
+    ROMAN
+    =========================
+
+    On conserve ici l'ancien
+    fonctionnement.
+    */
+    if (!isWebcomic && !content) {
       chapterStatusMsg.className =
         "status error";
 
@@ -1839,14 +2529,8 @@ addChapterForm.addEventListener(
       return;
     }
 
-    /*
-    En création :
-    image obligatoire.
-
-    En modification :
-    image facultative.
-    */
     if (
+      !isWebcomic &&
       !editingChapterId &&
       !imageFile
     ) {
@@ -1860,37 +2544,81 @@ addChapterForm.addEventListener(
     }
 
     if (imageFile) {
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-      ];
+      const imageError =
+        validateWebcomicFile(
+          imageFile
+        );
 
-      if (
-        !allowedTypes.includes(
-          imageFile.type
-        )
-      ) {
+      if (imageError) {
         chapterStatusMsg.className =
           "status error";
 
         chapterStatusMsg.textContent =
-          "❌ Format d'image non autorisé.";
+          "❌ " +
+          imageError;
 
         return;
       }
+    }
 
-      if (
-        imageFile.size >
-        10 * 1024 * 1024
+    /* =========================
+    VALIDATION WEBCOMIC
+    ========================= */
+
+    const webcomicPages =
+      isWebcomic
+        ? getWebcomicPageFiles()
+        : [];
+
+    if (
+      isWebcomic &&
+      webcomicPages.length ===
+        0
+    ) {
+      chapterStatusMsg.className =
+        "status error";
+
+      chapterStatusMsg.textContent =
+        "❌ Ajoute au moins une page au chapitre.";
+
+      return;
+    }
+
+    if (isWebcomic) {
+      for (
+        const page of webcomicPages
       ) {
-        chapterStatusMsg.className =
-          "status error";
+        const fileError =
+          validateWebcomicFile(
+            page.file
+          );
 
-        chapterStatusMsg.textContent =
-          "❌ L'image ne doit pas dépasser 10 Mo.";
+        if (fileError) {
+          chapterStatusMsg.className =
+            "status error";
 
-        return;
+          chapterStatusMsg.textContent =
+            `❌ Page ${page.pageNumber} : ${fileError}`;
+
+          return;
+        }
+
+        /*
+        Une nouvelle page doit obligatoirement
+        avoir une image.
+        */
+        if (
+          !page.pageId &&
+          !page.file
+        ) {
+          chapterStatusMsg.className =
+            "status error";
+
+          chapterStatusMsg.textContent =
+            `❌ La page ${page.pageNumber} doit avoir une image.`;
+
+          return;
+        }
       }
     }
 
@@ -1909,55 +2637,129 @@ addChapterForm.addEventListener(
       ========================= */
 
       if (editingChapterId) {
-        let chapterImageUrl =
-          editingChapterImageUrl;
+        /*
+        =========================
+        ROMAN
+        =========================
+        */
 
-        if (imageFile) {
-          const extension =
-            imageFile.name
-              .split(".")
-              .pop();
+        if (!isWebcomic) {
+          let chapterImageUrl =
+            editingChapterImageUrl;
 
-          const filePath =
-            `${selectedSeries.id}/${editingChapterId}-${Date.now()}.${extension}`;
+          if (imageFile) {
+            const extension =
+              imageFile.name
+                .split(".")
+                .pop();
 
-          chapterStatusMsg.textContent =
-            "⏳ Envoi de la nouvelle image...";
+            const filePath =
+              `${selectedSeries.id}/${editingChapterId}-${Date.now()}.${extension}`;
 
-          const {
-            error: uploadError
-          } = await supabase.storage
-            .from("chapter-images")
-            .upload(
-              filePath,
-              imageFile,
-              {
-                upsert: false
-              }
-            );
+            chapterStatusMsg.textContent =
+              "⏳ Envoi de la nouvelle image...";
 
-          if (uploadError) {
-            throw uploadError;
+            chapterImageUrl =
+              await uploadChapterImage(
+                imageFile,
+                filePath
+              );
           }
 
-          const {
-            data: publicUrlData
-          } = supabase.storage
-            .from("chapter-images")
-            .getPublicUrl(
-              filePath
-            );
+          chapterStatusMsg.textContent =
+            "⏳ Mise à jour du chapitre...";
 
-          chapterImageUrl =
-            publicUrlData.publicUrl;
+          const {
+            data: updatedChapter,
+            error: updateError
+          } = await supabase
+            .from("chapters")
+            .update({
+              chapter_number:
+                chapterNumber,
+
+              chapter_label:
+                chapterLabel,
+
+              title,
+              content,
+
+              chapter_image_url:
+                chapterImageUrl,
+
+              sound_url:
+                soundUrl || null
+            })
+            .eq(
+              "id",
+              editingChapterId
+            )
+            .select("id");
+
+          if (updateError) {
+            throw updateError;
+          }
+
+          if (
+            !updatedChapter ||
+            updatedChapter.length ===
+              0
+          ) {
+            throw new Error(
+              "Le chapitre n'a pas été modifié. Supabase n'a modifié aucune ligne."
+            );
+          }
+
+          chapterStatusMsg.className =
+            "status success";
+
+          chapterStatusMsg.textContent =
+            "✅ Chapitre modifié avec succès !";
+
+          editingChapterId = null;
+          editingChapterImageUrl =
+            null;
+
+          editingWebcomicPageIds =
+            [];
+
+          addChapterForm.reset();
+
+          chapterImage.required =
+            true;
+
+          chapterContent.required =
+            true;
+
+          chapterSubmitBtn.disabled =
+            false;
+
+          chapterSubmitBtn.textContent =
+            "Publier le chapitre";
+
+          newChapterBtn.textContent =
+            "➕ Nouveau chapitre";
+
+          await loadChapters();
+          await loadDashboard();
+
+          showPage("chapters");
+
+          return;
         }
 
+        /*
+        =========================
+        WEBCOMIC
+        =========================
+        */
+
         chapterStatusMsg.textContent =
-          "⏳ Mise à jour du chapitre...";
+          "⏳ Mise à jour des informations du chapitre...";
 
         /*
-        published_at n'est PAS modifié.
-        views n'est PAS modifié.
+        Le contenu texte reste vide/null
+        pour un WebComic.
         */
         const {
           data: updatedChapter,
@@ -1972,10 +2774,8 @@ addChapterForm.addEventListener(
               chapterLabel,
 
             title,
-            content,
 
-            chapter_image_url:
-              chapterImageUrl,
+            content: null,
 
             sound_url:
               soundUrl || null
@@ -1992,25 +2792,382 @@ addChapterForm.addEventListener(
 
         if (
           !updatedChapter ||
-          updatedChapter.length === 0
+          updatedChapter.length ===
+            0
         ) {
           throw new Error(
             "Le chapitre n'a pas été modifié. Supabase n'a modifié aucune ligne."
           );
         }
 
+        /*
+        IDs encore présents dans l'interface.
+        */
+        const currentPageIds =
+          webcomicPages
+            .filter(
+              (page) =>
+                page.pageId
+            )
+            .map(
+              (page) =>
+                page.pageId
+            );
+
+        /*
+        Pages supprimées dans l'interface.
+        */
+        const deletedPageIds =
+          editingWebcomicPageIds.filter(
+            (id) =>
+              !currentPageIds.includes(
+                id
+              )
+          );
+
+        if (
+          deletedPageIds.length >
+          0
+        ) {
+          chapterStatusMsg.textContent =
+            "⏳ Suppression des anciennes pages...";
+
+          const {
+            error: deletePagesError
+          } = await supabase
+            .from("chapter_pages")
+            .delete()
+            .in(
+              "id",
+              deletedPageIds
+            );
+
+          if (deletePagesError) {
+            throw deletePagesError;
+          }
+        }
+
+        /*
+        Traiter chaque page.
+        */
+        for (
+          let index = 0;
+          index <
+          webcomicPages.length;
+          index++
+        ) {
+          const page =
+            webcomicPages[index];
+
+          const pageNumber =
+            index + 1;
+
+          /*
+          PAGE EXISTANTE
+          */
+          if (page.pageId) {
+            if (page.file) {
+              chapterStatusMsg.textContent =
+                `⏳ Remplacement de la page ${pageNumber}...`;
+
+              const extension =
+                page.file.name
+                  .split(".")
+                  .pop();
+
+              const filePath =
+                `webcomic/${selectedSeries.id}/${editingChapterId}/page-${String(
+                  pageNumber
+                ).padStart(
+                  3,
+                  "0"
+                )}-${Date.now()}.${extension}`;
+
+              const imageUrl =
+                await uploadChapterImage(
+                  page.file,
+                  filePath
+                );
+
+              const {
+                error: updatePageError
+              } = await supabase
+                .from(
+                  "chapter_pages"
+                )
+                .update({
+                  page_number:
+                    pageNumber,
+
+                  image_url:
+                    imageUrl
+                })
+                .eq(
+                  "id",
+                  page.pageId
+                );
+
+              if (
+                updatePageError
+              ) {
+                throw updatePageError;
+              }
+            } else {
+              /*
+              On met quand même à jour
+              le numéro de page afin de
+              conserver l'ordre.
+              */
+              const {
+                error: updatePageError
+              } = await supabase
+                .from(
+                  "chapter_pages"
+                )
+                .update({
+                  page_number:
+                    pageNumber
+                })
+                .eq(
+                  "id",
+                  page.pageId
+                );
+
+              if (
+                updatePageError
+              ) {
+                throw updatePageError;
+              }
+            }
+
+            continue;
+          }
+
+          /*
+          NOUVELLE PAGE
+          */
+          if (!page.file) {
+            throw new Error(
+              `La page ${pageNumber} ne contient aucune image.`
+            );
+          }
+
+          chapterStatusMsg.textContent =
+            `⏳ Envoi de la page ${pageNumber}/${webcomicPages.length}...`;
+
+          const extension =
+            page.file.name
+              .split(".")
+              .pop();
+
+          const filePath =
+            `webcomic/${selectedSeries.id}/${editingChapterId}/page-${String(
+              pageNumber
+            ).padStart(
+              3,
+              "0"
+            )}-${Date.now()}.${extension}`;
+
+          const imageUrl =
+            await uploadChapterImage(
+              page.file,
+              filePath
+            );
+
+          const {
+            error: insertPageError
+          } = await supabase
+            .from(
+              "chapter_pages"
+            )
+            .insert({
+              chapter_id:
+                editingChapterId,
+
+              page_number:
+                pageNumber,
+
+              image_url:
+                imageUrl
+            });
+
+          if (insertPageError) {
+            throw insertPageError;
+          }
+        }
+
+        /*
+        Récupérer la première page
+        pour garder chapter_image_url
+        compatible avec les cartes existantes.
+        */
+        const {
+          data: firstPage,
+          error: firstPageError
+        } = await supabase
+          .from(
+            "chapter_pages"
+          )
+          .select(
+            "image_url"
+          )
+          .eq(
+            "chapter_id",
+            editingChapterId
+          )
+          .eq(
+            "page_number",
+            1
+          )
+          .maybeSingle();
+
+        if (firstPageError) {
+          throw firstPageError;
+        }
+
+        if (
+          firstPage?.image_url
+        ) {
+          const {
+            error: chapterImageUpdateError
+          } = await supabase
+            .from("chapters")
+            .update({
+              chapter_image_url:
+                firstPage.image_url
+            })
+            .eq(
+              "id",
+              editingChapterId
+            );
+
+          if (
+            chapterImageUpdateError
+          ) {
+            throw chapterImageUpdateError;
+          }
+        }
+
         chapterStatusMsg.className =
           "status success";
 
         chapterStatusMsg.textContent =
-          "✅ Chapitre modifié avec succès !";
+          "✅ Chapitre WebComic modifié avec succès !";
 
         editingChapterId = null;
-        editingChapterImageUrl = null;
+        editingChapterImageUrl =
+          null;
+
+        editingWebcomicPageIds =
+          [];
 
         addChapterForm.reset();
 
-        $("chapterImage").required =
+        resetWebcomicPages();
+
+        chapterSubmitBtn.disabled =
+          false;
+
+        chapterSubmitBtn.textContent =
+          "Publier le chapitre";
+
+        newChapterBtn.textContent =
+          "➕ Nouveau chapitre";
+
+        updateChapterEditorUI();
+
+        await loadChapters();
+        await loadDashboard();
+
+        showPage("chapters");
+
+        return;
+      }
+
+      /* =========================
+      CREATION ROMAN
+      ========================= */
+
+      if (!isWebcomic) {
+        let chapterImageUrl =
+          null;
+
+        if (imageFile) {
+          const extension =
+            imageFile.name
+              .split(".")
+              .pop();
+
+          const filePath =
+            `${selectedSeries.id}/${Date.now()}-${createSlug(
+              title
+            )}.${extension}`;
+
+          chapterStatusMsg.textContent =
+            "⏳ Envoi de l'image...";
+
+          chapterImageUrl =
+            await uploadChapterImage(
+              imageFile,
+              filePath
+            );
+        }
+
+        chapterStatusMsg.textContent =
+          "⏳ Publication du chapitre...";
+
+        const {
+          error: insertError
+        } = await supabase
+          .from("chapters")
+          .insert({
+            series_id:
+              selectedSeries.id,
+
+            chapter_number:
+              chapterNumber,
+
+            chapter_label:
+              chapterLabel,
+
+            title,
+            content,
+
+            chapter_image_url:
+              chapterImageUrl,
+
+            sound_url:
+              soundUrl || null,
+
+            published_at:
+              new Date().toISOString(),
+
+            views: 0
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        chapterStatusMsg.className =
+          "status success";
+
+        chapterStatusMsg.textContent =
+          "✅ Chapitre publié avec succès !";
+
+        addChapterForm.reset();
+
+        editingChapterId = null;
+        editingChapterImageUrl =
+          null;
+
+        editingWebcomicPageIds =
+          [];
+
+        chapterImage.required =
+          true;
+
+        chapterContent.required =
           true;
 
         chapterSubmitBtn.textContent =
@@ -2031,59 +3188,27 @@ addChapterForm.addEventListener(
       }
 
       /* =========================
-      CREATION
+      CREATION WEBCOMIC
       ========================= */
 
-      let chapterImageUrl =
-        null;
-
-      if (imageFile) {
-        const extension =
-          imageFile.name
-            .split(".")
-            .pop();
-
-        const filePath =
-          `${selectedSeries.id}/${Date.now()}-${createSlug(
-            title
-          )}.${extension}`;
-
-        chapterStatusMsg.textContent =
-          "⏳ Envoi de l'image...";
-
-        const {
-          error: uploadError
-        } = await supabase.storage
-          .from("chapter-images")
-          .upload(
-            filePath,
-            imageFile,
-            {
-              upsert: false
-            }
-          );
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const {
-          data: publicUrlData
-        } = supabase.storage
-          .from("chapter-images")
-          .getPublicUrl(
-            filePath
-          );
-
-        chapterImageUrl =
-          publicUrlData.publicUrl;
+      if (
+        webcomicPages.length ===
+        0
+      ) {
+        throw new Error(
+          "Ajoute au moins une page au chapitre."
+        );
       }
 
+      /*
+      1. Création du chapitre.
+      */
       chapterStatusMsg.textContent =
-        "⏳ Publication du chapitre...";
+        "⏳ Création du chapitre...";
 
       const {
-        error: insertError
+        data: newChapter,
+        error: insertChapterError
       } = await supabase
         .from("chapters")
         .insert({
@@ -2097,10 +3222,15 @@ addChapterForm.addEventListener(
             chapterLabel,
 
           title,
-          content,
+
+          /*
+          Un WebComic n'utilise pas
+          le contenu texte du Roman.
+          */
+          content: null,
 
           chapter_image_url:
-            chapterImageUrl,
+            null,
 
           sound_url:
             soundUrl || null,
@@ -2109,25 +3239,153 @@ addChapterForm.addEventListener(
             new Date().toISOString(),
 
           views: 0
-        });
+        })
+        .select("id")
+        .single();
 
-      if (insertError) {
-        throw insertError;
+      if (insertChapterError) {
+        throw insertChapterError;
+      }
+
+      if (!newChapter?.id) {
+        throw new Error(
+          "Le chapitre a été créé mais son identifiant est introuvable."
+        );
+      }
+
+      const newChapterId =
+        newChapter.id;
+
+      let firstPageUrl = null;
+
+      /*
+      2. Upload des pages.
+      */
+      for (
+        let index = 0;
+        index <
+        webcomicPages.length;
+        index++
+      ) {
+        const page =
+          webcomicPages[index];
+
+        if (!page.file) {
+          throw new Error(
+            `La page ${
+              index + 1
+            } ne contient aucune image.`
+          );
+        }
+
+        chapterStatusMsg.textContent =
+          `⏳ Envoi de la page ${
+            index + 1
+          }/${webcomicPages.length}...`;
+
+        const extension =
+          page.file.name
+            .split(".")
+            .pop();
+
+        const filePath =
+          `webcomic/${selectedSeries.id}/${newChapterId}/page-${String(
+            index + 1
+          ).padStart(
+            3,
+            "0"
+          )}-${Date.now()}.${extension}`;
+
+        const imageUrl =
+          await uploadChapterImage(
+            page.file,
+            filePath
+          );
+
+        /*
+        Première page = image principale
+        du chapitre.
+        */
+        if (index === 0) {
+          firstPageUrl =
+            imageUrl;
+        }
+
+        /*
+        3. Enregistrement dans
+        chapter_pages.
+        */
+        const {
+          error: insertPageError
+        } = await supabase
+          .from(
+            "chapter_pages"
+          )
+          .insert({
+            chapter_id:
+              newChapterId,
+
+            page_number:
+              index + 1,
+
+            image_url:
+              imageUrl
+          });
+
+        if (insertPageError) {
+          throw insertPageError;
+        }
+      }
+
+      /*
+      4. On conserve la première page
+      dans chapter_image_url.
+      */
+      if (firstPageUrl) {
+        const {
+          error:
+            chapterImageUpdateError
+        } = await supabase
+          .from("chapters")
+          .update({
+            chapter_image_url:
+              firstPageUrl
+          })
+          .eq(
+            "id",
+            newChapterId
+          );
+
+        if (
+          chapterImageUpdateError
+        ) {
+          throw chapterImageUpdateError;
+        }
       }
 
       chapterStatusMsg.className =
         "status success";
 
       chapterStatusMsg.textContent =
-        "✅ Chapitre publié avec succès !";
+        `✅ Chapitre ${
+          selectedSeries.format ===
+          "manga"
+            ? "Manga"
+            : "Webtoon"
+        } publié avec succès !`;
 
       addChapterForm.reset();
 
-      editingChapterId = null;
-      editingChapterImageUrl = null;
+      resetWebcomicPages();
 
-      $("chapterImage").required =
-        true;
+      editingChapterId = null;
+      editingChapterImageUrl =
+        null;
+
+      editingWebcomicPageIds =
+        [];
+
+      updateChapterEditorUI();
 
       chapterSubmitBtn.textContent =
         "Publier le chapitre";
@@ -2191,7 +3449,10 @@ document.addEventListener(
     } = await supabase
       .from("chapters")
       .delete()
-      .eq("id", id)
+      .eq(
+        "id",
+        id
+      )
       .select("id");
 
     if (error) {
@@ -2199,7 +3460,7 @@ document.addEventListener(
 
       alert(
         "Erreur lors de la suppression : " +
-        error.message
+          error.message
       );
 
       return;
@@ -2207,7 +3468,8 @@ document.addEventListener(
 
     if (
       !deletedChapter ||
-      deletedChapter.length === 0
+      deletedChapter.length ===
+        0
     ) {
       alert(
         "❌ Le chapitre n'a pas été supprimé. Supabase n'a supprimé aucune ligne."
@@ -2281,57 +3543,59 @@ async function loadSounds() {
     return;
   }
 
-  soundsList.innerHTML = files
-    .map((file) => {
-      const {
-        data: publicUrlData
-      } = supabase.storage
-        .from("sounds")
-        .getPublicUrl(
-          file.name
-        );
+  soundsList.innerHTML =
+    files
+      .map((file) => {
+        const {
+          data: publicUrlData
+        } =
+          supabase.storage
+            .from("sounds")
+            .getPublicUrl(
+              file.name
+            );
 
-      const url =
-        publicUrlData.publicUrl;
+        const url =
+          publicUrlData.publicUrl;
 
-      return `
-        <div class="item">
+        return `
+          <div class="item">
 
-          <div class="sound-row">
+            <div class="sound-row">
 
-            <div class="sound-name">
+              <div class="sound-name">
 
-              <strong>
-                ${escapeHTML(
+                <strong>
+                  ${escapeHTML(
+                    file.name
+                  )}
+                </strong>
+
+              </div>
+
+              <audio
+                controls
+                src="${escapeAttribute(
+                  url
+                )}"
+              ></audio>
+
+              <button
+                type="button"
+                class="danger"
+                data-delete-sound="${escapeAttribute(
                   file.name
-                )}
-              </strong>
+                )}"
+              >
+                🗑️ Supprimer
+              </button>
 
             </div>
 
-            <audio
-              controls
-              src="${escapeAttribute(
-                url
-              )}"
-            ></audio>
-
-            <button
-              type="button"
-              class="danger"
-              data-delete-sound="${escapeAttribute(
-                file.name
-              )}"
-            >
-              🗑️ Supprimer
-            </button>
-
           </div>
-
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
 }
 
 async function loadSoundOptions() {
@@ -2378,11 +3642,12 @@ async function loadSoundOptions() {
   files.forEach((file) => {
     const {
       data: publicUrlData
-    } = supabase.storage
-      .from("sounds")
-      .getPublicUrl(
-        file.name
-      );
+    } =
+      supabase.storage
+        .from("sounds")
+        .getPublicUrl(
+          file.name
+        );
 
     const option =
       document.createElement(
@@ -2538,7 +3803,7 @@ document.addEventListener(
 
       alert(
         "Erreur : " +
-        error.message
+          error.message
       );
 
       return;
@@ -2625,148 +3890,145 @@ async function loadCarousel() {
     return;
   }
 
-  carouselList.innerHTML = data
-    .map((slide) => {
-      const typeLabel =
-        slide.type === "evenement"
-          ? "🎉 Événement"
-          : "ℹ️ Information";
+  carouselList.innerHTML =
+    data
+      .map((slide) => {
+        const typeLabel =
+          slide.type ===
+          "evenement"
+            ? "🎉 Événement"
+            : "ℹ️ Information";
 
-      const statusLabel =
-        slide.active
-          ? "🟢 Actif"
-          : "🔴 Inactif";
+        const statusLabel =
+          slide.active
+            ? "🟢 Actif"
+            : "🔴 Inactif";
 
-      return `
-        <div class="item">
+        return `
+          <div class="item">
 
-          <div class="item-main">
+            <div class="item-main">
 
-            ${
-              slide.image_url
-                ? `
-                  <img
-                    class="cover"
-                    src="${escapeAttribute(
-                      slide.image_url
-                    )}"
-                    alt="${escapeAttribute(
-                      slide.title
-                    )}"
-                  >
-                `
-                : `
-                  <div class="cover"></div>
-                `
-            }
+              ${
+                slide.image_url
+                  ? `
+                    <img
+                      class="cover"
+                      src="${escapeAttribute(
+                        slide.image_url
+                      )}"
+                      alt="${escapeAttribute(
+                        slide.title
+                      )}"
+                    >
+                  `
+                  : `
+                    <div class="cover"></div>
+                  `
+              }
 
-            <div class="item-info">
+              <div class="item-info">
 
-              <div class="item-title">
-                ${escapeHTML(
-                  slide.title
-                )}
-              </div>
+                <div class="item-title">
+                  ${escapeHTML(
+                    slide.title
+                  )}
+                </div>
 
-              <div class="item-meta">
+                <div class="item-meta">
 
-                ${typeLabel}
+                  ${typeLabel}
 
-                <br>
+                  <br>
 
-                Durée :
-                ${escapeHTML(
-                  slide.duration
-                )}
-                secondes
+                  Durée :
+                  ${escapeHTML(
+                    slide.duration
+                  )}
+                  secondes
 
-                <br>
+                  <br>
 
-                Ordre :
-                ${escapeHTML(
-                  slide.display_order
-                )}
+                  Ordre :
+                  ${escapeHTML(
+                    slide.display_order
+                  )}
 
-                <br>
+                  <br>
 
-                ${statusLabel}
+                  ${statusLabel}
 
-                ${
-                  slide.button_text
-                    ? `
-                      <br>
-                      Bouton :
-                      ${escapeHTML(
-                        slide.button_text
-                      )}
-                    `
-                    : ""
-                }
+                  ${
+                    slide.button_text
+                      ? `
+                        <br>
+                        Bouton :
+                        ${escapeHTML(
+                          slide.button_text
+                        )}
+                      `
+                      : ""
+                  }
+
+                </div>
 
               </div>
 
             </div>
 
+            ${
+              slide.description
+                ? `
+                  <div
+                    class="item-meta"
+                    style="margin-top:12px;"
+                  >
+                    ${escapeHTML(
+                      slide.description
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+            <div class="item-actions">
+
+              <button
+                type="button"
+                class="secondary"
+                data-edit-carousel="${escapeAttribute(
+                  slide.id
+                )}"
+              >
+                ✏️ Modifier
+              </button>
+
+              <button
+                type="button"
+                class="danger"
+                data-delete-carousel="${escapeAttribute(
+                  slide.id
+                )}"
+              >
+                🗑️ Supprimer
+              </button>
+
+            </div>
+
           </div>
-
-          ${
-            slide.description
-              ? `
-                <div
-                  class="item-meta"
-                  style="margin-top:12px;"
-                >
-                  ${escapeHTML(
-                    slide.description
-                  )}
-                </div>
-              `
-              : ""
-          }
-
-          <div class="item-actions">
-
-            <button
-              type="button"
-              class="secondary"
-              data-edit-carousel="${escapeAttribute(
-                slide.id
-              )}"
-            >
-              ✏️ Modifier
-            </button>
-
-            <button
-              type="button"
-              class="danger"
-              data-delete-carousel="${escapeAttribute(
-                slide.id
-              )}"
-            >
-              🗑️ Supprimer
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
 }
 
 /* =========================
-AJOUTER UN CONTENU AU CARROUSEL
+AJOUTER CONTENU CARROUSEL
 ========================= */
 
 if (carouselForm) {
   carouselForm.addEventListener(
     "submit",
     async (event) => {
-      /*
-      Si une modification est en cours,
-      le listener de modification
-      prendra le relais.
-      */
       if (
         carouselForm.dataset
           .editingId
@@ -2777,7 +4039,8 @@ if (carouselForm) {
       event.preventDefault();
 
       const type =
-        $("carouselType").value;
+        $("carouselType")
+          .value;
 
       const title =
         $("carouselTitle")
@@ -2817,7 +4080,8 @@ if (carouselForm) {
 
       const active =
         $("carouselActive")
-          .value === "true";
+          .value ===
+        "true";
 
       if (!title) {
         carouselStatusMsg.className =
@@ -2896,7 +4160,9 @@ if (carouselForm) {
           const {
             error: uploadError
           } = await supabase.storage
-            .from("chapter-images")
+            .from(
+              "chapter-images"
+            )
             .upload(
               filePath,
               imageFile,
@@ -2911,11 +4177,14 @@ if (carouselForm) {
 
           const {
             data: publicUrlData
-          } = supabase.storage
-            .from("chapter-images")
-            .getPublicUrl(
-              filePath
-            );
+          } =
+            supabase.storage
+              .from(
+                "chapter-images"
+              )
+              .getPublicUrl(
+                filePath
+              );
 
           imageUrl =
             publicUrlData.publicUrl;
@@ -2927,18 +4196,23 @@ if (carouselForm) {
         const {
           error
         } = await supabase
-          .from("carousel_slides")
+          .from(
+            "carousel_slides"
+          )
           .insert({
             type,
             title,
             description:
-              description || null,
+              description ||
+              null,
             image_url:
               imageUrl,
             button_text:
-              buttonText || null,
+              buttonText ||
+              null,
             button_url:
-              buttonUrl || null,
+              buttonUrl ||
+              null,
             duration,
             display_order:
               Number.isFinite(
@@ -2989,7 +4263,7 @@ if (carouselForm) {
 }
 
 /* =========================
-MODIFIER UN CONTENU DU CARROUSEL
+MODIFIER CONTENU CARROUSEL
 ========================= */
 
 document.addEventListener(
@@ -3011,9 +4285,14 @@ document.addEventListener(
       data: slide,
       error
     } = await supabase
-      .from("carousel_slides")
+      .from(
+        "carousel_slides"
+      )
       .select("*")
-      .eq("id", id)
+      .eq(
+        "id",
+        id
+      )
       .single();
 
     if (error) {
@@ -3021,7 +4300,7 @@ document.addEventListener(
 
       alert(
         "Impossible de charger ce contenu : " +
-        error.message
+          error.message
       );
 
       return;
@@ -3052,7 +4331,8 @@ document.addEventListener(
 
     $("carouselOrder")
       .value =
-      slide.display_order ?? 0;
+      slide.display_order ??
+      0;
 
     $("carouselActive")
       .value =
@@ -3098,7 +4378,8 @@ if (carouselForm) {
       event.preventDefault();
 
       const type =
-        $("carouselType").value;
+        $("carouselType")
+          .value;
 
       const title =
         $("carouselTitle")
@@ -3138,7 +4419,8 @@ if (carouselForm) {
 
       const active =
         $("carouselActive")
-          .value === "true";
+          .value ===
+        "true";
 
       if (!title) {
         carouselStatusMsg.className =
@@ -3220,7 +4502,9 @@ if (carouselForm) {
           const {
             error: uploadError
           } = await supabase.storage
-            .from("chapter-images")
+            .from(
+              "chapter-images"
+            )
             .upload(
               filePath,
               imageFile,
@@ -3235,11 +4519,14 @@ if (carouselForm) {
 
           const {
             data: publicUrlData
-          } = supabase.storage
-            .from("chapter-images")
-            .getPublicUrl(
-              filePath
-            );
+          } =
+            supabase.storage
+              .from(
+                "chapter-images"
+              )
+              .getPublicUrl(
+                filePath
+              );
 
           imageUrl =
             publicUrlData.publicUrl;
@@ -3248,18 +4535,23 @@ if (carouselForm) {
         const {
           error
         } = await supabase
-          .from("carousel_slides")
+          .from(
+            "carousel_slides"
+          )
           .update({
             type,
             title,
             description:
-              description || null,
+              description ||
+              null,
             image_url:
               imageUrl,
             button_text:
-              buttonText || null,
+              buttonText ||
+              null,
             button_url:
-              buttonUrl || null,
+              buttonUrl ||
+              null,
             duration,
             display_order:
               Number.isFinite(
@@ -3323,7 +4615,7 @@ if (carouselForm) {
 }
 
 /* =========================
-SUPPRIMER UN CONTENU DU CARROUSEL
+SUPPRIMER CONTENU CARROUSEL
 ========================= */
 
 document.addEventListener(
@@ -3353,9 +4645,14 @@ document.addEventListener(
       data: deletedSlide,
       error
     } = await supabase
-      .from("carousel_slides")
+      .from(
+        "carousel_slides"
+      )
       .delete()
-      .eq("id", id)
+      .eq(
+        "id",
+        id
+      )
       .select("id");
 
     if (error) {
@@ -3363,7 +4660,7 @@ document.addEventListener(
 
       alert(
         "Erreur lors de la suppression : " +
-        error.message
+          error.message
       );
 
       return;
@@ -3371,7 +4668,8 @@ document.addEventListener(
 
     if (
       !deletedSlide ||
-      deletedSlide.length === 0
+      deletedSlide.length ===
+        0
     ) {
       alert(
         "❌ Le contenu n'a pas été supprimé. Supabase n'a supprimé aucune ligne."
@@ -3408,5 +4706,12 @@ supabase.auth.onAuthStateChange(
 /* =========================
 DEMARRAGE
 ========================= */
+
+updateSeriesFormatVisibility(
+  $("seriesType")?.value ||
+    "webcomic",
+  $("seriesFormat")?.value ||
+    ""
+);
 
 checkSession();
