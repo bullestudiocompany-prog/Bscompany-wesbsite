@@ -2783,7 +2783,8 @@ async function setupLikeButton(chapter) {
   if (
     !likeButton ||
     !likeCount ||
-    !likeIcon
+    !likeIcon ||
+    !chapter?.id
   ) {
     return;
   }
@@ -2791,8 +2792,37 @@ async function setupLikeButton(chapter) {
   const visitorId =
     getVisitorId();
 
-  try {
-    const { count, error: countError } =
+  async function refreshLikeState() {
+    const { data, error } =
+      await supabase
+        .from("likes")
+        .select("id")
+        .eq(
+          "chapter_id",
+          chapter.id
+        )
+        .eq(
+          "visitor_id",
+          visitorId
+        )
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+      console.error(
+        "Erreur vérification like :",
+        error
+      );
+
+      return false;
+    }
+
+    return Boolean(data);
+  }
+
+
+  async function refreshLikeCount() {
+    const { count, error } =
       await supabase
         .from("likes")
         .select(
@@ -2807,44 +2837,30 @@ async function setupLikeButton(chapter) {
           chapter.id
         );
 
-    if (countError) {
-      console.error(
-        "Erreur comptage likes :",
-        countError
-      );
-    } else {
-      likeCount.textContent =
-        String(count || 0);
-    }
-
-    const { data, error } =
-      await supabase
-        .from("likes")
-        .select("id")
-        .eq(
-          "chapter_id",
-          chapter.id
-        )
-        .eq(
-          "visitor_id",
-          visitorId
-        )
-        .maybeSingle();
-
     if (error) {
       console.error(
-        "Erreur vérification like :",
+        "Erreur comptage likes :",
         error
       );
 
-      updateLikeButton(false);
-
-    } else {
-
-      updateLikeButton(
-        Boolean(data)
-      );
+      return;
     }
+
+    likeCount.textContent =
+      String(count || 0);
+  }
+
+
+  try {
+    const isLiked =
+      await refreshLikeState();
+
+    updateLikeButton(
+      isLiked
+    );
+
+    await refreshLikeCount();
+
 
     likeButton.onclick =
       async () => {
@@ -2855,96 +2871,95 @@ async function setupLikeButton(chapter) {
           return;
         }
 
-        likeButton.disabled = true;
+        likeButton.disabled =
+          true;
 
         try {
-          const { data: existingLike } =
-            await supabase
-              .from("likes")
-              .select("id")
-              .eq(
-                "chapter_id",
-                chapter.id
-              )
-              .eq(
-                "visitor_id",
-                visitorId
-              )
-              .maybeSingle();
+
+          const existingLike =
+            await refreshLikeState();
+
 
           if (existingLike) {
 
-            const { error: deleteError } =
+            const { error } =
               await supabase
                 .from("likes")
                 .delete()
                 .eq(
-                  "id",
-                  existingLike.id
+                  "chapter_id",
+                  chapter.id
+                )
+                .eq(
+                  "visitor_id",
+                  visitorId
                 );
 
-            if (deleteError) {
-              throw deleteError;
+            if (error) {
+              throw error;
             }
 
-            updateLikeButton(false);
+            updateLikeButton(
+              false
+            );
 
           } else {
 
-            const { error: insertError } =
+            const { error } =
               await supabase
                 .from("likes")
                 .insert({
-                  user_id: null,
-                  visitor_id: visitorId,
-                  chapter_id: chapter.id,
-                  profil_id: null,
+                  visitor_id:
+                    visitorId,
+
+                  chapter_id:
+                    chapter.id,
+
                   series_id:
                     chapter.series_id
                 });
 
-            if (insertError) {
-              throw insertError;
+            if (error) {
+              throw error;
             }
 
-            updateLikeButton(true);
+            updateLikeButton(
+              true
+            );
           }
 
-          const { count: newCount } =
-            await supabase
-              .from("likes")
-              .select(
-                "id",
-                {
-                  count: "exact",
-                  head: true
-                }
-              )
-              .eq(
-                "chapter_id",
-                chapter.id
-              );
 
-          likeCount.textContent =
-            String(newCount || 0);
+          await refreshLikeCount();
 
         } catch (error) {
+
           console.error(
             "Erreur like :",
             error
           );
+
+          const realState =
+            await refreshLikeState();
+
+          updateLikeButton(
+            realState
+          );
+
+          await refreshLikeCount();
 
           alert(
             "Impossible de modifier le like pour le moment."
           );
 
         } finally {
+
           likeButton.disabled =
             false;
         }
       };
 
   } catch (error) {
+
     console.error(
       "Erreur initialisation like :",
       error
