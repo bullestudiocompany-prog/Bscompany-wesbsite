@@ -2792,14 +2792,8 @@ async function setupLikeButton(chapter) {
   const visitorId =
     getVisitorId();
 
-  /*
-   * État local du like de ce visiteur.
-   */
   let isLiked = false;
 
-  /*
-   * Nombre actuellement affiché.
-   */
   let displayedCount =
     Number.parseInt(
       likeCount.textContent,
@@ -2831,8 +2825,7 @@ async function setupLikeButton(chapter) {
           "visitor_id",
           visitorId
         )
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
     if (error) {
       console.error(
@@ -2843,7 +2836,8 @@ async function setupLikeButton(chapter) {
       return false;
     }
 
-    return Boolean(data);
+    return Array.isArray(data) &&
+      data.length > 0;
   }
 
 
@@ -2853,22 +2847,14 @@ async function setupLikeButton(chapter) {
 
   async function loadLikeCount() {
     /*
-     * IMPORTANT :
-     * On ne met plus "head: true".
-     *
-     * On récupère les lignes et le count.
-     * Ainsi, si count n'est pas fourni correctement,
-     * data.length peut servir de secours.
+     * Même méthode que serie.js :
+     * on récupère les likes du chapitre,
+     * puis on compte les lignes.
      */
-    const { data, count, error } =
+    const { data, error } =
       await supabase
         .from("likes")
-        .select(
-          "id",
-          {
-            count: "exact"
-          }
-        )
+        .select("chapter_id")
         .eq(
           "chapter_id",
           chapter.id
@@ -2876,35 +2862,21 @@ async function setupLikeButton(chapter) {
 
     if (error) {
       console.error(
-        "Erreur comptage likes :",
+        "Erreur récupération likes du chapitre :",
         error
       );
 
       /*
-       * On conserve le nombre affiché.
-       * Surtout, on ne le remet pas à zéro.
+       * On ne remet surtout pas le compteur à 0.
+       * On conserve la valeur actuellement affichée.
        */
       return null;
     }
 
-    let realCount = null;
-
-    if (
-      typeof count === "number" &&
-      count >= 0
-    ) {
-      realCount = count;
-    } else if (
+    const realCount =
       Array.isArray(data)
-    ) {
-      realCount = data.length;
-    }
-
-    if (
-      typeof realCount !== "number"
-    ) {
-      return null;
-    }
+        ? data.length
+        : 0;
 
     displayedCount =
       realCount;
@@ -2922,9 +2894,6 @@ async function setupLikeButton(chapter) {
 
   try {
 
-    /*
-     * Vérifier l'état du visiteur.
-     */
     isLiked =
       await loadInitialLikeState();
 
@@ -2932,9 +2901,10 @@ async function setupLikeButton(chapter) {
       isLiked
     );
 
-
     /*
-     * Charger le compteur réel.
+     * Ici le bouton récupère maintenant
+     * directement les lignes de likes,
+     * exactement comme serie.js.
      */
     await loadLikeCount();
 
@@ -2955,34 +2925,20 @@ async function setupLikeButton(chapter) {
         likeButton.disabled =
           true;
 
-
-        /*
-         * Nouvel état après le clic.
-         */
         const nextState =
           !isLiked;
 
 
         /* =================================================
-           MISE À JOUR IMMÉDIATE
+           MISE À JOUR IMMÉDIATE DU COMPTEUR
         ================================================= */
 
         if (nextState) {
 
-          /*
-           * Exemple :
-           * 1 → 2
-           * 2 → 3
-           */
           displayedCount += 1;
 
         } else {
 
-          /*
-           * Exemple :
-           * 2 → 1
-           * 1 → 0
-           */
           displayedCount =
             Math.max(
               0,
@@ -3004,7 +2960,7 @@ async function setupLikeButton(chapter) {
         try {
 
           /* =================================================
-             AJOUT
+             AJOUT DU LIKE
           ================================================= */
 
           if (nextState) {
@@ -3029,7 +2985,7 @@ async function setupLikeButton(chapter) {
 
 
           /* =================================================
-             RETRAIT
+             RETRAIT DU LIKE
           ================================================= */
 
           } else {
@@ -3053,18 +3009,18 @@ async function setupLikeButton(chapter) {
           }
 
 
-          /*
-           * L'écriture a réussi.
-           *
-           * On resynchronise avec Supabase.
-           *
-           * Si la lecture du compteur échoue,
-           * on garde simplement le compteur local
-           * déjà affiché.
-           */
+          /* =================================================
+             RESYNCHRONISATION
+          ================================================= */
+
           const realCount =
             await loadLikeCount();
 
+          /*
+           * Si la lecture échoue après que
+           * l'écriture a réussi, on garde le compteur
+           * optimiste affiché.
+           */
           if (
             realCount === null
           ) {
@@ -3080,10 +3036,9 @@ async function setupLikeButton(chapter) {
             error
           );
 
-
           /*
-           * Ici seulement, on annule le changement
-           * si l'INSERT ou le DELETE a réellement échoué.
+           * L'écriture en base a réellement échoué.
+           * On annule donc le changement visuel.
            */
 
           if (nextState) {
@@ -3113,14 +3068,12 @@ async function setupLikeButton(chapter) {
             "Impossible de modifier le like pour le moment."
           );
 
-
         } finally {
 
           likeButton.disabled =
             false;
         }
       };
-
 
   } catch (error) {
 
