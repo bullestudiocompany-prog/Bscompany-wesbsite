@@ -2792,7 +2792,35 @@ async function setupLikeButton(chapter) {
   const visitorId =
     getVisitorId();
 
-  async function refreshLikeState() {
+  /*
+   * On conserve l'état du like directement côté interface.
+   * Cela évite de refaire une vérification inutile avant
+   * chaque clic et empêche le compteur de revenir à 0
+   * simplement parce qu'une requête de lecture échoue.
+   */
+  let isLiked = false;
+
+  /*
+   * Compteur actuellement affiché à l'écran.
+   */
+  let displayedCount =
+    Number.parseInt(
+      likeCount.textContent,
+      10
+    );
+
+  if (
+    !Number.isFinite(displayedCount) ||
+    displayedCount < 0
+  ) {
+    displayedCount = 0;
+  }
+
+
+  /*
+   * Vérifie uniquement l'état initial du visiteur.
+   */
+  async function loadInitialLikeState() {
     const { data, error } =
       await supabase
         .from("likes")
@@ -2810,7 +2838,7 @@ async function setupLikeButton(chapter) {
 
     if (error) {
       console.error(
-        "Erreur vérification like :",
+        "Erreur vérification like initial :",
         error
       );
 
@@ -2821,7 +2849,14 @@ async function setupLikeButton(chapter) {
   }
 
 
-  async function refreshLikeCount() {
+  /*
+   * Charge le vrai nombre de likes.
+   *
+   * Si la requête échoue, on conserve le nombre
+   * actuellement affiché au lieu de le remplacer
+   * par 0.
+   */
+  async function loadLikeCount() {
     const { count, error } =
       await supabase
         .from("likes")
@@ -2846,22 +2881,41 @@ async function setupLikeButton(chapter) {
       return;
     }
 
-    likeCount.textContent =
-      String(count || 0);
+    if (
+      typeof count === "number" &&
+      count >= 0
+    ) {
+      displayedCount =
+        count;
+
+      likeCount.textContent =
+        String(displayedCount);
+    }
   }
 
 
   try {
-    const isLiked =
-      await refreshLikeState();
+
+    /*
+     * État initial du like.
+     */
+    isLiked =
+      await loadInitialLikeState();
 
     updateLikeButton(
       isLiked
     );
 
-    await refreshLikeCount();
+
+    /*
+     * Nombre initial de likes.
+     */
+    await loadLikeCount();
 
 
+    /*
+     * CLIC SUR LE BOUTON LIKE
+     */
     likeButton.onclick =
       async () => {
 
@@ -2874,36 +2928,47 @@ async function setupLikeButton(chapter) {
         likeButton.disabled =
           true;
 
+
+        /*
+         * État souhaité après le clic.
+         */
+        const nextState =
+          !isLiked;
+
+
+        /*
+         * Mise à jour IMMÉDIATE de l'interface.
+         *
+         * Le compteur change avant même d'attendre
+         * la réponse de Supabase.
+         */
+        if (nextState) {
+          displayedCount += 1;
+        } else {
+          displayedCount =
+            Math.max(
+              0,
+              displayedCount - 1
+            );
+        }
+
+        likeCount.textContent =
+          String(displayedCount);
+
+        isLiked =
+          nextState;
+
+        updateLikeButton(
+          isLiked
+        );
+
+
         try {
 
-          const existingLike =
-            await refreshLikeState();
-
-
-          if (existingLike) {
-
-            const { error } =
-              await supabase
-                .from("likes")
-                .delete()
-                .eq(
-                  "chapter_id",
-                  chapter.id
-                )
-                .eq(
-                  "visitor_id",
-                  visitorId
-                );
-
-            if (error) {
-              throw error;
-            }
-
-            updateLikeButton(
-              false
-            );
-
-          } else {
+          /*
+           * AJOUT DU LIKE
+           */
+          if (nextState) {
 
             const { error } =
               await supabase
@@ -2923,13 +2988,39 @@ async function setupLikeButton(chapter) {
               throw error;
             }
 
-            updateLikeButton(
-              true
-            );
+          /*
+           * RETRAIT DU LIKE
+           */
+          } else {
+
+            const { error } =
+              await supabase
+                .from("likes")
+                .delete()
+                .eq(
+                  "chapter_id",
+                  chapter.id
+                )
+                .eq(
+                  "visitor_id",
+                  visitorId
+                );
+
+            if (error) {
+              throw error;
+            }
           }
 
 
-          await refreshLikeCount();
+          /*
+           * L'opération a réussi.
+           *
+           * On essaie maintenant de récupérer le vrai
+           * nombre depuis la base pour resynchroniser
+           * l'affichage.
+           */
+          await loadLikeCount();
+
 
         } catch (error) {
 
@@ -2938,14 +3029,32 @@ async function setupLikeButton(chapter) {
             error
           );
 
-          const realState =
-            await refreshLikeState();
+
+          /*
+           * L'opération n'a pas réussi.
+           *
+           * On annule uniquement la modification
+           * visuelle que nous venons de faire.
+           */
+          if (nextState) {
+            displayedCount =
+              Math.max(
+                0,
+                displayedCount - 1
+              );
+          } else {
+            displayedCount += 1;
+          }
+
+          isLiked =
+            !nextState;
+
+          likeCount.textContent =
+            String(displayedCount);
 
           updateLikeButton(
-            realState
+            isLiked
           );
-
-          await refreshLikeCount();
 
           alert(
             "Impossible de modifier le like pour le moment."
