@@ -2,8 +2,8 @@ const TYPE_LABELS = {
   novel: 'Roman',
   roman: 'Roman',
   webnovel: 'Webnovel',
-  webtoon: 'Webcomic',
-  webcomic: 'Webcomic',
+  webtoon: 'KAZESH',
+  webcomic: 'KAZESH',
   manga: 'Manga'
 };
 
@@ -319,4 +319,4 @@ export function createFeaturedCard(rawItem) {
       </div>
     </a>
   `;
-}
+    }
