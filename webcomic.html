@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Webcomics — BSCompany</title>
+  <title>KAZESH — BSCompany</title>
 
   <meta
     name="description"
-    content="Découvrez les webcomics, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
+    content="Découvrez les KAZESH, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
   >
 
   <meta
@@ -25,12 +25,12 @@
 
   <meta
     property="og:title"
-    content="Webcomics — BSCompany"
+    content="KAZESH — BSCompany"
   >
 
   <meta
     property="og:description"
-    content="Découvrez les webcomics, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
+    content="Découvrez les KAZESH, mangas, webtoons et bandes dessinées disponibles sur BSCompany."
   >
 
   <meta
@@ -94,7 +94,7 @@
 
 
     /* ================================
-       CATALOGUE DES WEBCOMICS
+       CATALOGUE DES KAZESH
        CARTES COMPACTES
        ================================ */
 
@@ -297,7 +297,7 @@
 
 
   <!-- =========================
-       CATALOGUE WEBCOMICS
+       CATALOGUE KAZESH
        ========================= -->
 
   <main class="container">
@@ -330,7 +330,7 @@
         <input
           type="search"
           id="searchInput"
-          placeholder="Rechercher un webcomic..."
+          placeholder="Rechercher un KAZESH..."
           autocomplete="off"
         >
 
@@ -382,7 +382,7 @@
 
 
     <!-- =========================
-         GRILLE DES WEBCOMICS
+         GRILLE DES KAZESH
          ========================= -->
 
     <section
@@ -626,7 +626,7 @@
 
       /* =========================
          ADDITIONNER LES VUES
-         PAR WEBCOMIC
+         PAR KAZESH
          ========================= */
 
       const viewsBySeries = {};
@@ -647,7 +647,7 @@
 
       /* =========================
          AJOUTER LES VUES
-         AUX WEBCOMICS
+         AUX KAZESH
          ========================= */
 
       return series.map(webcomic => {
@@ -782,7 +782,7 @@
 
       /* =========================
          ADDITIONNER LES LIKES
-         PAR WEBCOMIC
+         PAR KAZESH
          ========================= */
 
       const likesBySeries = {};
@@ -803,7 +803,7 @@
 
       /* =========================
          AJOUTER LES LIKES
-         AUX WEBCOMICS
+         AUX KAZESH
          ========================= */
 
       return series.map(webcomic => {
@@ -826,7 +826,7 @@
 
 
     /* =========================
-       CHARGEMENT DES WEBCOMICS
+       CHARGEMENT DES KAZESH
        ========================= */
 
     async function loadWebcomics() {
@@ -870,7 +870,7 @@
 
           webcomicsGrid.innerHTML = `
             <p class="error-state">
-              Impossible de charger les webcomics
+              Impossible de charger les KAZESH
               pour le moment.
             </p>
           `;
@@ -909,14 +909,14 @@
 
           webcomicsGrid.innerHTML = `
             <p class="empty-state">
-              Aucun webcomic n'est disponible
+              Aucun KAZESH n'est disponible
               pour le moment.
             </p>
           `;
 
 
           resultsCount.textContent =
-            '0 webcomic';
+            '0 KAZESH';
 
           return;
 
@@ -932,7 +932,7 @@
       catch (error) {
 
         console.error(
-          'Erreur inattendue lors du chargement des webcomics:',
+          'Erreur inattendue lors du chargement des KAZESH:',
           error
         );
 
@@ -1157,7 +1157,7 @@
 
 
       resultsCount.textContent =
-        `${count} webcomic${count > 1 ? 's' : ''}`;
+        `${count} KAZESH`;
 
 
       /* =========================
@@ -1168,7 +1168,7 @@
 
         webcomicsGrid.innerHTML = `
           <p class="empty-state">
-            Aucun webcomic ne correspond
+            Aucun KAZESH ne correspond
             à votre recherche.
           </p>
         `;
@@ -1224,4 +1224,4 @@
   <script src="js/theme.js"></script>
 
 </body>
-  </html>
+</html>
