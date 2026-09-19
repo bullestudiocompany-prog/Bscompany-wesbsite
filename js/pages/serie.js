@@ -116,9 +116,9 @@ function typeLabel(rawType) {
     novel: 'Roman',
     roman: 'Roman',
     webnovel: 'Webnovel',
-    webtoon: 'Webcomic',
-    webcomic: 'Webcomic',
-    manga: 'Manga'
+    webtoon: 'KAZESH',
+    webcomic: 'KAZESH',
+    manga: 'KAZESH'
   };
 
   return labels[slug] || rawType || 'Webnovel';
