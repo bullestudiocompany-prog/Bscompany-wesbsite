@@ -1,0 +1,22 @@
+#bullo-phaser-root {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 170px;
+  height: 220px;
+  z-index: 9999;
+  pointer-events: none;
+}
+#bullo-phaser-root canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+@media (max-width: 600px) {
+  #bullo-phaser-root { width: 125px; height: 165px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #bullo-phaser-root { transition: none; }
+}
