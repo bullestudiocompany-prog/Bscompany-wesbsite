@@ -1,0 +1,47 @@
+/* Mascotte Bullo de BSCompany */
+#bullo-mascot {
+    position: fixed;
+    left: 0;
+    bottom: 16px;
+    z-index: 999;
+    width: clamp(76px, 12vw, 118px);
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+    object-position: left bottom;
+    cursor: pointer;
+
+    transform: translateX(-27%);
+    transform-origin: left bottom;
+
+    transition: transform 0.28s ease;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#bullo-mascot.is-peeking {
+    transform: translateX(0);
+}
+
+#bullo-mascot.is-hidden {
+    transform: translateX(-78%);
+}
+
+#bullo-mascot:focus-visible {
+    outline: 2px solid #48bfe8;
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    #bullo-mascot {
+        width: 82px;
+        bottom: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #bullo-mascot {
+        transition: none !important;
+    }
+  }
