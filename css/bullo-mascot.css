@@ -1,46 +1,20 @@
-/* ========================================== BSCOMPANY — BULLO Positionnement et animations responsives ========================================== */
+/* Conteneur principal de Bullo */ #bullo-mascot { position: fixed; right: 0; bottom: 0; width: 100px; height: 100px; z-index: 99999;
 
-#bullo-mascot { position: fixed; right: 0; bottom: 0;
+display: flex; align-items: flex-end; justify-content: flex-end;
 
-width: clamp(65px, 8vw, 105px); height: auto; max-height: 18vh;
+cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 
-z-index: 1000; display: block;
+transform: translateX(0); transition: transform 850ms cubic-bezier(.22, .75, .25, 1); }
 
-object-fit: contain; object-position: right bottom;
+/* Le SVG remplit le conteneur */ #bullo-mascot svg, #bullo-mascot img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
-cursor: pointer; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+/* Bullo se cache */ #bullo-mascot.is-hiding { transform: translateX(85%); transition: transform 320ms ease-in; }
 
-transform: translate3d(68%, 0, 0); transform-origin: right bottom;
+/* Bullo hésite avant de revenir */ #bullo-mascot.is-hesitating { transform: translateX(35%); transition: transform 950ms cubic-bezier(.16, 1, .3, 1); }
 
-transition: transform 850ms cubic-bezier(.22, .75, .25, 1), opacity 450ms ease;
+/* Bullo est visible */ #bullo-mascot.is-visible { transform: translateX(0); }
 
-will-change: transform; }
+/* Affichage sur téléphone */ @media (max-width: 600px) { #bullo-mascot { width: 76px; height: 76px; right: 0; bottom: 0; } }
 
-/* Bullo est visible */ #bullo-mascot.is-visible { transform: translate3d(0, 0, 0); opacity: 1; }
-
-/* Bullo se cache */ #bullo-mascot.is-hiding { transform: translate3d(110%, 0, 0); opacity: 0.96;
-
-transition: transform 320ms ease-in, opacity 220ms ease-in; }
-
-/* Bullo hésite avant de ressortir */ #bullo-mascot.is-hesitating { transform: translate3d(38%, 0, 0); opacity: 1;
-
-transition: transform 950ms cubic-bezier(.16, 1, .3, 1), opacity 650ms ease; }
-
-/* Accessibilité clavier */ #bullo-mascot:focus-visible { outline: 2px solid #56c8ef; outline-offset: 3px; border-radius: 12px; }
-
-/* Ordinateurs */ @media (min-width: 900px) { #bullo-mascot { width: clamp(75px, 7vw, 105px); } }
-
-/* Téléphones et petits écrans */ @media (max-width: 600px) { #bullo-mascot { width: clamp(55px, 16vw, 76px); max-height: 13vh;
-
-right: env(safe-area-inset-right, 0px); bottom: env(safe-area-inset-bottom, 0px); transform: translate3d(72%, 0, 0); 
-
-}
-
-#bullo-mascot.is-visible { transform: translate3d(0, 0, 0); }
-
-#bullo-mascot.is-hiding { transform: translate3d(110%, 0, 0); }
-
-#bullo-mascot.is-hesitating { transform: translate3d(38%, 0, 0); } }
-
-/* Respect des préférences de réduction des animations */ @media (prefers-reduced-motion: reduce) { #bullo-mascot, #bullo-mascot.is-visible, #bullo-mascot.is-hiding, #bullo-mascot.is-hesitating { transition: none !important; } }
+/* Respecte les préférences d'accessibilité */ @media (prefers-reduced-motion: reduce) { #bullo-mascot { transition: none !important; } }
 
