@@ -355,11 +355,17 @@
 
   </section>
 
+  <div id="bullo-mascot" aria-label="Bullo, la mascotte de BSCompany" role="button" tabindex="0">
+  <img src="img/bullo.svg" alt="" draggable="false">
+  </div>
+
   <footer class="site-footer">
     <p>
       © <span id="year"></span> BSCompany — Partagez votre bulle
     </p>
   </footer>
+
+  <script src="js/bullo-mascot.js" defer></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
@@ -411,12 +417,6 @@
     setTheme(currentTheme === "black" ? "light" : "black");
   });
   </script>
-
-  <div id="bullo-mascot" aria-label="Bullo, la mascotte de BSCompany" role="button" tabindex="0">
-  <img src="img/bullo.svg" alt="" draggable="false">
-  </div>
-
-  <script src="js/bullo-mascot.js" defer></script>
 
 </body>
     </html>
