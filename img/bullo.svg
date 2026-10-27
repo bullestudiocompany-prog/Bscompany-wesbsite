@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-labelledby="title desc">
+  <title id="title">Bullo — mascotte BSCompany</title>
+  <desc id="desc">Petite mascotte bleue arrondie, avec reflets, joues roses et visage expressif.</desc>
+  <defs>
+    <linearGradient id="bodyFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fe8fb"/>
+      <stop offset=".55" stop-color="#5fc9e8"/>
+      <stop offset="1" stop-color="#35a9d3"/>
+    </linearGradient>
+    <linearGradient id="bodyShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#168ab8" stop-opacity=".65"/>
+      <stop offset=".38" stop-color="#168ab8" stop-opacity="0"/>
+      <stop offset="1" stop-color="#168ab8" stop-opacity=".18"/>
+    </linearGradient>
+    <linearGradient id="armFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#81e2f5"/>
+      <stop offset="1" stop-color="#42b8df"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Bras derrière le corps -->
+  <g id="bullo-arms" stroke="#17252b" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M72 174 C54 177 46 191 43 208 C40 221 45 229 55 225 C65 221 74 205 82 193" fill="url(#armFill)"/>
+    <path d="M216 176 C231 175 243 184 251 197 C256 205 251 212 244 210 C233 206 223 197 213 192" fill="url(#armFill)"/>
+  </g>
+
+  <!-- Pieds courts et souples -->
+  <g id="bullo-feet" stroke="#17252b" stroke-width="5.5" stroke-linejoin="round">
+    <path d="M91 218 C87 235 79 247 67 252 C57 257 48 251 53 243 L72 211 Z" fill="#48b6db"/>
+    <path d="M184 216 C191 234 202 245 213 246 C224 247 228 239 220 232 L202 207 Z" fill="#48b6db"/>
+  </g>
+
+  <!-- Corps : silhouette arrondie légèrement irrégulière -->
+  <path id="bullo-body" d="M149 31
+    C190 31 224 55 239 91
+    C252 123 248 158 232 186
+    C218 211 190 229 156 232
+    C119 236 86 222 65 197
+    C43 171 39 136 48 103
+    C58 65 92 37 129 32
+    C136 31 143 30 149 31 Z"
+    fill="url(#bodyFill)" stroke="#17252b" stroke-width="6.5" stroke-linejoin="round"/>
+
+  <!-- Ombre douce sur le bord gauche -->
+  <path d="M62 91 C47 127 54 167 77 194 C92 212 111 222 132 226
+    C102 221 76 204 62 180 C46 153 44 117 62 91 Z" fill="#168bb5" opacity=".35"/>
+  <path d="M149 31 C190 31 224 55 239 91 C252 123 248 158 232 186
+    C218 211 190 229 156 232 C119 236 86 222 65 197
+    C43 171 39 136 48 103 C58 65 92 37 129 32 C136 31 143 30 149 31 Z"
+    fill="url(#bodyShade)"/>
+
+  <!-- Reflets caractéristiques -->
+  <g id="bullo-highlights" fill="#f2fdff" opacity=".98">
+    <ellipse cx="91" cy="66" rx="16" ry="8" transform="rotate(-43 91 66)"/>
+    <ellipse cx="75" cy="86" rx="6.5" ry="4.2" transform="rotate(-43 75 86)"/>
+    <ellipse cx="68" cy="111" rx="3.5" ry="7" transform="rotate(18 68 111)" opacity=".72"/>
+  </g>
+
+  <!-- Joues -->
+  <g id="bullo-cheeks" fill="#ff8297" opacity=".95">
+    <ellipse cx="91" cy="160" rx="13" ry="7.5" transform="rotate(-9 91 160)"/>
+    <ellipse cx="207" cy="158" rx="12" ry="7" transform="rotate(-15 207 158)"/>
+  </g>
+
+  <!-- Sourcils / paupières animables -->
+  <g id="bullo-brows" fill="none" stroke="#17252b" stroke-width="5.5" stroke-linecap="round">
+    <path id="bullo-brow-left" d="M104 116 Q111 106 120 116"/>
+    <path id="bullo-brow-right" d="M175 116 Q184 106 192 116"/>
+  </g>
+
+  <!-- Yeux : les groupes des pupilles restent séparés pour suivre le pointeur -->
+  <g id="bullo-eyes">
+    <g id="bullo-pupil-left">
+      <ellipse cx="113" cy="132" rx="8.5" ry="11" fill="#101c22"/>
+      <ellipse cx="115" cy="129" rx="2.2" ry="3.1" fill="#f4fdff"/>
+    </g>
+    <g id="bullo-pupil-right">
+      <ellipse cx="183" cy="132" rx="8.5" ry="11" fill="#101c22"/>
+      <ellipse cx="185" cy="129" rx="2.2" ry="3.1" fill="#f4fdff"/>
+    </g>
+  </g>
+
+  <!-- Bouche souriante -->
+  <path id="bullo-mouth" d="M133 145
+    C142 151 157 151 166 144
+    C165 162 157 173 148 173
+    C138 173 132 161 133 145 Z"
+    fill="#f0444e" stroke="#17252b" stroke-width="5.5" stroke-linejoin="round"/>
+  <path d="M137 148 C144 152 156 152 163 148 C161 154 155 157 149 157 C144 157 139 154 137 148 Z"
+    fill="#fff8f5"/>
+</svg>
