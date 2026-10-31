@@ -1,0 +1,1 @@
+#bullo-mascot{position:fixed;right:0;bottom:0;width:150px;height:150px;z-index:9999;pointer-events:none;overflow:visible}#bullo-mascot canvas{display:block;width:150px!important;height:150px!important;pointer-events:none}@media(max-width:600px){#bullo-mascot,#bullo-mascot canvas{width:120px;height:120px}#bullo-mascot canvas{width:120px!important;height:120px!important}}
