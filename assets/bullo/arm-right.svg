@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><defs>
+<linearGradient id="bodyFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe8fb"/><stop offset=".55" stop-color="#5fc9e8"/><stop offset="1" stop-color="#35a9d3"/></linearGradient>
+<linearGradient id="bodyShade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#168ab8" stop-opacity=".65"/><stop offset=".38" stop-color="#168ab8" stop-opacity="0"/><stop offset="1" stop-color="#168ab8" stop-opacity=".18"/></linearGradient>
+<linearGradient id="armFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#81e2f5"/><stop offset="1" stop-color="#42b8df"/></linearGradient></defs><path d="M216 176 C231 175 243 184 251 197 C256 205 251 212 244 210 C233 206 223 197 213 192" fill="url(#armFill)" stroke="#17252b" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
